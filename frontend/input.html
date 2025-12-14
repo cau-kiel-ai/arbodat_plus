@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">      
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+      <title>ArboDat+ Input</title>
+
+      <link href="img/favicon.png" rel="icon">
+      <link href="css/input.min.css" rel="stylesheet">
+      
+      <!-- bootstrap -->
+      <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"
+        >
+      </script>
+      <!-- axios -->
+      <script src="https://unpkg.com/axios@1.8.4/dist/axios.min.js"></script>
+      <!-- jquery -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+      <!-- leaflet -->
+      <link
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        rel="stylesheet"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+      />
+      <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+        >
+      </script>
+      <!-- proj4js -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.15.0/proj4.js"></script>
+      <!-- Select2 -->
+      <link
+        href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+        rel="stylesheet"
+      />
+      <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+      <style>
+        .hidden {
+            display: none;
+        }
+
+        .dropdown {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            background: #fff;
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .dropdown li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown li:hover, .dropdown li.active {
+            background: #f0f0f0;
+        }
+
+        .col-75 {
+            position: relative;
+        }
+
+        .clear-icon {
+            display: none;
+        }
+
+        .col-75 input:not(:placeholder-shown) + .clear-icon {
+            display: block;
+        }
+        input[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+      </style>
+
+  </head>
+
+  <body >
+    
+    <header class="header_img_input_html">
+      <h1> <img src="img/logo1.png" alt="logo" id="logo_input_html"> </h1>
+    </header> 
+    
+    <!-- Literature Popup -->
+    <div id="literaturModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Ceate new literature</h2>
+
+        <form id="literatureForm">
+          <!-- Literature field -->
+          <fieldset>
+            <legend> Literature details</legend>
+              <div class="row">
+                <div class="col-25">
+                  <label for="doi">DOI:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="doi" autocomplete="off">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="publicationYear">publication year:</label>
+                </div>
+                <div class="col-75">
+                  <input type="number" id="publicationYear" autocomplete="off">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="title">title:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="title" class="form-control" list="titleList" autocomplete="off">
+                  <datalist id="titleList"></datalist>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="shortCitation">short citation:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="shortCitation" autocomplete="off">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="longCitation">long citation:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="longCitation" autocomplete="off">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="litAbstract">abstract:</label>
+                </div>
+                <div class="col-75">
+                  <textarea name="abstract" id="litAbstract" cols="30" rows="5"></textarea>
+                </div>
+              </div>
+              <br>
+            </fieldset>
+
+            <!-- Authors field -->
+            <fieldset>
+              <legend>Authors</legend>
+              <div class="row">
+                <div class="col-25">
+                  <label for="lastName" data-tooltip="Create a new person or double-click to view all exsiting author names.">last name:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="lastName" required class="form-control" list="lastnameList" autocomplete="off">
+                  <datalist id="lastnameList"></datalist>
+                </div>
+              </div>                        
+              <div class="row">
+                <div class="col-25">
+                  <label for="firstName">first name:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="firstName" autocomplete="off">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-25">
+                  <label for="middleName">middle name:</label>
+                </div>
+                <div class="col-75">
+                  <input type="text" id="middleName" autocomplete="off">
+                </div>
+              </div>                        
+              
+              <!-- Button to add author-->
+              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button type="button" class="btn btn-primary" id="addAuthorButton">Add this author</button>
+              </div>
+
+              <!-- Container to display added authors -->
+              <div id="authorContainer" style="margin-top: 20px; width: 40%;"></div>
+
+            </fieldset>    
+          </form>
+
+          <!-- 'Create Literature' Button -->
+          <div class="text-center" style="margin-top: 15px">
+            <button type="button" class="btn btn-primary" onclick="createLiterature(authorList)">Create literature</button>
+          </div>
+
+      </div>
+    </div>
+
+    <!-- Accordion -->
+    <div class="container-md">
+      <div class="accordion" id="accordionPanels">
+        
+        <!-- Research Project -->
+        <div class="accordion-item">
+
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+              RESEARCH PROJECT
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+
+              <form id="rp" role="form">
+                <fieldset>
+                  <legend>Project</legend>
+
+                  <input type="hidden" id="projectId">
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="projectName" title="Identification of the Project. Select from the list or enter a new project." >project name: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" name="projectName" id="projectName" required>
+                      <span class="clear-icon" id="clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="projectDropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label  for="funder" data-tooltip="Who funded the project? e.g. German Research Foundation." >funder name:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" name="funder" id="funder">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="authorisationNumber" data-tooltip="Grant or funding reference number.">authorisation number:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" name="authorisationNumber" id="authorisationNumber">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="rp_license" data-tooltip="Please choose from the list.">license: </label>
+                    </div>
+                    <div class="col-75">
+                      <select name="rp_license" id="rp_license">
+                        <option value="">select license</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="exportFileName">export file name:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" name="exportFileName" id="exportFileName">
+                    </div>
+                  </div>
+
+                  <button type="button" id="custom_rp_button" onclick="create_update_researchProject()" class="MySubmitButton" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- User and Institution -->
+        <div class="accordion-item">
+
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+              INSTITUTIONS AND USER
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              
+              <!-- Institution -->
+              <form id="institutionForm" role="form">
+                <fieldset>
+                  <legend>Institutions</legend>
+
+                  <input type="hidden" id="institutionId">
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="institutionLabel">label:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="institutionLabel" name="institutionLabel" style="padding-right: 50px;" required>
+                      <span class="clear-icon" id="clearIconInstitution" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="institution_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="rorId" data-tooltip="ROR is a global, community-led registry of open persistent identifiers for research organizations. You can check your research institution's ROR ID on ror.org.">ROR ID:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="rorId" placeholder="" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <button type="button" id="custom_inst_button" class="MySubmitButton" onclick="create_update_institution()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                
+                </fieldset>
+              </form>
+
+              <br>
+              
+              <!-- User -->
+              <form id="user_and_institution" role="form">
+                <fieldset>
+                  <legend>User</legend>
+
+                  <input type="hidden" id="userId">
+                    
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="last_name">last name: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" name="last_name" id="last_name" placeholder="" style="padding-right: 50px;" required>
+                      <span class="clear-icon" id="clearIconUser" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="user_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="first_name">first name: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="first_name" name="first_name" required>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="middle_names" data-tooltip="If you have more than one middle name or other name additions, please provide them here.">middle name:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="middle_names" name="middle_names" placeholder="">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="mail">mail address:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="email" id="mail" name="mail" >
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="orcid" data-tooltip="ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities. Find out more on orcid.org.">ORCID iD:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="orcid" name="orcid" >
+                    </div>
+                  </div> 
+
+                  <div id="inst_ror_site">
+                    <div class="row">
+                      <div class="col-25">
+                        <label for="user_institution" data-tooltip="Select an institution from the list.">institutions:</label>
+                      </div>
+                      <div class="col-75">
+                        <select id="user_institution">
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Button to add institution -->
+                  <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" class="btn btn-primary" id="addInstitutionButton">Add this institution</button>
+                  </div>
+
+                  <!-- Container to display added institutions -->
+                  <div class="row">
+                    <div class="col-75">
+                      <div id="institutionContainer" style="margin-top: 20px; width: 95%;"></div>
+                    </div>
+                  </div>
+
+                  <button type="button" id="custom_usr_button" class="MySubmitButton" onclick="create_update_user()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                  
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Site -->
+        <div class="accordion-item">
+
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+              SITE
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+              <form id="site" role="form">
+                <fieldset>
+                  <legend></legend>
+
+                  <input type="hidden" id="rp_id_site">
+                  <input type="hidden" id="siteId">
+                  <input type="hidden" id="lit_id_site">
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="projectName_in_site" data-tooltip = "Please add: Which project is the site assigned to? Multiple choice is possible.">reference project:&nbsp;*</label>
+                    </div>
+                    <div class="col-75">
+                      <select name="projectName_in_site" id="projectName_in_site"></select>
+                    </div>
+                  </div>
+
+                  <!-- Button to add project --> 
+                  <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" class="btn btn-primary" id="add_rp_button">Add this project</button>
+                  </div>
+
+                  <!-- Container to display added projects -->
+                  <div class="row">
+                    <div class="col-75">
+                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <div id="rp_in_site_Container" style="margin-top: 10px; width: 95%;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <br><br>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literature_in_site" data-tooltip="Please reference relevant literature by adding or creating new literature entries.">reference literature:</label>
+                    </div>
+                    <div class="col-75">
+                      <select name="literature_in_site" id="literature_in_site"></select>
+                    </div>
+                  </div>
+
+                  <!-- Button to add literature --> 
+                  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                    <button type="button" class="btn btn-primary" onclick="openLiteratureWindow()">Create new literature</button>
+                    <button type="button" class="btn btn-primary" id="add_lit_button">Add this literature</button>
+                  </div>
+
+                  <!-- Container to display added literature -->
+                  <div class="row">
+                    <div class="col-75">
+                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <div id="lit_in_site_Container" style="margin-top: 10px; width: 95%;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </fieldset>
+
+                <br>
+
+                <fieldset>
+                  <!-- 2nd accordion -->
+                  <div class="container-md">
+                    <div class="accordion">
+
+                      <!-- site general info -->
+                      <div class="accordion-item" id="siteGeneral_AccordionItem">                              
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#siteGeneral_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            GENERAL INFORMATION
+                          </button>
+                        </h2>
+
+                        <div id="siteGeneral_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="activity_number" data-tooltip="Optional number, for internal use.">activity number:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="activity_number">
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_label" >site label: *</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_label" required>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_label_abbreviation" data-tooltip="Abbreviation of the site name.">site label abbreviation:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_label_abbreviation" placeholder="">
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_number" data-tooltip="Findspot number.">site number:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_number">
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="taxonomy" data-tooltip="The selected taxonomy will be used in the results section, e.g. PCODE.">taxonomy:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="taxonomy">
+                                    <option value="">select taxonomy</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="select-site-type" data-tooltip="Multiple site types can be selected by pressing 'ctrl'.">site type:</label> 
+                                </div>
+                                <div class="col-75">
+                                  <select id="select-site-type" multiple size="20">
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_type_uncertain" data-tooltip="Is the site type uncertain? Than please check this box. If necessary, you can specify any details in the remarks box at the bottom of this section below.">site type uncertain</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="checkbox" id="site_type_uncertain" style="margin-top: 18px;">
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="natural_unit" data-tooltip="Please select one natural unit from the list.">natural unit:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="select-natural-unit">
+                                    <option value="">select natural unit</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_condition_undisturbed" data-tooltip="Is the site condition undisturbed? Than please check this box. If necessary, you can specify any details in the remarks box below.">site condition undisturbed</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="checkbox" id="site_condition_undisturbed" style="margin-top: 18px;">
+                                </div>
+                              </div>
+
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- excavation team (head, botanist, archaeologist) and institutions -->
+                      <div class="accordion-item" id="sitePeople_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sitePeople_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            EXCAVATION TEAM AND INSTITUTIONS
+                          </button>
+                        </h2>
+
+                        <div id="sitePeople_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+
+                              <div id="inst_ror_site">
+                                <div class="row">
+                                  <div class="col-25">
+                                    <label for="site_institution" data-tooltip="Enter a new institution in 'institutions and users' or select from the list.">institution:</label>
+                                  </div>
+                                  <div class="col-75">
+                                    <select id="site_institution">
+                                      <option value="" hidden selected></option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <!-- Button to add institution -->
+                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                                <button type="button" class="btn btn-primary" id="addInstitutionButtonSite">Add this institution</button>
+                              </div>
+                              <!-- Container to display added institutions -->
+                              <div class="row">
+                                <div class="col-75">
+                                  <div id="institutionContainerSite" style="margin-top: 20px; width: 95%;"></div>
+                                </div>
+                              </div>
+                              <br><br>
+
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="head_of_exc" data-tooltip="Please enter the name of the site director.">head of excavation:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="head_of_exc" class="user_site_Dropdown">
+                                  </select>
+                                </div>
+                              </div>
+                              <!-- Button to add head of excavation -->
+                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                                <button type="button" class="btn btn-primary" id="addHeadButton">Add this person</button>
+                              </div>
+                              <!-- Container to display added persons -->
+                              <div class="row">
+                                <div class="col-75">
+                                  <div id="HeadOfExcContainer" style="margin-top: 20px; width: 95%;"></div>
+                                </div>
+                              </div>
+                              <br><br>
+
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="archeologist">archaeologists:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="archeologist" class="user_site_Dropdown"></select>
+                                </div>
+                              </div>
+                              <!-- Button to add archaeologist -->
+                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                                <button type="button" class="btn btn-primary" id="addArcheologistButton">Add this person</button>
+                              </div>
+                              <!-- Container to display added persons -->
+                              <div class="row">
+                                <div class="col-75">
+                                  <div id="ArcheologistContainer" style="margin-top: 20px; width: 95%;"></div>
+                                </div>
+                              </div>
+                              <br><br>
+
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="botanist">botanists:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="botanist" class="user_site_Dropdown"></select>
+                                </div>
+                              </div>
+                              <!-- Button to add botanist -->
+                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                                <button type="button" class="btn btn-primary" id="addBotanistButton">Add this person</button>
+                              </div>
+                              <!-- Container to display added persons -->
+                              <div class="row">
+                                <div class="col-75">
+                                  <div id="BotanistContainer" style="margin-top: 20px; width: 95%;"></div>
+                                </div>
+                              </div>
+                              <br>
+
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- coordinates, map, addresses -->
+                      <div class="accordion-item" id="siteCoords_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#siteCoords_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            COORDINATES AND ADDRESS
+                          </button>
+                        </h2>
+
+                        <div id="siteCoords_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="site_coordinate_system" data-tooltip="DHDN / 3-degree Gauss and 'local' are not being transformed into WGS84 automatically but you can enter these manually.">coordinate reference system:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="site_coordinate_system">
+                                    <option value="" >select coordinate reference system</option>
+                                  </select>
+                                </div>
+                              </div>
+  
+                              <!-- longitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="site_longitude">longitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_longitude">
+                                </div>
+                              </div>
+  
+                              <!-- latitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="site_latitude">latitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_latitude">
+                                </div>
+                              </div>
+  
+                              <!-- altitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="site_altitude">altitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_altitude">
+                                </div>
+                              </div>
+  
+                              <!-- longitude wgs84 -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="site_longitude_wgs84" data-tooltip="This field is filled in automatically for all selected CRS but '3-degree Gauss' and 'local'.">longitude wgs84:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_longitude_wgs84">
+                                </div>
+                              </div>
+  
+                              <!-- latitude wgs84 -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="site_latitude_wgs84" data-tooltip="This field is filled in automatically for all selected CRS but '3-degree Gauss' and 'local'.">latitude wgs84:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="site_latitude_wgs84">
+                                </div>
+                              </div>
+                            </fieldset>
+                        
+                            <fieldset>
+                              <!-- Leaflet Map -->
+                              <div id="site_map"></div>
+                              <style>
+                                #site_map {
+                                  width: 100%;
+                                  height: 300px;
+                                }
+                              </style>
+  
+                              <!-- Address -->
+                              <legend> </legend>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="country" data-tooltip="The address section is filled in automatically based on the given coordinates using reverse geocoding. Some fields may remain empty if no data is available and can be completed manually.">country:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="country">
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="county">county:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="county">
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="district" data-tooltip="German: 'Landkreis'">district:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="district">
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="parish" data-tooltip="German: 'Gemarkung, Gemeinde, Ort'">parish:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="parish">
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="street_or_place">street or place:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="street_or_place">
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="town">town:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="town">
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+                      <br>
+
+                      <!-- remarks -->
+                      <div class="row">
+                        <div class="col-25">
+                          <label for="remarks_site" style="color: rgb(33, 37, 41);">remarks:</label>
+                        </div>
+                        <div class="col-75">
+                          <textarea name="remarks_site" id="remarks_site" rows="3"></textarea>
+                        </div>
+                      </div>
+
+                      <button type="button" id="site_button" class="MySubmitButton" onclick="create_site()" style="width: unset; padding-left: 10px; padding-right: 10px;">submit&nbsp;site</button>
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature -->
+        <div class="accordion-item">
+
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false" aria-controls="panelsStayOpen-collapseFour">
+              FEATURE (horizontal)
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+              <form id="feature" role="form">
+                <fieldset>
+                  <legend></legend>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="which_site">reference site: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="which_site" required>
+                        <option value="">select site</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="feature_label" data-tooltip="German: 'Befundnummer'">feature label: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="hidden" id="feature_id">
+                      <input type="text" id="feature_label" required style="padding-right: 50px;" autocomplete="off">
+                      <span class="clear-icon" id="feature_label_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="feature_label_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+
+                </fieldset>
+
+                <br>
+
+                <fieldset>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="excavation_area" data-tooltip="German: ’Grabungsfläche'">excavation area:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="excavation_area">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="feature_condition" data-tooltip="Feature ok?">feature condition satisfactory:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="checkbox" id="feature_condition" style="margin-top: 18px;">
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="preservation_condition_feature" data-tooltip="Please select from the list to report the preservation of the plant remains.">preservation condition:</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="preservation_condition_feature">
+                        <option value="">select preservation condition</option>  
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="feature_type">feature type:</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="feature_type">
+                        <option value="">select feature type</option>  
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row" id="exc_year">
+                    <div class="col-25">
+                      <label for="excavation_years">year(s) of excavation: </label>
+                    </div>
+                    <div class="col-75">
+                      <select type="int" id="excavation_years" multiple size="6"></select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="building_context" data-tooltip="Check this box if the feature belongs to a building. Specifications such as house numbers can be made in the 'remarks' box below.">building context:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="checkbox" id="building_context" style="margin-top: 18px;">
+                    </div>
+                  </div>
+
+                  <!--div class="row">
+                    <div class="col-25">
+                      <label for="arch_dating_feature">archaeological dating(s):</label>
+                    </div>
+                    <div class="col-75">
+                      <select class="selectpicker" id="arch_dating_feature" multiple onclick="Dante_getArcheologicalDating()">
+                        <option value="" > click to load list </option>
+                        <option disabled value="" >----------------------------------</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="cult_group_feature">cultural group(s):</label>
+                    </div>
+                    <div class="col-75">
+                      <select class="selectpicker" id="cult_group_feature" multiple onclick="Dante_getCulturalGroup()">
+                        <option value="" > click to load list </option>
+                        <option disabled value="" >----------------------------------</option>
+                      </select>
+                    </div>
+                  </div-->
+
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="remarks_feature">remarks:</label>
+                    </div>
+                    <div class="col-75">
+                      <textarea name="remarks_feature" id="remarks_feature" rows="3"></textarea>
+                    </div>
+                  </div>
+
+                  <button type="button" id="feature_submit_update_button" class="MySubmitButton" onclick="create_feature()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Sample -->
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFive" aria-expanded="false" aria-controls="panelsStayOpen-collapseFive">
+              SAMPLE (vertical)
+            </button>
+          </h2>
+          <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+              <form id="sampleForm">
+                
+                <!-- Reference and label -->
+                <fieldset>
+                  <!-- reference feature -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="feature_dropdown">reference feature: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="feature_dropdown" required>
+                        <option value="">select feature</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- sample label -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="sample_label">sample label: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="hidden" id="sample_id">
+                      <input type="text" id="sample_label" required style="padding-right: 50px;" autocomplete="off">
+                      <span class="clear-icon" id="sample_label_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="sample_label_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <br>
+                <!-- 2nd accordion -->
+                <fieldset>
+                  <div class="container-md">
+                    <div class="accordion">
+
+                      <!-- sample location -->
+                      <div class="accordion-item" id="sampleLoc_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleLoc_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            SAMPLE LOCATION
+                          </button>
+                        </h2>
+                        <div id="sampleLoc_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <legend>Sample location</legend>
+
+                              <!-- stratum -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="stratum" >stratum:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="stratum">
+                                </div>
+                              </div>
+
+                              <!-- layer -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="layer" data-tooltip="german: 'Schicht'">layer:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="layer">
+                                </div>
+                              </div>
+
+                              <!-- sector -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sector" data-tooltip="german: 'Quadrant'">sector:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sector">
+                                </div>
+                              </div>
+
+                              <!-- planum -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="planum">planum:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="planum">
+                                </div>
+                              </div>
+
+                              <!-- depth from, depth to -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="depth_from" data-tooltip="Please specify the drill core depth in cm.">depth from ... to [cm]:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.1" id="depth_from" placeholder="drill core depth from">
+                                  <input type="number" step="0.1" id="depth_to"   placeholder="to">
+                                </div>
+                              </div>
+
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- coordinates incl. map -->
+                      <div class="accordion-item" id="sampleCoords_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleCoords_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            COORDINATES
+                          </button>
+                        </h2>
+                        <div id="sampleCoords_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="sample_coordinate_system">coordinate reference system:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="sample_coordinate_system">
+                                    <option value="">select coordinate reference system</option>
+                                  </select>
+                                </div>
+                              </div>
+    
+                              <!-- longitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_longitude">longitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sample_longitude">
+                                </div>
+                              </div>
+    
+                              <!-- latitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_latitude">latitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sample_latitude">
+                                </div>
+                              </div>
+    
+                              <!-- altitude -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_altitude">altitude:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sample_altitude">
+                                </div>
+                              </div>
+    
+                              <!-- longitude wgs84 -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_longitude_wgs84" data-tooltip="This field is filled in automatically." >longitude wgs84:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sample_longitude_wgs84">
+                                </div>
+                              </div>
+    
+                              <!-- latitude wgs84 -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_latitude_wgs84" data-tooltip="This field is filled in automatically." >latitude wgs84:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="sample_latitude_wgs84">
+                                </div>
+                              </div>
+    
+                              </style>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- measurement details -->
+                      <div class="accordion-item" id="sampleMeasure_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleMeasure_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            MEASUREMENT DETAILS
+                          </button>
+                        </h2>
+                        <div id="sampleMeasure_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- botanical determination by -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="bot_det_by" data-tooltip="Multiple selections are allowed (Please use the 'ctrl' button to mark multiple.). Please use the remarks box below to specify the tasks assigned to different staff members, e.g., charcoal analysis – author, seed identification – author.">botanical determination by:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="bot_det_by" multiple></select>
+                                </div>
+                              </div>
+
+                              <!-- year of botanical determination -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="bot_det_yr" data-tooltip="Please enter the year of botanical determination in the form yyyy.">botanical determination year:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="int" id="bot_det_yr">
+                                </div>
+                              </div>
+                              <br>
+
+                              <fieldset id="fractions">
+                                <div id="one_fraction">
+                                  <br>
+                                  <legend data-tooltip="To enter information about a fraction, please first indicate whether it was analyzed by selecting an option from this list.">fraction 1:</legend>
+
+                                  <!-- fraction analyzed -->
+                                  <div class="row">
+                                    <div class="col-25"> 
+                                      <label for="fraction_analyzed_1">fraction analyzed:</label>
+                                    </div>
+                                    <div class="col-75">
+                                      <select id="fraction_analyzed_1">
+                                        <option value="" hidden selected></option>
+                                        <option value="yes">yes</option>
+                                        <option value="no">no</option>
+                                        <option value="partly">partly</option>
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  <!-- orgOrMin -->
+                                  <div class="row">
+                                    <div class="col-25"> 
+                                      <label>organic / minerals:</label>
+                                    </div>
+                                    <div class="col-75">
+                                      <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="org_1">ORG</label>
+                                        <input class="form-check-input" type="radio" name="orgOrMin_1" id="org_1" value="org" disabled>
+                                      </div>
+                                      <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="min_1">MIN</label>
+                                        <input class="form-check-input" type="radio" name="orgOrMin_1" id="min_1" value="min" disabled>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- sieve size -->
+                                  <div class="row">
+                                    <div class="col-25"> 
+                                      <label for="sieveSize">sieve size [mm]:</label>
+                                    </div>
+                                    <div class="col-75">
+                                      <input type="number" step="0.01" id="sieveSize_1" disabled>
+                                    </div>
+                                  </div>
+
+                                  <!-- standard multiplier -->
+                                  <div class="row">
+                                    <div class="col-25"> 
+                                      <label for="multiplier">standard multiplier:</label>
+                                    </div>
+                                    <div class="col-75">
+                                      <input type="number"step="0.01" id="multiplier_1" min="1" disabled>
+                                    </div>
+                                  </div>
+                                </div>
+                              </fieldset>
+                              <button type="button" class="Add" style="margin-right: 30px;" onclick="addFraction()" >add fraction</button>
+                              <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                  updateRemoveFractionButtonVisibility();
+                                  handleRequiredAndEnableInputsForFraction(1);
+                                });
+                              </script>
+                              <button type="button" class="Remove" style="margin-left: 10px; margin-right: 10px;" id="removeFractionButton" onclick="removeFraction()" >remove fraction</button>
+                              <br><br><br><br><br>
+
+                              <!-- sample type -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sample_type">sample type:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="sample_type">
+                                    <option value="" >select sample type</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <!-- sample storage -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="storage" data-tooltip="These include finds > 100 pieces/litre.">mass / storage find:</label>
+                                  
+                                </div>
+                                <div class="col-75">
+                                  <input type="checkbox" id="storage" style="margin-top: 18px;">
+                                </div>
+                              </div>
+
+                              <!-- micro remain -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="microRemain">microremain sample:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="checkbox" id="microRemain" style="margin-top: 18px;">
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- inventory -->
+                      <div class="accordion-item" id="sampleInventory_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleInventory_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            INVENTORY
+                          </button>
+                        </h2>
+                        <div id="sampleInventory_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- seeds and fruits -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="seedsAndFruits">
+                                    seeds and fruits:
+                                  </label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="seedsAndFruits">
+                                    <option value="" hidden selected></option>
+                                  </select>
+                                </div>
+                              </div>
+                              
+                              <!-- wood subfossil -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="woodSubfossile">wood, subfossil:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="woodSubfossile">
+                                    <option value="" hidden selected></option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <!-- charcoal investigated -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="charcoalInvestigated">charcoal investigated:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="charcoalInvestigated">
+                                    <option value="" hidden selected></option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <!-- total weight -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="charcoal_total_weight">charcoal total weight [g]:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.01" id="charcoal_total_weight">
+                                </div>
+                              </div>
+
+                              <!-- weight undetermined -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="charcoal_undetermined_weight">charcoal, undetermined weight [g]:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.01" id="charcoal_undetermined_weight">
+                                </div>
+                              </div>
+
+                              <br>
+
+                              <!-- sample volume -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="sampleVolume">sample volume [l]:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.01" id="sampleVolume">
+                                </div>
+                              </div>
+
+                              <!-- volume determination -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label data-tooltip="Wet in case of permanently influenced by groundwater or by pond water.">volume determination:</label>
+                                </div>
+                                <div class="col-75">
+                                  <div class="form-check form-check-inline">
+                                    <label class="form-check-label" for="dry">dry</label>
+                                    <input class="form-check-input" type="radio" name="volumeDetermination" id="dry" value="dry">
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <label class="form-check-label" for="wet">wet</label>
+                                    <input class="form-check-input" type="radio" name="volumeDetermination" id="wet" value="wet">
+                                  </div>
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- sample dating -->
+                      <div class="accordion-item" id="sampleDating_AccordionItem">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleDating_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
+                            SAMPLE DATING
+                          </button>
+                        </h2>
+                        <div id="sampleDating_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- chronozone -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="chronozone" data-tooltip="e.g. 'Subatlantic', 'Boreal', 'Older Dryas', ...">chronozone:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="chronozone">
+                                    <option value="" >select chronozone</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <!-- archaeological dating -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="archaeologicalDating" data-tooltip="The archaeological period, e.g. 'Palaeolithic', 'Roman Iron Age', 'Medieval', ...">archaeological dating:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="archaeologicalDating">
+                                </div>
+                              </div>
+
+                              <!-- cultural group -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="culturalGroup" data-tooltip="e.g. 'Celts', 'Germans', 'Romans', 'Vikings', ...">cultural group:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="culturalGroup">
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+                      <br>
+                      <!-- remarks -->
+                      <div class="row">
+                        <div class="col-25"> 
+                          <label for="sample_remarks" style="color: rgb(33, 37, 41);">remarks:</label>
+                        </div>
+                        <div class="col-75">
+                          <textarea id="sample_remarks" rows="3"></textarea>
+                        </div>
+                      </div>
+
+                      <button type="button" class="MySubmitButton" id="sample_submit_update_button" onclick="submit_update_Sample()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dating -->
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSix" aria-expanded="false" aria-controls="panelsStayOpen-collapseSix">
+              DATING
+            </button>
+          </h2>
+          <div id="panelsStayOpen-collapseSix" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+              <form id="absDatingForm">
+                <!-- Reference Selection -->
+                <fieldset>
+                  <legend>References</legend>
+
+                  <!-- reference sample -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="absDating_sample_dropdown" data-tooltip="Please select the corresponding sample.">reference sample: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="absDating_sample_dropdown" required>
+                        <option value="">select sample</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- subsample -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="subsample" data-tooltip="The name of the subsample, e.g. Fagus 1.">subsample: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="hidden" id="absDating_id">
+                      <input type="text" id="subsample" required style="padding-right: 50px;" autocomplete="off">
+                      <span class="clear-icon" id="subsample_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="subsample_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+
+                  <!-- reference literature -->
+                  <input type="hidden" id="absDating_literature_id">
+
+                  <div class="row">
+                    <div class="col-25">
+                      <label data-tooltip="Please link associated literature here.">choose reference literature:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="absDating_literature_Input" style="padding-right: 50px;" list="absDating_literature_List">
+                      <span class="clear-icon" id="absDating_literature_clearIcon" style="top: 26px;">&#10005;</span>
+                      <datalist id="absDating_literature_List"></datalist>
+                      <ul id="absDating_literature_Dropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+
+                  <!-- 'Create new literature' and 'Add literature' Button --> 
+                  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                    <button type="button" class="btn btn-primary" onclick="openLiteratureWindow()">Create new literature</button>
+                    <button type="button" class="btn btn-primary" onclick="absDating_addLiterature()">Add this literature</button>
+                  </div>
+
+                  <!-- Container to display added literature -->
+                  <div class="row">
+                    <div class="col-75">
+                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <div id="absDating_literature_container" style="margin-top: 10px; width: 95%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <br>
+                <!-- Absolute dating -->
+                <fieldset>
+                  <legend>Absolute dating</legend>
+
+                  <!-- material -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label>material:</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="material">
+                        <option value="">select material</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- remarks -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="absDating_remarks">remarks:</label>
+                    </div>
+                    <div class="col-75">
+                      <textarea id="absDating_remarks" rows="3"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- dating method -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label>dating method:</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="dating_method">
+                        <option value="">select dating method</option>
+                      </select>
+                    </div>
+                  </div>                        
+                </fieldset>
+
+                <br>
+                <fieldset>
+                  <!-- 2nd accordion -->
+                  <div class="container-md">
+                    <div class="accordion">
+                    
+                      <!--Dendrochronological dating-->
+                      <div class="accordion-item disabled" id="dendroDating_AccordionItem" style="pointer-events: none; opacity: 0.5;">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dendroDating_AccordionCollapseElem" aria-expanded="false" aria-controls="dendroDating_AccordionCollapseElem">
+                            DENDROCHRONOLOGICAL DATING
+                          </button>
+                        </h2>
+                        <div id="dendroDating_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- laboratory -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="dendro_lab" data-tooltip="Enter a label to create a new laboratory or select an existing laboratory from the list.">laboratory:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text"
+                                          id="dendro_lab"
+                                          placeholder=""
+                                          class="form-control"
+                                          autocomplete="off"
+                                          list="dendro_lab_list">
+                                  <datalist id="dendro_lab_list"></datalist>
+                                </div>
+                              </div>
+
+                              <!-- number -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="dendro_number" data-tooltip="The laboratory number.">number:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="1" id="dendro_number">
+                                </div>
+                              </div>
+
+                              <!-- dendro age -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="dendro_age">dendrochronological age:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="dendro_age">
+                                  <!--input type="int" id="dendro_age_devation" placeholder="±"-->
+                                </div>
+                              </div>
+
+                              <!-- waney edge -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="waney_edge" data-tooltip="German: 'Waldkante'">waney edge:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="checkbox" id="waney_edge" style="margin-top: 18px;">
+                                </div>
+                              </div>
+                            </fieldset>                                  
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- C14 dating -->
+                      <div class="accordion-item" id="c14Dating_AccordionItem" style="pointer-events: none; opacity: 0.5;">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c14Dating_AccordionCollapseElem" aria-expanded="false" aria-controls="c14Dating_AccordionCollapseElem">
+                            C14 DATING
+                          </button>
+                        </h2>
+                        <div id="c14Dating_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- C14 lab -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="c14_lab" data-tooltip="Please select a C14 laboratory from the list.">C14 laboratory:</label>
+                                </div>
+                                <div class="col-75">
+                                  <select id="c14_lab">
+                                    <option value="">select C14 laboratory</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <!-- number -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="c14_number" data-tooltip="The laboratory number.">number:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="c14_number">
+                                </div>
+                              </div>
+
+                              <!-- C14-age BP -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="c14_age_bp" data-tooltip="Conventional age = years before 1950.">C14-age BP:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="int" id="c14_age_bp">
+                                  <input type="int" id="c14_std_dev" placeholder="±">
+                                </div>
+                              </div>
+
+                              <!-- C14 cal BC/AD (2 sigma) -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="c14_calibration_bc_ad_2s" data-tooltip="Calibrated age: entry of 2-Sigma range (95,4% probability).">C14 cal BC/AD (2s):</label>
+                                </div>
+                                <div class="col-75">
+                                  <textarea id="c14_calibration_bc_ad_2s" rows="3"></textarea>
+                                </div>
+                              </div>
+
+                              <!-- Delta C13 -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="delta_C13" data-tooltip="Delta C13 = indication in ‰. Entry of e.g. -25.55, and its standard deviation.">Delta C13:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.01" id="delta_C13">
+                                  <input type="number" step="0.01" id="c13_dev" placeholder="±">
+                                </div>
+                              </div>
+
+                              <!-- pMC -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="pMC" data-tooltip="pMC-value = Percent Modern Carbon. Entry of e.g. 75,68. 100pMC = C14-concentration in the atmosphere 1950, and its standard deviation.">pMC:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="0.01" id="pMC">
+                                  <input type="number" step="0.01" id="pMC_dev" placeholder="±">
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- other dating -->
+                      <div class="accordion-item" id="otherDating_AccordionItem" style="pointer-events: none; opacity: 0.5;">
+                        <h2 class="accordion-header">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#otherDating_AccordionCollapseElem" aria-expanded="false" aria-controls="otherDating_AccordionCollapseElem">
+                            OTHER DATING
+                          </button>
+                        </h2>
+                        <div id="otherDating_AccordionCollapseElem" class="accordion-collapse collapse">
+                          <div class="accordion-body">
+                            <fieldset>
+                              <!-- laboratory -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="other_lab" data-tooltip="Enter a label to create a new laboratory or select an existing laboratory from the list.">laboratory:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text"
+                                        id="other_lab"
+                                        placeholder=""
+                                        class="form-control"
+                                        autocomplete="off"
+                                        list="other_lab_list">
+                                  <datalist id="other_lab_list"></datalist>
+                                </div>
+                              </div>
+
+                              <!-- number -->
+                              <div class="row">
+                                <div class="col-25">
+                                  <label for="other_number" data-tooltip="The laboratory number.">number:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="number" step="1" id="other_number">
+                                </div>
+                              </div>
+
+                              <!-- age -->
+                              <div class="row">
+                                <div class="col-25"> 
+                                  <label for="other_age" data-tooltip="Free text entry for other dating and information related to the dating method.">age:</label>
+                                </div>
+                                <div class="col-75">
+                                  <input type="text" id="other_age">
+                                  <!--input type="int" id="other_age_devation" placeholder="±"-->
+                                </div>
+                              </div>
+                            </fieldset>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="MySubmitButton" id="absDating_submit_update_button" onclick="submit_update_AbsoulteDating()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSeven" aria-expanded="false" aria-controls="panelsStayOpen-collapseSeven">
+              RESULTS
+            </button>
+          </h2>
+          <div id="panelsStayOpen-collapseSeven" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <form id="resultForm">
+
+                <!-- General Info / Reference Selection -->
+                <fieldset>
+                  <legend>References</legend>
+
+                  <!-- reference sample -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="result_sample_dropdown">reference sample: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="result_sample_dropdown" required>
+                        <option value="">select sample</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- reference absolute datings -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="which_datings" data-tooltip="Please select from the list of subsamples, 
+                      previously entered in the dating-section.">related datings:</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="which_datings" multiple></select>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <br>
+                <fieldset>
+                  <legend>General</legend>
+
+                  <!-- reference fraction -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="which_fraction" data-tooltip="Please choose from the list or add a new fraction under sample -> measurement details. 
+                        The list shows available fraction details in the order: ORG/MIN, sive size, standard multiplier.">reference fraction: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="which_fraction" required>
+                        <option value="">select fraction</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- fraction fieldset -->
+                  <fieldset id="result_fraction">
+
+                    <!-- fraction analyzed -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="result_fractionAnalyzed">fraction analyzed?</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="text" id="result_fractionAnalyzed" disabled style="margin-top: 12px; width: 30%;">
+                      </div>
+                    </div>
+
+                    <!-- org or min -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label>organic / minerals:</label>
+                      </div>
+                      <div class="col-75" style="margin-top: 18px;">
+                        <div class="form-check form-check-inline">
+                          <label class="form-check-label" for="result_org">ORG</label>
+                          <input class="form-check-input" type="radio" name="orgOrMin" id="result_org" value="org" disabled>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <label class="form-check-label" for="result_min">MIN</label>
+                          <input class="form-check-input" type="radio" name="orgOrMin" id="result_min" value="min" disabled>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- sieve size -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="result_sieveSize">sieve size [mm]:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="number" id="result_sieveSize" disabled>
+                      </div>
+                    </div>
+
+                    <!-- multiplier -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="result_multiplier" data-tooltip="The multiplicator is needed for the extrapolation to the whole sample and depends on the sieved fraction.">multiplier:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="number" step="0.01" id="result_multiplier" style="width: 65%;">
+                      </div>
+                    </div>                          
+                  </fieldset>
+
+                  <!-- entry date -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label>entry date:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="date" class="set-today" id="entryDate">
+                      <script>
+                        window.onload= function() {
+                          const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                          document.querySelector('.set-today').value = today;
+                        }
+                      </script>
+                    </div>
+                  </div>
+
+                  <!-- state of preservation (result condition) -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="state_of_preservation" data-tooltip="Please select from the list.">state of preservation: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="state_of_preservation" required>
+                        <option value="">select state of preservation</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <br><br>
+                  <legend>Taxonomy</legend>
+                  <span id="taxonomy_info"></span>
+                  <fieldset id="resultFormTaxonomy">
+
+                    <!-- classification confer -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="cf" data-tooltip="Indicates the highest taxonomic level to which the specimen could be reliably identified.">classification confer: *</label>
+                      </div>
+                      <div class="col-75">
+                        <select id="cf" required>
+                          <option value="">select classification confer</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- tax code -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="taxCode" data-tooltip="Please select from the corresponding list of taxonomy codes, which was specified under ' site -> general information -> taxonomy '. ">tax code: *</label>
+                      </div>
+                      <div class="col-75" style="margin-top: 15px;">
+                        <select id="taxCode" required style="width: 100%"></select>
+                      </div>
+                    </div>
+                    <!-- dropdown filter -->
+                    <script>
+                      $(document).ready(function() {
+                          $('#taxCode').select2({
+                            placeholder: "select tax code",
+                            allowClear: true
+                          });
+                      });
+                    </script>
+
+                    <!-- remarks taxonomy -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="remarks_taxonomy">remarks taxonomy:</label>
+                      </div>
+                      <div class="col-75">
+                        <textarea id="remarks_taxonomy" rows="3"></textarea>
+                      </div>
+                    </div>
+
+                    <br><br>
+                    <legend title="Data entries can be queried, filtered and altered for download via the 'Data Explorer' module.">Results</legend>
+
+                    <!-- rest type -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="restType" data-tooltip="The type of plant remains.">rType: *</label>
+                      </div>
+                      <div class="col-75">
+                        <select id="restType" required>
+                          <option value="">select rest type</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- rest count -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="r_count" data-tooltip="The number of finds of one type of plant remains.">rCount:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="number" step="1" min="0" id="r_count">
+                      </div>
+                    </div>
+
+                    <!-- rest fragment -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="r_fragment" data-tooltip="The number of fragments.">rFragment:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="number" step="1" min="0" id="r_fragment">
+                      </div>
+                    </div>
+
+                    <!-- rest weight -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="r_weight" data-tooltip="The weight of the plant remains in gram.">rWeight [g]:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="number" name="r_weight" step=0.0001 id="r_weight">
+                      </div>
+                    </div>
+                    
+                    <!-- estimation -->
+                    <div class="row">
+                      <div class="col-25"> 
+                        <label for="estimation" data-tooltip="Please tick if this is an estimation.">estimation:</label>
+                      </div>
+                      <div class="col-75">
+                        <input type="checkbox" id="estimation" style="margin-top: 18px;">
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <button type="button" class="MySubmitButton" onclick="submitResult()" style="width: unset; padding-left: 10px; padding-right: 10px;">submit&nbsp;result</button>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- additional information -->
+        <!-- <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseEight" aria-expanded="false" aria-controls="panelsStayOpen-collapseNine">
+              ADDITIONAL INFORMATION
+            </button>
+          </h2>
+          <div id="panelsStayOpen-collapseEight" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              Please enter additional, individual information here. 
+              A quick intro into the usage details can be found   
+              <a href="manual.html" target="_blank">here</a>.
+              <br><br>
+              <fieldset>
+                <div class="row">
+                  <div class="col-25">
+                    <label for="which_project">reference project(s):</label>
+                  </div>
+                  <div class="col-75">
+                    <select class="selectpicker" id="which_project" required multiple>
+                      <option value="project 1">project 1, from local</option>
+                      <option value="project 2">project 2, from local</option>
+                      <option value="project 3">project 3, from local</option>
+                      <option value="project 4">project 4, from local</option>
+                      <option value="project 5">project 5, from local</option>
+                      <option value="project 6">project 6, from local</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <br>
+              <fieldset>
+                <div class="row">
+                  <div class="col-25">
+                    <label for="add_info">additional information:</label>
+                  </div>
+                  <div class="col-75">
+                    <textarea name="add_info" id="add_info" rows="10" placeholder=""></textarea>
+                  </div>
+                </div>
+                <button type="submit" class="MySubmitButton" onclick="mySubmitButton()" > submit </button>
+              </fieldset>
+            </div>
+          </div>
+        </div> -->
+
+      </div>
+    </div>
+
+    <!------------------------------- Scripts -------------------------------->
+    <!-- DANTE attributes -->
+    <script src="js/danteAttributes/fetchDanteAttribute.js"></script>
+    <script src="js/danteAttributes/populateDanteDropdown.js"></script>
+
+    <!-- general -->
+    <script src="js/formatService.js"></script>
+    <script src="js/leafletMap.js"></script>
+    <script src="js/transformCoordinatesToWGS84.js"></script>
+    <script src="js/reverseGeocoding.js"></script>
+    
+    <script src="js/input/literatureModal.js"></script>
+
+    <!-- research project -->
+    <script src="js/input/researchProject.js"></script>
+
+    <!-- user and institution -->
+    <script src="js/input/institution.js"></script>
+    <script src="js/input/institution-boxes.js"></script>
+    <script src="js/input/user.js"></script>
+
+    <!-- site -->
+    <script src="js/input/site.js"></script>
+    <script src="js/input/site-researchProject-boxes.js"></script>
+    <script src="js/input/site-literature-boxes.js"></script>
+    <script src="js/input/site-user-boxes.js"></script>
+
+    <!-- feature -->
+    <script src="js/input/feature.js"></script>
+    <script src="js/input/feature-label-dropdown.js"></script>
+    
+    <!-- sample -->
+    <script src="js/input/sample.js"></script>
+    <script src="js/input/sample-label-dropdown.js"></script>      
+    <script src="js/input/sample-fraction-boxes.js"></script>
+    
+    <!-- absolute dating -->
+    <script src="js/input/absoluteDating.js"></script>
+    <script src="js/input/absoluteDating-subsample-dropdown.js"></script>
+
+    <!-- result -->
+    <script src="js/input/result.js"></script>
+    <!------------------------------------------------------------------------>
+
+
+    <footer>
+      <ul>
+          <li><a href="copyright.html" target="_blank">license </a></li>
+          <li>Version 1.3</li>
+          <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+      </ul>
+    </footer>
+
+  </body>
+</html>

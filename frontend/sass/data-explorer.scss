@@ -1,0 +1,260 @@
+
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.MyButton {
+    width: 100%;
+    height: 42px;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    border-color:  #f2f2f2;
+    background-color: rgb(241, 34, 34);
+    color: #FFFFFF;
+    float:right;
+}
+
+.ExportButton {
+    width: auto;
+    height: 42px;
+    margin-top: 40px;
+    margin-left: 20px;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    border-color:  #f2f2f2;
+    background-color: rgb(28, 182, 209);
+    color: #FFFFFF;
+    display: inline-block; 
+    //float: center;
+    margin-right: 10px;   
+}
+
+.MyButton.hidden {
+    visibility: hidden;
+}
+
+.table-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin: 2em;
+    margin-top: 8em;
+}
+
+.dropdown-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 1em 0;
+}
+
+.button-container {
+    align-self: flex-start;
+    margin-bottom: 1em;
+}
+
+.table-container {
+    display: flex;
+}
+
+
+/* ------------ Input types --------------- */
+
+input[type=text], input[type=email], select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+input[type=int], input[type=number] {
+    width: 30%;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+input[type=checkbox] {
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    margin-top: 1.5%;
+    margin-left: 0%;
+}
+
+input[type=radio] {
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    margin-top: 15px;
+    margin-left: 0%;
+}
+
+
+/* ---------------- header ---------------- */
+
+.header_img_input_html {
+    background-color: #776c78;
+    height: 70px;
+    text-align: center;
+    position: fixed;
+    padding: 2px;
+    z-index: 999;
+    margin-bottom: 2em;
+   }
+
+.header_img_input_html img {
+    height: 65px;
+    width: 120px;
+}
+
+header {
+    background-color: #776c78;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    height: 20px;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    // margin-bottom: 2em;
+}
+
+/* ---------------- footer ---------------- */
+
+footer li {
+    width: 20%;
+    display: inline-block;
+}
+   
+footer li a{
+    font-size: 18px;
+    text-decoration: none;
+    color: #FFFFFF;
+    height: auto;
+}
+   
+footer{
+       height: 60px;
+       background:#776c78;
+       color: white;
+       padding: 20px;
+       text-align: center;
+       margin-top: auto;
+}
+
+
+/* ------------ fancy stuff --------------- */
+
+button:hover{
+    text-decoration: underline;
+    background-color: #b4adb5;
+    cursor:pointer;
+}
+
+footer li a:hover{
+    text-decoration: underline;
+    background-color: #b4adb5;
+    padding: 3%;
+    cursor:pointer;
+}
+
+
+@media screen and (max-width: 1200px) {
+    header {
+        z-index: 1;
+        position: fixed;
+    }
+
+    header h1{
+        color: white;
+        font-size: 32px;
+        padding: 2px 12px 10px 12px;
+        display: inline-block;
+    }
+
+    .header_img_input_html {
+        background-color: #776c78;
+        height: 70px;
+        text-align: center;
+        position: fixed;
+        padding: 2px;
+       }
+
+    .container-md{
+        color: #5D535E;
+        margin-top:8%;
+        width: 95%;
+        margin-bottom: 5%;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    header {
+        z-index: 1;
+        position: fixed;
+    }
+    
+    header h1{
+        color: white;
+        font-size: 32px;
+        padding: 2px 12px 10px 12px;
+        display: inline-block;
+    }
+    
+    .header_img_input_html {
+        background-color: #776c78;
+        height: 70px;
+        text-align: center;
+        position: fixed;
+        padding: 2px;
+    }
+    
+    .container-md{
+        color: #5D535E;
+        margin-top:12%;
+        width: 95%;
+        margin-bottom: 5%;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    header {
+        z-index: 1;
+        position: fixed;
+    }
+        
+    header h1{
+        color: white;
+        font-size: 32px;
+        padding: 2px 12px 10px 12px;
+        display: inline-block;
+    }
+        
+    .header_img_input_html {
+        background-color: #776c78;
+        height: 70px;
+        text-align: center;
+        position: fixed;
+        padding: 2px;
+    }
+        
+    .container-md{
+        color: #5D535E;
+        margin-top:16%;
+        width: 95%;
+        margin-bottom: 5%;
+    }
+
+    fieldset .col-25, fieldset .col-75 {
+        width: 100%;
+        margin-top: 0;
+      }
+}
+
+
+@import '../bootstrap-scss/bootstrap';

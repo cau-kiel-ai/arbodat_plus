@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">    
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"> 
+
+        <title>ArboDat+ Explorer</title>
+
+        <link href="img/favicon.png" rel="icon">
+        <link href="css/data-explorer.min.css" rel="stylesheet">
+        
+        <!-- bootstrap -->
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"
+          >
+        </script>
+        <!-- axios -->
+        <script src="https://unpkg.com/axios@1.8.4/dist/axios.min.js"></script>
+        <!-- tabulator -->
+        <link
+          href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css"
+          rel="stylesheet"
+        >
+        <script
+          type="text/javascript"
+          src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"
+          >
+        </script>
+
+        <!-- Export includes -->
+        <script type="text/javascript" src="https://oss.sheetjs.com/sheetjs/xlsx.full.min.js"></script>
+    </head>
+
+    <body>
+
+        <header class="header_img_input_html">
+        <h1> <img src="img/logo1.png" alt="logo" id="logo_input_html"> </h1>
+        </header>
+
+        <div class="table-wrapper">
+
+            <div class="dropdown-container">
+                <select id="tableSelector">
+                    <option value="" disabled selected hidden>select table</option>
+                    <option value="researchProject-table">research projects</option>
+                    <option value="institution-table">institutions</option>
+                    <option value="user-table">users</option>
+                    <option value="site-table">sites</option>
+                    <option value="feature-table">features</option>
+                    <option value="sample-table">samples</option>
+                    <option value="dating-table">datings</option>
+                    <option value="result-table">results</option>
+                    <option value="literature-table">literature</option>
+                    <option value="author-table">authors</option>
+                </select>
+            </div>
+
+            <div class="button-container">
+                <button id="deleteRows-button" class="MyButton hidden">Delete selected rows</button>
+            </div>                
+
+            <div class="table-container">
+                <div id="table"></div>
+            </div>
+
+            <br><br>
+                <div>
+                    <button class="ExportButton" id="download-csv">Download CSV</button>
+                    <button class="ExportButton" id="download-json">Download JSON</button>
+                    <button class="ExportButton" id="download-xlsx">Download XLSX</button>
+                    <button class="ExportButton" id="download-html">Download HTML</button>
+                </div>
+        </div>
+
+        <!-- scripts --> 
+        <script src="js/data-explorer/renderTable.js"></script>
+
+        <script src="js/data-explorer/researchProject-table.js"></script>
+        <script src="js/data-explorer/institution-table.js"></script>
+        <script src="js/data-explorer/user-table.js"></script>
+        <script src="js/data-explorer/site-table.js"></script>
+        <script src="js/data-explorer/feature-table.js"></script>
+        <script src="js/data-explorer/sample-table.js"></script>
+        <script src="js/data-explorer/dating-table.js"></script>
+        <script src="js/data-explorer/result-table.js"></script>
+        <script src="js/data-explorer/literature-table.js"></script>
+        <script src="js/data-explorer/author-table.js"></script>
+
+        <script src="js/danteAttributes/fetchDanteAttribute.js"></script>
+        <script src="js/danteAttributes/updateBackendDanteAttributes.js"></script>
+
+        <script src="js/formatService.js"></script>
+
+        <footer>
+            <ul>
+                <li><a href="copyright.html" target="_blank">license </a></li>
+                <li>Version 1.3</li>
+                <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+            </ul>
+        </footer>
+
+    </body>
+</html>

@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <!-- responsive -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link href="css/index.min.css" rel="stylesheet">
+        <!-- tab icon and tab title --> 
+        <link rel="shortcut icon" href="img/favicon.png">
+        <title>ArboDat+ Home</title>
+    </head>
+
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <header>
+            <h1> <img src="img/logo1.png" alt="logo"> </h1>
+        </header>   
+
+        <!-- <section class="banner">
+            <img src="img/banner.png" alt="banner">
+        </section>  -->
+
+        <nav class="main_nav">
+            <ul>
+                <li><a href="input.html" target="_blank">Data Input</a></li>
+                <li><a href="migration.html" target="_blank">Data Import</a></li>
+                <li><a href="data-explorer.html" target="_blank">Data Explorer</a></li>
+                <li><a href="report.html" target="_blank">Data Report</a></li>
+                <li><a href="export.html" target="_blank">Data Export</a></li>
+                <!--li><a href="about.html" target="_blank">About</a></li-->
+            </ul>
+        </nav> 
+
+        <!-- the main tag is unique for every web page -->
+        <main>  
+            <article>
+                <h2>Welcome to ArboDat+</h2>
+                <div class="intro"> 
+                    ArboDat+ is the new implementation of the archaeobotanical database program ArboDat.
+                    It is designed to simplify and enhance your data management experience. 
+                    ArboDat+ incorporates both new and existing features.
+                    More details about <a href="https://zenodo.org/records/17522142" target="_blank"><i>What's new</i></a> can also be found on Zenodo.
+                </div>
+                <br>
+                <div class="intro"> 
+                    <strong>Key changes and what they allow you to do:</strong>
+                </div>
+                    <p>
+                        <ul>
+                            <li>ArboDat+ is designed as an operating system independent web application, which can be run in almost any modern browser on most computers.</li>
+                            <li>A newly implemented PostgreSQL database transitions the system to an open and free platform. The database remains relational,
+                                however by translating the old database schema according to the third normal form, data integrity is ensured. </li>
+                            <li>ArboDat+ uses central lists of standardized vocabularies and thesauri, stored at Dante <a href="https://dante.gbv.de/" target="_blank">VZG</a>. 
+                                It is also possible to add local attribute labels to the central Dante Server.
+                                These will be manually reviewed prior to being uploaded centrally - updating lists for all users automatically. 
+                                This way, the data becomes consistent and interoperable with other data sets using the same data lists, while still allowing flexibility for unique needs.</li>
+                            <li>Migration of existing data sets is possible via the 'Data Import' module.</li>
+                            <li>The data entry structure has largely remained the same as in the previous version. New records can be entered through the ‘Data Input’ module.</li>
+                            <li>Data entries can be queried, filtered, altered and exported into different file types for download via the 'Data Explorer' module.</li>
+                            <li>In addition, ArboDat+ provides an interactive map for easy location management of sites and samples.</li>
+                        </ul>
+                </p>
+            </article>
+            <br><br>
+        
+            <div class="lower">
+                This continued development of ArboDat is being carried out as a collaborative project between NFDI for Objects (<a href="https://www.nfdi4objects.net/">NFDI4O</a>), 
+                Kiel University (<a href="https://www.uni-kiel.de/de/">CAU</a>), and the Lower Saxony Institute for Historical Coastal Research (<a href="https://nihk.de/">NIhK</a>).
+            </div>
+
+            <ul class="images">
+                <li><img src="img/nfdi4objects_logo_volltitel_digital_USE.png" alt="NFDI4O" onclick="window.open('https://www.nfdi4objects.net/')"></li>
+                <li><img src="img/cau-norm-de-lilagrey-rgb-0720.png" alt="CAU" onclick="window.open('https://www.uni-kiel.de/de/')"></li>
+                <li><img src="img/Logo_NIhK_Homepage_ausdemNetz_CKN.png" alt="NIhK" onclick="window.open('https://nihk.de/')"></li>
+            </ul>
+        </main>
+
+        <footer>
+            <ul>
+                <li><a href="copyright.html" target="_blank">license </a></li>
+                <li>Version 1.3</li>
+                <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+            </ul>
+        </footer>
+
+    </body>
+</html>
