@@ -61,6 +61,7 @@ Please note that this is an early public release, and further improvements are r
 ## Start ArboDat+ Application:  
 ### Requirements: *Docker*
 `docker compose --profile prod up -d --build`
+
 Next, open a web browser and go to `http://localhost`
 
 ## Export ArboDat+
