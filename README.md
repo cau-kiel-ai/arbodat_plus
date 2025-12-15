@@ -1,4 +1,17 @@
 # ArboDat+
+
+## Overview
+ArboDat+ is the continued development of the archaeobotanical database program ArboDat. It is being carried out as a collaborative project between NFDI for Objects, Kiel University, and the Lower Saxony Institute for Historical Coastal Research, Germany.
+
+ArboDat+ is designed as an operating system-independent web application, which can be run in almost any modern browser on most computers. It features a newly implemented PostgreSQL database that transitions the system to an open and free platform. While the database remains relational, data integrity is ensured by adapting the old schema in accordance with the principles of the third normal form.
+
+ArboDat+ uses central lists of standardized vocabularies and thesauri, stored at Dante VZG. It also allows the addition of local attribute labels to the central Dante Server. These labels are manually reviewed before being uploaded centrally, updating the thesauri lists for all users automatically. This ensures that the data remains consistent and interoperable with other datasets, while still allowing flexibility for unique requirements.
+
+The system also supports data migration through the **'Data Import'** module. New records can be entered using the **‘Data Input’** module. Additionally, data entries can be queried, filtered, modified, and exported into various file formats (the HTML-format is recommended) through the **'Data Explorer'** module. An interactive map is also provided for easy management of site locations.
+
+Please note that this is an early public release, and further improvements are recommended. For example, the data import functionality is still to be refined, and integration with a data repository would further enhance the system's capabilities.
+
+## Directory Structure
 ```
 ├── database
 │   ├── data                 # postgresql database bind mount
@@ -45,8 +58,8 @@
 └── docker-compose.yml
 ```
 
-### Start ArboDat+ Application:  
-##### Requirements: *Docker*
+## Start ArboDat+ Application:  
+### Requirements: *Docker*
 `docker compose --profile prod up -d --build`
 
 ## Export ArboDat+
