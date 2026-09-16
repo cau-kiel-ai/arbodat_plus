@@ -18,6 +18,12 @@ public class PreservationCondition implements Serializable {
     @Column(name = "preservation_condition_label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @JsonIgnore
     @OneToMany(mappedBy = "preservationCondition")
     private Set<Feature> featureList;

@@ -6,10 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public interface SiteRepository extends JpaRepository<Site, UUID> {
@@ -28,4 +25,11 @@ public interface SiteRepository extends JpaRepository<Site, UUID> {
     Optional<Site> findAlreadyExisting(
             @Param("siteLabel") String siteLabel,
             @Param("researchProjectIds") Set<UUID> researchProjectIds);
+
+    @Query("SELECT DISTINCT s FROM Site s JOIN s.researchProjectList rp WHERE rp.id in :rpIds")
+    List<Site> findByResearchProjectIdIn(@Param("rpIds") Collection<UUID> rpIds);
+
+    // Site<->RP pairs directly from the join table – avoids lazy loading of the collections (N+1)
+    @Query("SELECT s.id, rp.id FROM Site s JOIN s.researchProjectList rp WHERE s.id in :siteIds")
+    List<Object[]> findRpIdPairsBySiteIdIn(@Param("siteIds") Collection<UUID> siteIds);
 }

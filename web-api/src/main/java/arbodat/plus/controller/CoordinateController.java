@@ -34,7 +34,7 @@ public class CoordinateController {
     }
 
     @PostMapping("/{type}/{id}")
-    public String create(@RequestBody Coordinate coordinate,
+    public String create(@RequestBody  Coordinate coordinate,
                          @PathVariable String type,
                          @PathVariable UUID id) {
 

@@ -171,6 +171,7 @@ public class FeatureTypeMapper {
         featureTypeMap.put("BefuTyp?", "ArboDat+_featureType_unknown");
         // not chosen
         featureTypeMap.put("-99", "ArboDat+_featureType_notChosen");
+        featureTypeMap.put(null, "ArboDat+_featureType_notChosen");
         // other ritual feature
         featureTypeMap.put("SoRit", "ArboDat+_featureType_otherRitualFeature");
         // other type of feature

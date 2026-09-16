@@ -82,7 +82,7 @@ public class Site implements Serializable {
     @OneToMany(mappedBy = "site")
     private Set<Feature> featureList;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany
     @JoinTable(name = "institutions",
             joinColumns = @JoinColumn(name = "site_id"),
             inverseJoinColumns = @JoinColumn(name = "institution_id")

@@ -1,5 +1,5 @@
 
-const danteAttributesJSON = {};
+let danteAttributesJSON = {};
 
 async function updateBackendDanteAttributes() {
 
@@ -7,12 +7,13 @@ async function updateBackendDanteAttributes() {
 
     const attributes = ["license",                                                                    // research project
                         "taxonomy", "siteType", "naturalUnit",                                        // site
+                        "coordinateSystem",                                                           // coordinate
                         "featureType", "preservationCondition",                                       // feature
                         "chronozone", "sampleType", "sampleInvestigated",                             // sample
-                        "datingMethod",                                                               // absolute dating
+                        "datingMethod", "material", "c14Laboratory",                                  // absolute dating
                         "ArboDat_PCODE", "classificationConfer", "restType", "stateOfPreservation"];  // result
 
-    const ArboDat_PCODE_URI = "http://uri.gbv.de/terminology/arbodat_taxonomy/6ac2cb7f-fed7-445d-bd8c-4c8cadec2303"
+    const ArboDat_PCODE_URI = "http://uri.gbv.de/terminology/arbodat_taxonomy/6ac2cb7f-fed7-445d-bd8c-4c8cadec2303";                              
 
     for (let i = 0; i < attributes.length; i++) {
         const attribute = attributes[i];
@@ -74,9 +75,17 @@ async function updateBackendDanteAttributes() {
                 cachedData = cachedSampleInvestigated;
                 break;
     
-            // absoluteDating -------------------------------    
+            // absoluteDating -------------------------------
+            case ("material"):
+                cachedData = cachedMaterials;
+                break;
+
             case ("datingMethod"):
                 cachedData = cachedDatingMethods;
+                break;
+
+            case ("c14Laboratory"):
+                cachedData = cachedC14Laboratories;
                 break;
     
             // result ---------------------------------------
@@ -110,19 +119,24 @@ async function updateBackendDanteAttributes() {
         for (let i = 0; i < cachedData.length; i++) {
             const item = cachedData[i];
 
-            // If guideTerm ("restType")
-            if (attribute !== "taxonomy" && item.type.includes("http://vocab.getty.edu/ontology#GuideTerm")) {
-                isNarrower = true;
-                iterateNarrower(item.prefLabel.en, item.narrower, attribute);
-                continue;
-            }
-
             switch (attribute) {
+
+                case "coordinateSystem":
+                    newEntry = {
+                        id:    item.uri,
+                        label: item.prefLabel?.en ?? null,
+                        epsg: item.notation?.[0] ?? null
+                    };
+                    break;
 
                 case "ArboDat_PCODE":
                     newEntry = {
                         id:       item.uri,
                         label:    item.notation[0],
+                        labelDe: item.hiddenLabel?.de?.[0] ?? null,
+                        labelEn: item.hiddenLabel?.en?.[0] ?? null,
+                        labelFr: item.hiddenLabel?.fr?.[0] ?? null,
+                        labelIt: item.hiddenLabel?.it?.[0] ?? null,
                         taxonomy: "ArboDat PCODE"
                     };                    
                     break;
@@ -131,13 +145,53 @@ async function updateBackendDanteAttributes() {
                     newEntry = {
                         id:    item.uri,
                         label: item.prefLabel.zxx,
-                        naturalMainGroup: Array.isArray(item.ancestors)
-                                          ? (item.ancestors.length > 1
-                                             ? item.ancestors[0]?.prefLabel.de
-                                             : (item.ancestors[0]?.prefLabel.de ?? item.ancestors[0]?.prefLabel.en)
-                                            )
-                                          : null
+                        labelDe: item.altLabel?.zxx?.[0] ?? null,
+                        labelFr: item.altLabel?.zxx?.[1] ?? null,
+                        naturalMainGroup:
+                            Array.isArray(item.ancestors) && item.ancestors.length > 0
+                                ? Object.values(item.ancestors[0].prefLabel || {})[0] ?? null
+                                : null
                     };
+                    break;
+
+                case "c14Laboratory":
+                    newEntry = {
+                        id:    item.uri,
+                        label: item.prefLabel?.zxx ?? null,
+                        notation: item.notation?.[0] ?? null
+                    };
+                    break;
+
+                case "siteType":
+                case "restType":
+                    // Skip guide term
+                    if (item.type.includes("http://vocab.getty.edu/ontology#GuideTerm")) { continue }
+
+                    newEntry = {
+                        id:      item.uri,
+                        label:   item.prefLabel.en,
+                        labelDe: item.altLabel?.de?.[0] ?? null,
+                        labelFr: item.altLabel?.fr?.[0] ?? null,
+                        structuralConcept:
+                            Array.isArray(item.ancestors) && item.ancestors.length > 0
+                                ? Object.values(item.ancestors[0].prefLabel || {})[0] ?? null
+                                : null
+                    };
+                    break;
+
+                case "featureType":
+                case "preservationCondition":
+                case "sampleType":
+                case "sampleInvestigated":
+                case "datingMethod":
+                case "stateOfPreservation":
+                case "classificationConfer":
+                    newEntry = {
+                        id:    item.uri,
+                        label: item.prefLabel.en,
+                        labelDe: item.altLabel?.de?.[0] ?? null,
+                        labelFr: item.altLabel?.fr?.[0] ?? null,
+                    };                    
                     break;
             
                 default:
@@ -157,34 +211,10 @@ async function updateBackendDanteAttributes() {
     }
 
     // POST -----------------------------------------------------------------------------
-    try {        
+    try {
         await axios.post("http://localhost:8080/dante_attributes", danteAttributesJSON);
 
     } catch (error) {
         console.error('Error during post dante attributes: ', error);
     }
-}
-
-function iterateNarrower(structuralConcept, narrower, attribute) {
-
-    // Termination condition
-    if (!narrower || narrower.length === 0) {
-        return;
-    }
-    
-    // create JSON-Arrays for narrower ----------------
-    const attributeList = [];
-    for (let i = 0; i < narrower.length; i++) {
-        newEntry = {
-            id:                narrower[i].uri,
-            label:             narrower[i].prefLabel.en,
-            structuralConcept: structuralConcept
-        };            
-
-        attributeList.push(newEntry);
-    } // ----------------------------------------------
-    if (!Array.isArray(danteAttributesJSON[attribute])) {
-        danteAttributesJSON[attribute] = [];
-    }
-    danteAttributesJSON[attribute].push(...attributeList);
 }

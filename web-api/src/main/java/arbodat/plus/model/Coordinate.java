@@ -49,7 +49,6 @@ public class Coordinate implements Serializable {
     @OneToOne(mappedBy = "coordinate")
     private Sample sample;
 
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

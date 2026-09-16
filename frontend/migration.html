@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>ArboDat+ Import</title>
+    <title>ArboDat+ Migration</title>
 
     <link href="img/favicon.png" rel="icon">
     <link href="css/migration.min.css" rel="stylesheet">
@@ -18,8 +18,16 @@
     </script>
     <!-- axios -->
     <script src="https://unpkg.com/axios@1.8.4/dist/axios.min.js"></script>
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- proj4js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.15.0/proj4.js"></script>
+    <!-- select2 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- ResearchProject Dropdown style -->
     <style>
@@ -99,16 +107,91 @@
       }
     </style>
 
+    <!-- Spinner style -->
+    <style>
+      /* Fullscreen Overlay */
+      .loading-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(1px);
+
+          display: none;
+
+          justify-content: center;
+          align-items: center;
+
+          z-index: 9999;
+
+          /* disable clicks */
+          pointer-events: all;
+      }
+      /* Loading Spinner (Circular) */
+      .spinner {
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #3498db;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          animation: spin 2s linear infinite;
+      }
+      /* Spinner Animation */
+      @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+      }
+    </style>
+
+    <!-- Select2 style -->
+    <style>
+      .select2-container .select2-selection--single {
+        display: flex;
+        align-items: center;
+        height: 52px !important;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+      }
+      .select2-container .select2-selection--multiple {
+        border: 2px solid #ccc;
+        min-height: 52px;
+      }
+      .select2-container .select2-selection--single .select2-selection__rendered {
+        order: 1;
+        padding: 12px;
+        font-size: 16px;
+        color: #000000;
+      }
+      .select2-container .select2-selection--single .select2-selection__clear {
+        order: 2;
+        margin-left: auto;
+        transform: translateX(50%) translateY(-2px);
+        font-size: 22px;
+        font-weight: 200;
+        line-height: 24px;
+        font-family: sans-serif;
+      }
+      .select2-container .select2-selection--multiple .select2-selection__clear {
+        font-size: 24px;
+        font-weight: 200;
+        line-height: 24px;
+      }
+    </style>
+
   </head>
 
-  <body>    
+  <body>
     
-    <header class="header_img_input_html">
-      <h1> <img src="img/logo1.png" alt="logo" id="logo_input_html"> </h1>
+    <!-- Gloabl loadding overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <header class="header">
+      <h1> <img src="img/logo_arbodat_plus.png" alt="logo_arbodat_plus"> </h1>
     </header>
     
     <!-- Container for File Upload -->
-    <div class="container-md" style="margin-top: 160px;">
+    <div class="container-md" style="margin-top: 120px;">
       <div class="card mx-auto" style="max-width: 500px; padding: 20px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
         <h2 class="text-center">File Upload</h2>
         <form id="fileUploadForm">
@@ -116,36 +199,12 @@
               <label for="dataFile" class="form-label">Select 'ArchBotDaten.mdb' file</label>
               <input type="file" id="dataFile" class="form-control">
             </div>
-            <div class="mb-3">
+            <div class="mb-3" style="margin-bottom: 20px !important;">
               <label for="strukDataFile" class="form-label">Select 'ArchBotStrukDat.mdb' file</label>
               <input type="file" id="strukDataFile" class="form-control">
             </div>
             <div class="text-center">
-              <button type="button" class="btn btn-primary" onclick="getSites()">Upload Files</button>
-
-              <style>
-                /* Loading Spinner (Circular) */
-                .spinner {
-                    border: 4px solid #f3f3f3;
-                    border-top: 4px solid #3498db;
-                    border-radius: 50%;
-                    width: 50px;
-                    height: 50px;
-                    animation: spin 2s linear infinite;
-                    display: none; /* Initially hidden */
-                    margin: 20px auto;
-                }
-        
-                /* Spinner Animation */
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-              </style>
-
-              <!-- Spinner, initially hidden -->
-              <div id="spinner" class="spinner"></div>
-
+              <button type="button" class="btn btn-primary" onclick="getSites()">Upload</button>
             </div>
         </form>
       </div>
@@ -164,13 +223,12 @@
           </h2>
           <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
             <div class="accordion-body">
-
               Select existing research projects (by clicking in the 'project name' field) or create new ones to migrate sites corresponding to them.
               <br><br>
 
               <form id="research_project">
                 <fieldset>
-                    <input type="hidden" id="projectId">
+                    <input type="hidden" id="researchProjectId">
 
                     <div class="row">
                         <div class="col-25">
@@ -206,10 +264,31 @@
                         <label for="license" data-tooltip="Please choose from the list." >license:</label>
                       </div>
                       <div class="col-75">
-                        <select id="licenseDropdown">
-                                <option value="">select license</option>
-                                <!-- Rows will be dynamically added here by script below -->
+                        <select id="licenseDropdown" style="width: 100%;">
+                          <option value=""></option>
                         </select>
+                        <script>
+                          // Select2 dropdown
+                          $(document).ready(function() {
+                              $('#licenseDropdown').select2({
+                                placeholder: '',
+                                allowClear: true
+                              });
+
+                              // remove arrow
+                              $('#licenseDropdown')
+                                .next('.select2-container')
+                                .find('.select2-selection__arrow')
+                                .remove();
+                          });
+
+                          // populate license dropdown 
+                          document.addEventListener("DOMContentLoaded", async function () {
+                            await fetchDanteAttribute("license");
+                            const licenseDropdown = document.getElementById("licenseDropdown");
+                            populateDanteDropdown ("license", licenseDropdown);
+                          });
+                        </script>
                       </div>
                     </div>
 
@@ -222,26 +301,17 @@
                       </div>
                   </div>
 
-                  <!-- Script to populate license dropdown -->
-                  <script>
-                    document.addEventListener("DOMContentLoaded", async function () {
-                        // License
-                        await fetchDanteAttribute("license");
-                        const licenseDropdown = document.getElementById("licenseDropdown");
-                        populateDanteDropdown ("license", licenseDropdown);
-                    });
-                  </script>
 
                   <!-- Button to add research project-->
-                  <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                    <button type="button" class="btn btn-primary" id="addResearchProjectButton">Add research project</button>
+                  <div style="margin-top: 20px;" class="text-center">
+                    <button type="button" class="btn btn-primary" id="addResearchProjectButton">Add Research Project</button>
                   </div>
                               
                 </fieldset>   
               </form>
 
               <!-- Container to display added research projects -->
-              <div id="researchProjectContainer" style="margin-top: 20px; width: 40%;"></div>
+              <div id="researchProjectContainer" style="margin-top: 20px;"></div>
 
               <script>
                 window.researchProjects = [];
@@ -249,7 +319,7 @@
                 document.getElementById("addResearchProjectButton").addEventListener("click", function() {
 
                   // Get values from the form
-                  const projectId = document.getElementById("projectId").value;
+                  const researchProjectId = document.getElementById("researchProjectId").value;
                   const projectName = document.getElementById("projectName").value;
                   let funder = document.getElementById("funder").value;
                   let authorisationNumber = document.getElementById("authorisationNumber").value;
@@ -262,7 +332,7 @@
 
                   // Check if projectName is provided (required)
                   if (!projectName) {
-                      alert("Project name is required!");
+                      toast.info("Project name is required.");
                       return;
                   }
 
@@ -270,7 +340,7 @@
                   const existingProject = researchProjects.find(project => project.projectName === projectName);
 
                   if (existingProject) {
-                      alert("This project has already been added!");
+                      toast.info("This project has already been added.");
                       return;
                   }
 
@@ -281,7 +351,7 @@
 
                   // Create a JSON object to store the data
                   const projectData = {
-                      id : projectId,
+                      id : researchProjectId,
                       projectName: projectName,
                       funder: funder,
                       authorisationNumber: authorisationNumber,
@@ -292,32 +362,49 @@
                   // Save object into the researchProjects array
                   researchProjects.push(projectData);
 
-                  // Display the saved project in a box under the form
-                  const savedProjectBox = document.createElement("div");
-                  savedProjectBox.style.border = "1px solid #ccc";
-                  savedProjectBox.style.padding = "10px";
-                  savedProjectBox.style.marginTop = "10px";
-                  savedProjectBox.style.backgroundColor = "#f9f9f9";
+                  // Display the saved item in a box under the form
+                  const itemBox = document.createElement("div");
+                  itemBox.classList.add("item-box");
+
+                  itemBox.style.border          = "2px solid #ccc";
+                  itemBox.style.borderRadius    = "4px";
+                  itemBox.style.padding         = "12px";
+                  itemBox.style.marginTop       = "6px";
+                  itemBox.style.marginBottom    = "6px";
+                  itemBox.style.backgroundColor = "#f9f9f9";
+                  itemBox.style.height          = "52px";
 
                   // Add project name and delete button
-                  savedProjectBox.innerHTML = `
+                  itemBox.innerHTML = `
                       <span>${projectName}</span>
-                      <span style="color: red; float: right; cursor: pointer;" 
-                            onclick="deleteProject(this)"
-                            data-name="${projectName}">
-                            &#10005;
-                      </span>
+                      <button
+                          type="button"
+                          style="
+                              float: right;
+                              color: red;
+                              cursor: pointer;
+                              transform: translateX(6px);
+                              background: none;
+                              border: none;
+                          "
+                          onclick="deleteProject(this)"
+                          data-name="${projectName}"
+                          aria-label="Remove Research Project"
+                      >
+                          &#10005;
+                      </button>
                   `;
 
                   // Append the saved project box to the container
-                  document.getElementById("researchProjectContainer").appendChild(savedProjectBox);
+                  document.getElementById("researchProjectContainer").appendChild(itemBox);
 
                   // Clear the form
                   document.getElementById("research_project").reset();
-                  document.getElementById("projectId").value = "";
+                  document.getElementById("researchProjectId").value = "";
                   document.getElementById("funder").readOnly = false;
                   document.getElementById("authorisationNumber").readOnly = false;
                   document.getElementById("licenseDropdown").disabled = false;
+                  $('#licenseDropdown').val(null).trigger('change');
                   document.getElementById("exportFileName").readOnly = false;
                 });
 
@@ -347,19 +434,25 @@
             </button>
           </h2>
           <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
-            <div class="accordion-body">
-              
-              <p>Select the sites to be migrated for the selected research projects.<br><br>
-              - Sites that have the same label and are already assigned to any chosen research projects in the database will not be migrated. (These sites will be listed below )<br>
-              - If the site you want to migrate has more research projects assigned to it than the existing site in the database, the additional research projects will be added to the existing site.<br><br>
-              - Features, samples and datings related to the selected sites, that have the same label and are already assigned to the same elements in the database will not be migrated. (These features, samples and datings will be listed below)</p>
+            <div class="accordion-body">              
+              <p>
+                Select sites to be migrated for the added research projects.<br>
+                - To select or deselect a site use the checkbox on the right. To select or deselect <u>all</u> sites use the checkbox at the top right of a table.<br><br>
+                - Sites that have the same label and already assigned to any added research project in the database will not be migrated (these sites will be listed below).
+                If the site to migrate contains more research projects than the existing site in the database, the additional research projects will be added to the existing site.<br>                
+                - Features, samples and datings related to the selected sites, that have the same label and are already assigned to the same elements in the database will not be migrated (these features, samples and datings will be listed below).
+              </p>
 
               <form id="siteSelectionForm">
                 <table class="table table-striped">
                   <thead>
                     <tr>
                       <th scope="col">Site</th>
-                      <th scope="col">Select</th>
+                      <th scope="col" style="text-align: right; padding-right: 8px;">
+                        Select
+                        <input type="checkbox" onclick="toggleAllCheckboxes(this, 'siteTableBody')" style="margin-left: 10px;">
+                      </th>
+
                     </tr>
                   </thead>
                   <tbody id="siteTableBody">
@@ -367,8 +460,8 @@
                   </tbody>
                 </table>
                 <!-- Button -->
-                <div style="display: flex; justify-content: flex-end;">
-                  <button type="button" class="btn btn-primary" onclick="handleMigrateSites()" > migrate sites </button>
+                <div class="text-center">
+                  <button type="button" class="btn btn-primary" onclick="handleMigrateSites()" > Migrate Sites </button>
                 </div>
 
                 <script>
@@ -376,7 +469,7 @@
                     if (researchProjects && researchProjects.length > 0) {
                       migrateSites(researchProjects);
                     } else {
-                      alert("At least one research project must be selected");
+                      toast.info("At least one research project must be added.");
                     }
                   }
                 </script>
@@ -395,6 +488,9 @@
           </h2>          
           <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
             <div class="accordion-body">
+              <p>
+                List of literature for the selected sites.<br>
+              </p>
 
                 <!-- Literature Table -->
                 <table class="table table-striped">
@@ -403,7 +499,7 @@
                           <th>Site</th>
                           <th>author</th>
                           <th>publicationYear</th>
-                          <th>Create Literatur</th>
+                          <th>Create Literature</th>
                       </tr>
                   </thead>
                   <tbody id="literatureTableBody">
@@ -414,265 +510,168 @@
                 <!-- Literature Popup -->
                 <div id="literaturModal" class="modal">
                   <div class="modal-content">
-                      <span class="close">&times;</span>
-                      <h2>Ceate new literature</h2>
+                    <span class="close">&times;</span>
+                    <h2>Create new Literature</h2>
+                    When a new literature is created, it is automatically linked to the corresponding site. To link an existing literature to this site, simply select the literature (by clicking in the 'title' field) and 'update' at the bottom.
+                    <br><br>
 
-                      <form id="literatureForm">
+                    <!-- Author -->
+                    <form id="authorForm" role="form">
+                      <fieldset>
+                        <legend>Author</legend>
 
-                        <!-- Literature field -->
-                        <fieldset>
-                          <legend> Literature details</legend>
-                            <div class="row">
-                                <div class="col-25">
-                                  <label for="doi">DOI:</label>
-                                </div>
-                                <div class="col-75">
-                                  <input type="text" id="doi" placeholder="" class="form-control" list="doiList" autocomplete="off">
-                                  <datalist id="doiList"></datalist>
-                                </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-25">
-                                <label for="publicationYear">publication year:</label>
-                              </div>
-                              <div class="col-75">
-                                <input type="number" id="publicationYear" placeholder="" autocomplete="off">
-                              </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-25">
-                                  <label for="title">title:</label>
-                                </div>
-                                <div class="col-75">
-                                  <input type="text" id="title" placeholder="" class="form-control" list="titleList" autocomplete="off">
-                                  <datalist id="titleList"></datalist>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-25">
-                                  <label for="shortCitation">short citation:</label>
-                                </div>
-                                <div class="col-75">
-                                  <input type="text" id="shortCitation" placeholder="" autocomplete="off">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-25">
-                                  <label for="longCitation">long citation:</label>
-                                </div>
-                                <div class="col-75">
-                                  <input type="text" id="longCitation" placeholder="" autocomplete="off">
-                                </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-25">
-                                <label for="litAbstract">abstract:</label>
-                              </div>
-                              <div class="col-75">
-                                <textarea name="abstract" id="litAbstract" cols="30" rows="5"></textarea>
-                              </div>
-                            </div>
-                            <br>
-                        </fieldset>
-
-                        <!-- Reference selection field -->
-                        <fieldset>
-                          <legend>References</legend>
-                          <div class="row">
-                            <div class="col-25">
-                              <span>refernece site from migration:</span>
-                            </div>
-                            <div class="col-75">
-                              <span id="siteLabelFromMigration"></span>
-                            </div>
+                        <div class="row">
+                          <div class="col-25"></div>
+                          <div class="col-75" style="margin-bottom: 10px;">
+                            <span id="authorsFromMigration"></span>
                           </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="siteSelectpicker">reference sites:</label>
-                            </div>
-                            <div class="col-75">
-                              <select class="selectpicker" id="siteSelectpicker" multiple></select>
-                            </div>
+                        </div>
+
+                        <input type="hidden" id="authorId">
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="authorLastName">last name: *</label>
                           </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="datingSelectpicker">reference datings:</label>
-                            </div>
-                            <div class="col-75">
-                              <select class="selectpicker" id="datingSelectpicker" multiple></select>
-                            </div>
+                          <div class="col-75">
+                            <input type="text" id="authorLastName" placeholder="" style="padding-right: 50px;" required>
+                            <span class="clear-icon" id="authorClearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                            <ul id="authorDropdown" class="dropdown hidden"></ul>
                           </div>
-                          <br>
-                        </fieldset>
-
-                        <!-- Authors field -->
-                        <fieldset>
-                          <legend>Authors</legend>
-                          <div class="row">
-                            <div class="col-25">
-                              <span>authors from migration:</span>
-                            </div>
-                            <div class="col-75">
-                              <span id="authorsFromMigration"></span>
-                            </div>
+                        </div>
+                        
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="authorFirstName" data-tooltip="">first name: *</label>
                           </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="lastName">last name:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="lastName" required placeholder="enter a new last name or select one from the database" class="form-control" list="lastnameList" autocomplete="off">
-                              <datalist id="lastnameList"></datalist>
-                            </div>
-                          </div>                        
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="firstName">first name:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="firstName" placeholder="" autocomplete="off">
-                            </div>
+                          <div class="col-75">
+                            <input type="text" id="authorFirstName" placeholder="" autocomplete="off" required>
                           </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="middleName">middle name:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="middleName" placeholder="" autocomplete="off">
-                            </div>
-                          </div>                        
-                          
-                          <!-- Button to add author-->
-                          <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                            <button type="button" class="btn btn-primary" id="addAuthorButton">Add author</button>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="authorMiddleNames" data-tooltip="If the author has more than one middle name or other name additions, please provide them here.">middle name:</label>
                           </div>
+                          <div class="col-75">
+                            <input type="text" id="authorMiddleNames" placeholder="">
+                          </div>
+                        </div>
 
-                          <!-- Container to display added authors -->
-                          <div id="authorContainer" style="margin-top: 20px; width: 40%;"></div>
-
-                        </fieldset>    
-
-                      </form>
-
-                      <script>
-                        const authorList = [];
-
-                        document.getElementById("addAuthorButton").addEventListener("click", function() {                              
-
-                          // Get values from the form
-                          const lastNameValue = document.getElementById("lastName").value;
-
-                          // Check if LastName is provided (required)
-                          if (!lastNameValue) {
-                              alert("Last name is required!");
-                              return;
-                          }
-
-                          let authorId;
-                          let lastName;
-                          let firstName;
-                          let middleName;
-
-                          const uuidPattern = /^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/;
-
-                          if (uuidPattern.test(lastNameValue)) {
-                            authorId = lastNameValue;
-                          } else {
-                            lastName = lastNameValue;
-                            firstName = document.getElementById("firstName").value || null;
-                            middleName = document.getElementById("middleName").value || null;
-                          }                              
-
-                          // Check if author already added
-                          const existingAuthor = authorList.find(author => {
-                              if (authorId) {
-                                  return author.id === authorId;
-                              } else {
-                                  return author.lastName === lastName && 
-                                          author.firstName === firstName && 
-                                          author.middleName === middleName;
-                              }
-                          });
-                          
-                          if (existingAuthor) {
-                              alert("This author has already been added!");
-                              return;
-                          }
-
-                          // Create a JSON object to store the data
-                          let authorData;
-
-                          if (authorId) {
-                              authorData = { id: authorId };
-                          } else {
-                              authorData = {
-                                  lastName: lastName,
-                                  firstName: firstName,
-                                  middleName: middleName
-                              };
-                          }       
-
-                          // Save object into the author array
-                          const index = authorList.push(authorData) - 1;
-
-                          // Display the saved author in a box under the form
-                          const savedAuthorBox = document.createElement("div");
-                          savedAuthorBox.style.border = "1px solid #ccc";
-                          savedAuthorBox.style.padding = "10px";
-                          savedAuthorBox.style.marginTop = "10px";
-                          savedAuthorBox.style.backgroundColor = "#f9f9f9";
-                          
-                          // Add author name and delete button
-                          let authorName;
-                          if (authorId) {
-                            const selectedOption = document.querySelector(`#lastnameList option[value="${document.getElementById("lastName").value}"]`);
-                            authorName = selectedOption ? selectedOption.getAttribute("data-label") : null;
-                          } else {                                  
-                            if (firstName) {
-                              if (middleName) {
-                                authorName = `${lastName}, ${firstName} ${middleName}`;
-                              } else {
-                                authorName = `${lastName}, ${firstName}`;
-                              }                                    
-                            } else {
-                              authorName = `${lastName}`;
-                            }
-                          }
-
-                          savedAuthorBox.innerHTML = `
-                            <span>"${authorName}"</span>
-                            <span style="color: red; float: right; cursor: pointer;" 
-                                  onclick="deleteAuthor(this, ${index})">
-                                  &#10005;
-                            </span>
-                          `;                                                               
-                          
-                          // Append the saved author box to the container
-                          document.getElementById("authorContainer").appendChild(savedAuthorBox);
-
-                          // Clear the form
-                          document.getElementById("lastName").value = "";
-                          document.getElementById("firstName").value = "";
-                          document.getElementById("middleName").value = "";
-                        });
-
-                        // Function to delete a author
-                        function deleteAuthor(deleteIcon, index) {
-                            // Find the parent div (the author box) and remove it
-                            const authorBox = deleteIcon.parentElement;
-                            authorBox.remove();
-
-                            // Remove author from the authorList with index                                
-                            if (index !== -1) {
-                              authorList.splice(index, 1);
-                            }    
-                        }
-                      </script>
+                        <button type="button" id="authorSubmitButton" class="MySubmitButton" onclick="create_update_author()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
                       
-                      <!-- 'Create Literature' Button -->
-                      <div class="text-center" style="margin-top: 15px">
-                        <button type="button" class="btn btn-primary" onclick="createLiterature(authorList)">Create literature</button>
-                      </div>
+                      </fieldset>
+                    </form>
+
+                    <br>
+                    
+                    <!-- Literature -->
+                    <form id="literatureForm" role="form">
+                      <fieldset>
+                        <legend>Literature</legend>
+
+                        <input type="hidden" id="literatureId">
+                        <input type="hidden" id="literatureSiteId">
+                        <input type="hidden" id="literatureRowId">
+                        
+                        <!-- title -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literatureTitle">title: *</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="literatureTitle" placeholder="" style="padding-right: 50px;" required>
+                            <span class="clear-icon" id="literatureClearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                            <ul id="literatureDropdown" class="dropdown hidden"></ul>
+                          </div>
+                        </div>
+                        
+                        <!-- publication year -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literaturePublicationYear">publication year:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="number" id="literaturePublicationYear" autocomplete="off">
+                          </div>
+                        </div>
+                        
+                        <!-- authors -->
+                        <div
+                          class="row"
+                          style="
+                            border: 0.5px solid #ccc;
+                            border-left: none;
+                            border-radius: 0 4px 4px 0;
+                            margin-top: 12px;
+                            padding-bottom: 6px;
+                            padding-top: 6px;
+                            margin-right: auto;
+                          "
+                        >
+                          <div class="col-25">
+                            <label for="literatureAuthors" data-tooltip="Add authors from the list.">authors:</label>
+                          </div>
+
+                          <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">                      
+                            <select id="literatureAuthors"></select>
+                            <!-- Button to add author -->
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    id="addAuthorButton">
+                              Add
+                            </button>
+                          </div>
+
+                          <!-- Container to display added Authors -->
+                          <div class="col-25"></div>
+                          <div class="col-75" id="literatureAuthorContainer" style="padding-left: 14px; margin-top: 0px;"></div>
+                        </div>
+
+                        <!-- DOI -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literatureDOI">DOI:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="literatureDOI" autocomplete="off">
+                          </div>
+                        </div>
+
+                        <!-- short citation -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literatureShortCitation">short citation:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="literatureShortCitation" autocomplete="off">
+                          </div>
+                        </div>
+
+                        <!-- long citation -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literatureLongCitation">long citation:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="literatureLongCitation" autocomplete="off">
+                          </div>
+                        </div>
+
+                        <!-- abstract -->
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="literatureAbstract">abstract:</label>
+                          </div>
+                          <div class="col-75">
+                            <textarea id="literatureAbstract" cols="30" rows="5"></textarea>
+                          </div>
+                        </div>
+
+                        <button type="button" id="literatureSubmitButton" class="MySubmitButton" onclick="create_update_literature()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                        
+                      </fieldset>
+                    </form>
 
                   </div>
                 </div>
@@ -685,19 +684,25 @@
         <div class="accordion-item">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFive" aria-expanded="false" aria-controls="panelsStayOpen-collapseFive">
-              Non-matching attributes
+              Non-matching Attributes
             </button>
           </h2>
           <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse">
             <div class="accordion-body">
+              <p>
+                List of non-matching Attributes.<br>
+                - Update attributes by selecting 'danteLabels' from the dropdowns.<br>
+                - If attributes you are looking for are not in the central thesauri lists (dropdowns), you can use the ‘Add to JSON’ option to save non matching attributes at the bottom of the page.<br>
+                - To select danteLabels or update attributes in several rows simultaneously select multiple rows.<br>
+                - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+              </p>
+              </p>
 
               <form id="danteAttributesForm">
-                <p>- Update attributes OR add 'nonMatchingLabel' to JSON.<br>
-                   - The danteLabels are set in all selected lines. You can select or deselect all rows with the checkbox at the top left of a table.</p>
                    
                 <table class="table table-striped">
                   <caption style="caption-side: top;">
-                    siteType (multiple selection with the shift key pressed)
+                    siteType (select multiple items by using the shift key)
                   </caption>
                   <thead>
                       <tr>
@@ -707,7 +712,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -728,7 +733,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -749,7 +754,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -770,7 +775,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -791,7 +796,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -812,7 +817,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -821,7 +826,7 @@
                   </tbody>
                 </table>
 
-                <table class="table table-striped">
+                <!-- <table class="table table-striped">
                   <caption style="caption-side: top;">
                     archaeologicalDating
                   </caption>
@@ -833,12 +838,11 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
-                          <th></th> <!-- updateAttribute -->
+                          <th style="min-width: 200px;">danteLabels</th>
+                          <th></th>
                       </tr>
                   </thead>
                   <tbody id="archaeologicalDatingTableBody">
-                      <!-- Rows will be dynamically added here by populateNonMatchingDanteAttributes function -->
                   </tbody>
                 </table>
 
@@ -854,14 +858,13 @@
                       <th>Type</th>
                       <th>Label</th>
                       <th>nonMatchingLabel</th>
-                      <th>danteLabels</th>
-                      <th></th> <!-- updateAttribute -->
+                      <th style="min-width: 200px;">danteLabels</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody id="culturalGroupTableBody">
-                      <!-- Rows will be dynamically added here by populateNonMatchingDanteAttributes function -->
                   </tbody>
-                </table>
+                </table> -->
 
                 <table class="table table-striped">
                   <caption style="caption-side: top;">
@@ -875,7 +878,7 @@
                       <th>Type</th>
                       <th>Label</th>
                       <th>nonMatchingLabel</th>
-                      <th>danteLabels</th>
+                      <th style="min-width: 200px;">danteLabels</th>
                       <th></th> <!-- updateAttribute -->
                     </tr>
                   </thead>
@@ -896,7 +899,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -917,7 +920,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -938,7 +941,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -959,7 +962,7 @@
                           <th>Type</th>
                           <th>Label</th>
                           <th>nonMatchingLabel</th>
-                          <th>danteLabels</th>
+                          <th style="min-width: 200px;">danteLabels</th>
                           <th></th> <!-- updateAttribute -->
                       </tr>
                   </thead>
@@ -983,12 +986,19 @@
           </h2>
           <div id="panelsStayOpen-collapseSix" class="accordion-collapse collapse">
             <div class="accordion-body">
+              <p>
+                List of site and sample coordinates for the selected sites.<br>
+                - To create coordinates select 'dante coordinateSystem'.<br>
+                - If a coordinate system you are looking for is not in the central thesauri list (dropdown), you can use the ‘Add to JSON’ option to save the 'coordinateSystem' at the bottom of the page.<br>
+                - Before using the ‘Add to JSON’ option, please fill in all applicable fields(lon, lat,	alt, lon WGS84,	lat WGS84,	remarks).<br>
+                - The 'altitude' and 'z coordinate' from the former database are displayed. But the new database only uses the altitude value.<br>
+                - The longitude and latitude WGS 84 fields are computed and filled in automatically (except for the coordinate systems 'DHDN / 3-degree Gauss' and 'local').<br>
+                - If ‘local’ is selected as coordinate system, this can be described in the ‘remarks’ text field.<br>
+                - To select coordinate systems or create coordinates in several rows simultaneously select multiple rows.<br>
+                - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+              </p>
 
               <form>
-                <p>- The 'altitude' and 'z coordinate' from the former database are displayed. But in the new database only one value, the altitude, is saved.<br>
-                   - If ‘local’ is selected as the coordinate system, this can be described in the ‘remarks’ text field.<br>
-                   - The coordinateSystem is set in all selected lines. You can select or deselect all rows with the checkbox at the top left of a table.</p>
-
                 Site coordinates
                 <table class="table table-striped">
                   <thead>
@@ -997,12 +1007,14 @@
                           <input type="checkbox" onclick="toggleAllCheckboxes(this, 'siteCoordinateTableBody')">
                         </th>
                         <th>Site</th>
-                        <th>longitude</th>
-                        <th>latitude</th>
-                        <th>altitude</th>
+                        <th style="min-width: 100px;">lon</th>
+                        <th style="min-width: 100px;">lat</th>
+                        <th style="min-width: 100px;">alt</th>
                         <th>coordinateSystem</th>
                         <th>dante coordinateSystem</th>
-                        <th>remarks</th>
+                        <th style="min-width: 100px;">lon WGS84</th>
+                        <th style="min-width: 100px;">lat WGS84</th>
+                        <th style="min-width: 105px;">remarks</th>
                         <th>Create Coordinate</th>
                       </tr>
                   </thead>
@@ -1019,13 +1031,15 @@
                           <input type="checkbox" onclick="toggleAllCheckboxes(this, 'sampleCoordinateTableBody')">
                         </th>
                         <th>Site<br>Feature<br>Sample</th>
-                        <th>lon/x</th>
-                        <th>lat/y</th>
-                        <th>altitude</th>
+                        <th style="min-width: 100px;">lon/x</th>
+                        <th style="min-width: 100px;">lat/y</th>
+                        <th style="min-width: 100px;">alt</th>
                         <th>z</th>
                         <th>coordinateSystem</th>
                         <th>dante coordinateSystem</th>
-                        <th>remarks</th>
+                        <th style="min-width: 100px;">lon WGS84</th>
+                        <th style="min-width: 100px;">lat WGS84</th>
+                        <th style="min-width: 105px;">remarks</th>
                         <th>Create Coordinate</th>
                       </tr>
                   </thead>
@@ -1049,242 +1063,189 @@
           </h2>
           <div id="panelsStayOpen-collapseSeven" class="accordion-collapse collapse">
             <div class="accordion-body">
+              <p>
+                List of employees at the selected sites.<br>
+                - Update users by selecting existing user OR creating new ones first if they are missing.<br>
+                - To select multiple users use the shift key.<br>
+                - To select users in several rows simultaneously select multiple rows.<br>
+                - To update with selected users in several rows simultaneously select multiple rows.<br>
+                - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+              </p>
 
-                List of employees of the selected sites. If the shift key is pressed, several users can be selected.
+              <!-- User Table -->
+              <table class="table table-striped">
+                <thead>
+                    <tr>
+                      <th>
+                        <input type="checkbox" onclick="toggleAllCheckboxes(this, 'userTableBody')">
+                      </th>
+                      <th>Site<br>Feature<br>Sample</th>
+                      <th>userRole</th>
+                      <th>userLabel</th>
+                      <th style="min-width: 250px;">Select Users</th>
+                      <th style="min-width: 130px;">Update with selected Users</th>
+                      <th style="min-width: 90px;">Create new User</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Rows will be dynamically added here by populateUsers function -->
+                </tbody>
+              </table>
+              
+              <!-- User Popup -->
+              <div id="userModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Ceate new user</h2>
 
-                <!-- User Table -->
-                <table class="table table-striped">
-                  <thead>
-                      <tr>
-                        <th>
-                          <input type="checkbox" onclick="toggleAllCheckboxes(this, 'userTableBody')">
-                        </th>
-                        <th>Site<br>Feature<br>Sample</th>
-                        <th>userRole</th>
-                        <th>userLabel</th>
-                        <th>Select existing User(s)</th>
-                        <th>Update with selected User(s)</th>
-                        <th>Create new User</th>
-                      </tr>
-                  </thead>
-                  <tbody id="userTableBody">
-                      <!-- Rows will be dynamically added here by populateUsers function -->
-                  </tbody>
-                </table>
-                
-                <!-- User Popup -->
-                <div id="userModal" class="modal">
-                  <div class="modal-content">
-                      <span class="close">&times;</span>
+                    <!-- Institution -->
+                    <form id="institutionForm" role="form">
+                      <fieldset>
+                        <legend>Institution</legend>
 
-                      <h2>Ceate new user</h2>
-                      <form id="userForm">
+                        <input type="hidden" id="institutionId">
 
-                        <!-- User field -->
-                        <fieldset>
-                          <legend> User details</legend>
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="institutionLabel">label: *</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="institutionLabel" placeholder="" name="institutionLabel" style="padding-right: 50px;" required>
+                            <span class="clear-icon" id="clearIconInstitution" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                            <ul id="institution_Dropdown" class="dropdown hidden"></ul>
+                          </div>
+                        </div>
+                        
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="rorId" data-tooltip="ROR is a global, community-led registry of open persistent identifiers for research organizations. You can check your research institution's ROR ID on ror.org.">ROR ID:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="rorId" placeholder="" autocomplete="off">
+                          </div>
+                        </div>
 
-                          <div class="row">
-                            <div class="col-25">
-                              <span>userLabel from migration:</span>
-                            </div>
-                            <div class="col-75">
-                              <span id="userLabelFromMigration"></span>
-                            </div>
+                        <button
+                          type="button"
+                          id="institutionSubmitButton"
+                          class="MySubmitButton"
+                          onclick="create_update_institution()"
+                          style="width: unset; padding-left: 10px; padding-right: 10px;"
+                        >
+                          create
+                        </button> 
+                      
+                      </fieldset>
+                    </form>
+
+                    <br>
+                    
+                    <!-- User -->
+                    <form id="userForm" role="form">
+                      <fieldset>
+                        <legend>User</legend>
+
+                        <div class="row">
+                          <div class="col-25"></div>
+                          <div class="col-75" style="margin-bottom: 10px;">
+                            <span id="usersFromMigration"></span>
                           </div>
-                          <div class="row">
-                              <div class="col-25">
-                                <label for="userLastName">last name:</label>
-                              </div>
-                              <div class="col-75">
-                                <input type="text" id="userLastName" placeholder="" class="form-control" list="userLastNameList" autocomplete="off">
-                                <datalist id="userLastNameList"></datalist>
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-25">
-                                <label for="userFirstName">first name:</label>
-                              </div>
-                              <div class="col-75">
-                                <input type="text" id="userFirstName" placeholder="" autocomplete="off">
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-25">
-                                <label for="userMiddleName">middle name:</label>
-                              </div>
-                              <div class="col-75">
-                                <input type="text" id="userMiddleName" placeholder="" autocomplete="off">
-                              </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="mailAddress">mail address:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="mailAddress" placeholder="" autocomplete="off">
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="ORCID">ORCID:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="ORCID" placeholder="" autocomplete="off">
-                            </div>
-                          </div>
+                        </div>
+
+                        <input type="hidden" id="userId">
                           
-                          <br>
-                        </fieldset>
-
-                        <!-- Institution field -->
-                        <fieldset>
-                          <legend>Institutions</legend>
-
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="institution">institution:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="institution" required placeholder="enter a new institution or select one from the database" class="form-control" list="institutionLabelList" autocomplete="off">
-                              <datalist id="institutionLabelList"></datalist>
-                            </div>
-                          </div>                        
-                          <div class="row">
-                            <div class="col-25">
-                              <label for="rorId">ROR id:</label>
-                            </div>
-                            <div class="col-75">
-                              <input type="text" id="rorId" placeholder="" autocomplete="off">
-                            </div>
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="last_name">last name: *</label>
                           </div>
-                          
-                          <!-- Button to add institution -->
-                          <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                            <button type="button" class="btn btn-primary" id="addInstitutionButton">Add institution</button>
+                          <div class="col-75">
+                            <input type="text" name="last_name" id="last_name" placeholder="" style="padding-right: 50px;" required>
+                            <span class="clear-icon" id="clearIconUser" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                            <ul id="user_Dropdown" class="dropdown hidden"></ul>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="first_name">first name: *</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="first_name" name="first_name" autocomplete="off" required>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="middle_names" data-tooltip="If you have more than one middle name or other name additions, please provide them here.">middle name:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="middle_names" name="middle_names" placeholder="">
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="mail">mail address:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="email" id="mail" name="mail" >
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-25">
+                            <label for="orcid" data-tooltip="ORCID is a free, unique, persistent identifier (PID) for individuals to use as they engage in research, scholarship, and innovation activities. Find out more on orcid.org.">ORCID iD:</label>
+                          </div>
+                          <div class="col-75">
+                            <input type="text" id="orcid" name="orcid" >
+                          </div>
+                        </div>
+
+                        <div
+                          class="row"
+                          style="
+                            border: 0.5px solid #ccc;
+                            border-left: none;
+                            border-radius: 0 4px 4px 0;
+                            margin-top: 12px;
+                            padding-bottom: 6px;
+                            padding-top: 6px;
+                            margin-right: auto;
+                          "
+                        >
+                          <div class="col-25">
+                            <label for="userInstitutions" data-tooltip="Add institutions from the list.">institutions:</label>
+                          </div>
+
+                          <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">
+                            <select id="userInstitutions"></select>
+                            <!-- Button to add institution -->
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    id="addInstitutionButton">
+                              Add
+                            </button>
                           </div>
 
                           <!-- Container to display added institutions -->
-                          <div id="institutionContainer" style="margin-top: 20px; width: 40%;"></div>
-                          <script>
-                              const institutionList = [];
+                          <div class="col-25"></div>
+                          <div class="col-75" id="institutionContainer" style="padding-left: 14px; margin-top: 0px;"></div>
+                        </div>
 
-                              document.getElementById("addInstitutionButton").addEventListener("click", function() {                              
-
-                                  // Get values from the form
-                                  const institutionValue = document.getElementById("institution").value;
-
-                                  // Check if institution is provided (required)
-                                  if (!institutionValue) {
-                                      alert("institution is required!");
-                                      return;
-                                  }
-
-                                  let institutionId;
-                                  let institution;
-                                  let rorId;
-
-                                  const uuidPattern = /^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/;
-
-                                  if (uuidPattern.test(institutionValue)) {
-                                    institutionId = institutionValue;
-                                  } else {
-                                    institution = institutionValue;
-                                    rorId = document.getElementById("rorId").value || null;
-                                  }                              
-
-                                  // Check if institution already added
-                                  const existinginstitution = institutionList.find(institution => {
-                                      if (institutionId) {
-                                          return institution.id === institutionId;
-                                      } else {
-                                          return institution.institution === institution && 
-                                                 institution.rorId       === rorId;
-                                      }
-                                  });
-                                  
-                                  if (existinginstitution) {
-                                      alert("This institution has already been added!");
-                                      return;
-                                  }
-
-                                  // Create JSON object to store the data
-                                  let institutionData;
-
-                                  if (institutionId) {
-                                      institutionData = { id: institutionId };
-                                  } else {
-                                      institutionData = {
-                                          label: institution,
-                                          rorId: rorId
-                                      };
-                                  }       
-
-                                  // Save object into the institution array
-                                  const index = institutionList.push(institutionData) - 1;
-
-                                  // Display the saved institution in a box under the form
-                                  const savedinstitutionBox = document.createElement("div");
-                                  savedinstitutionBox.style.border = "1px solid #ccc";
-                                  savedinstitutionBox.style.padding = "10px";
-                                  savedinstitutionBox.style.marginTop = "10px";
-                                  savedinstitutionBox.style.backgroundColor = "#f9f9f9";
-                                  
-                                  // Add institutionName(label + rorId) and delete button
-                                  let institutionName;
-                                  if (institutionId) {
-                                    const selectedOption = document.querySelector(`#institutionLabelList option[value="${document.getElementById("institution").value}"]`);
-                                    institutionName = selectedOption ? selectedOption.getAttribute("data-label") : null;
-                                  } else {                                  
-                                    if (rorId) {
-                                      institutionName = `${institution}, ${rorId}`;
-                                                                      
-                                    } else {
-                                      institutionName = `${institution}`;
-                                    }
-                                  }
-
-                                  savedinstitutionBox.innerHTML = `
-                                    <span>"${institutionName}"</span>
-                                    <span style="color: red; float: right; cursor: pointer;" 
-                                          onclick="deleteinstitution(this, ${index})">
-                                          &#10005;
-                                    </span>
-                                  `;                                                               
-                                  
-                                  // Append the saved institution box to the container
-                                  document.getElementById("institutionContainer").appendChild(savedinstitutionBox);
-
-                                  // Clear the form
-                                  document.getElementById("institution").value = "";
-                                  document.getElementById("rorId").value = "";
-                              });
-
-                              // Function to delete a author
-                              function deleteinstitution(deleteIcon, index) {
-                                  // Find the parent div (the institution box) and remove it
-                                  const institutionBox = deleteIcon.parentElement;
-                                  institutionBox.remove();
-
-                                  // Remove institution from the institutionList with index                                
-                                  if (index !== -1) {
-                                    institutionList.splice(index, 1);
-                                  }    
-                              }
-                          </script>
-
-                        </fieldset>    
-
-                      </form>                  
-                      
-                      <!-- 'Create User' Button -->
-                      <div class="text-center" style="margin-top: 15px">
-                        <button type="button" class="btn btn-primary" onclick="createUser(institutionList)">Create user</button>
-                      </div>
-
-                  </div>
+                        <button
+                          type="button"
+                          id="userSubmitButton"
+                          class="MySubmitButton"
+                          onclick="create_update_user()"
+                          style="width: unset; padding-left: 10px; padding-right: 10px;"
+                        >
+                          create
+                        </button> 
+                        
+                      </fieldset>
+                    </form>
                 </div>
-
+              </div>
             </div>
           </div>
         </div>
@@ -1300,7 +1261,13 @@
             <div class="accordion-body">
 
               <form id="fractionAnalyzedForm">
-                <p>The sieveSize is set in all selected lines. You can select or deselect all rows with the checkbox at the top left of a table.</p>
+                <p>
+                  List of the fractions analyzed from the samples taken at the selected sites.<br>
+                  - To sort the rows by sieveSize click on 'sieveSize' in the table header.<br>
+                  - To edit orgOrMin and sieveSize in several rows simultaneously select multiple rows.<br>
+                  - To create fraction analyzed in several rows simultaneously select multiple rows.<br>
+                  - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+                </p>
                 
                 <table class="table table-striped">
                   <thead>
@@ -1312,7 +1279,7 @@
                         <th>fractionAnalyzed</th>
                         <th>modifiedFraction</th>
                         <th>orgOrMin</th>
-                        <th>sieveSize</th>
+                        <th id="sieveSizeHeader" style="cursor:pointer;">sieveSize</th>
                         <th>Create Fraction Analyzed</th>
                       </tr>
                   </thead>
@@ -1336,8 +1303,14 @@
           <div id="panelsStayOpen-collapseNine" class="accordion-collapse collapse">
             <div class="accordion-body">
               <form id="LabAndNumberForm">
-
-                <p>The Laboratory from the dropdown or input field is set in all selected lines. You can select or deselect all rows with the checkbox at the top left of a table.</p>
+                <p>
+                  List of laboratories and numbers from the datings of the selected sites.<br>
+                  - To update datings select a laboratory and set a number.<br>
+                  - If a C14Laboratory you are looking for is not in the central thesauri list (dropdown), you can use the ‘Add to JSON’ option to save a new C14 laboratory code at the bottom of the page.<br>
+                  - To create/select laboratories in several rows simultaneously select multiple rows.<br>
+                  - To update datings in several rows simultaneously select multiple rows.<br>
+                  - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+                </p>
 
                 C14 Dating
                 <table class="table table-striped">
@@ -1348,10 +1321,10 @@
                           </th>
                           <th>Site<br>Feature<br>Sample<br>SubSample</th>
                           <th>labAndNumber</th>
-                          <th>Select existing C14Laboratory</th>
+                          <th style="width: 35%;">Select C14Laboratory</th>
                           <th>New C14Laboratory</th>
-                          <th>number</th>
-                          <th>Update Dating</th>
+                          <th style="min-width: none 110px;">Set Number</th>
+                          <th style="width: 85px;">Update Dating</th>
                       </tr>
                   </thead>
                   <tbody id="C14LabAndNumberTableBody">
@@ -1360,6 +1333,9 @@
                 </table>
 
                 <br>
+
+                <datalist id="lab_list"></datalist>
+
                 <table class="table table-striped">
                   <thead>
                       <tr>
@@ -1369,10 +1345,9 @@
                           <th>Site<br>Feature<br>Sample<br>SubSample</th>
                           <th>datingMethod</th>
                           <th>labAndNumber</th>
-                          <th>Select existing Laboratory</th>
-                          <th>Create new Laboratory</th>
-                          <th>number</th>
-                          <th>Update Dating</th>
+                          <th>Create/Select Laboratory</th>
+                          <th style="width: 100px;">Set Number</th>
+                          <th style="width: 85px;">Update Dating</th>
                       </tr>
                   </thead>
                   <tbody id="LabAndNumberTableBody">
@@ -1396,11 +1371,15 @@
             <div class="accordion-body">
 
               <form id="resultForm">
-                <p>- Before you can select a 'dante taxCode' you have to select a 'Taxonomy'.<br>
-                   - Before you can 'Create' a result OR add 'former taxCode' to JSON, you must create the corresponding fraction analysed for the corresponding sample in the ‘Fraction Analyzed’ accordion. if the fraction analysed is not in the ‘Fraction Analysed’ accordion, this must be set in the ArboDat2018 software.<br>
-                   - If the ‘cf’ (classificationConfer), ‘restType’ and ‘stateOfPreservation’ attributes should be set with new existing Dante labels, these must be selected BEFORE add ‘former taxCode’ to JSON in the dropdowns.
-                     If ‘Add to JSON’ is to be chosen for the attributes, this can be done AFTER add ‘former taxCode’ to JSON.<br>
-                   - You can set options from the dropdowns for all selected rows, by using the checkboxes on the left of each row. You can select or deselect all rows with the checkbox at the top left of a table.</p>
+                <p>
+                  List of results for the selected sites.<br>
+                  - To create results 'select Taxonomy' for the corresponding site and, if dropdowns are available, select options from them.<br>
+                  - Before you can select a 'dante taxCode' you have to 'select Taxonomy'.<br>
+                  - If attributes you are looking for are not in the central thesauri lists (dropdowns), you can use the ‘Add to JSON’ option to save non matching attributes at the bottom of the page.<br>
+                  - Before using the ‘Add to JSON’ option, please fill in all applicable fields(dante taxCode, dante restType, dante stateOfPreservation).<br>
+                  - To select dropdown options or create results in several rows simultaneously select multiple rows.<br>
+                  - To select or deselect a row use the checkbox on the left. To select or deselect <u>all</u> rows use the checkbox at the top left of a table.
+                </p>
                 
                 <!-- Tables will be dynamically added here by migrateSites -> populateResults function -->
 
@@ -1429,25 +1408,52 @@
       </div>
     </div>
 
-
-    <!-- scripts --> 
-    <script src="js/migration/getSites.js"></script>
-    <script src="js/migration/migrateSites.js"></script>
-    <script src="js/migration/researchProject-dropdown.js"></script>
-    <script src="js/migration/displayAndDownload-JSON.js"></script>
-
+    <!------------------------------- Scripts -------------------------------->
+    <!-- DANTE attributes -->
     <script src="js/danteAttributes/fetchDanteAttribute.js"></script>
     <script src="js/danteAttributes/populateDanteDropdown.js"></script>
     <script src="js/danteAttributes/updateBackendDanteAttributes.js"></script>
-
+    
+    <!-- general -->
+    <script src="js/formatService.js"></script>
     <script src="js/transformCoordinatesToWGS84.js"></script>
+    <script src="js/loadingSpinner.js"></script>
+    <script src="js/toast.js"></script>
+
+    <!-- migration specific -->    
+    <script src="js/migration/getSites.js"></script>
+    <script src="js/migration/researchProject-dropdown.js"></script>
+    <script src="js/migration/migrateSites.js"></script>
+    <script src="js/migration/literature.js"></script>
+    <script src="js/migration/nonMatchingDanteAttributes.js"></script>
+    <script src="js/migration/coordinates.js"></script>
+    <script src="js/migration/user.js"></script>
+    <script src="js/migration/fractionAnalyzed.js"></script>
+    <script src="js/migration/labsAndNumbers.js"></script>
+    <script src="js/migration/result.js"></script>
+    <script src="js/migration/displayAndDownload-JSON.js"></script>
+    <script src="js/migration/helper.js"></script>    
+    
+    <!-- input -->
+    <script src="js/input/institution.js"></script>
+    <script src="js/input/institution-dropdown.js"></script>
+    <script src="js/input/institution-boxes.js"></script>
+    <script src="js/input/user.js"></script>
+    <script src="js/input/user-dropdown.js"></script>
+    <script src="js/input/author.js"></script>
+    <script src="js/input/author-dropdown.js"></script>
+    <script src="js/input/author-boxes.js"></script>
+    <script src="js/input/literature.js"></script>
+    <script src="js/input/literature-dropdown.js"></script>
+    <!------------------------------------------------------------------------>
 
     <footer>
       <ul>
-          <li><a href="copyright.html" target="_blank">license </a></li>
-          <li>Version 1.3</li>
-          <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+        <li><a href="license.html" target="_blank">License</a></li>
+        <li>Version 4.0.0</li>
+        <li><a href="contact.html" target="_blank">Contact<strong> ☏ </strong></a></li>
       </ul>
     </footer>
+    
   </body>
 </html>

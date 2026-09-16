@@ -18,6 +18,9 @@ public class CoordinateSystem implements Serializable {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "epsg")
+    private String epsg;
+
     @JsonIgnore
     @OneToMany(mappedBy = "coordinateSystem")
     private Set<Coordinate> coordinateList;

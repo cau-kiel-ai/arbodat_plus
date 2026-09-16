@@ -18,6 +18,12 @@ public class DatingMethod implements Serializable {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @JsonIgnore
     @OneToMany(mappedBy = "datingMethod")
     private Set<AbsoluteDating> absoluteDatingList;

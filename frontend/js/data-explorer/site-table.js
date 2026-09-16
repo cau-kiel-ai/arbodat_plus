@@ -1,6 +1,21 @@
 let siteTable;
 
 async function buildSiteTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET sites ----------------------------------------------------------------
+    let sites = [];
+    try {
+        const response = await axios.get("http://localhost:8080/sites");
+        sites = response.data;
+    } catch (error) {
+        console.error("Error loading sites:", error);
+    }
 
     // GET research projects ----------------------------------------------------
     let researchProjects = [];
@@ -9,6 +24,21 @@ async function buildSiteTable() {
         researchProjects = response.data;
     } catch (error) {
         console.error("Error loading research projects:", error)
+    }
+
+    function formatResearchProjects(researchProjectList) {
+        if (!researchProjectList) return "";
+
+        // HTML download
+        if (!Array.isArray(researchProjectList)) return researchProjectList;
+
+        return researchProjectList
+            .map(id => {
+                const rp = researchProjects.find(rp => rp.id === id)
+                return rp?.projectName ?? id ?? "";
+            })
+            .filter(Boolean)
+            .join(", ");
     }
     
     // GET literature -----------------------------------------------------------
@@ -29,6 +59,21 @@ async function buildSiteTable() {
         console.error("Error loading site types:", error)
     }
 
+    function formatSiteTypes(siteTypeList) {
+        if (!siteTypeList) return "";
+
+        // HTML download
+        if (!Array.isArray(siteTypeList)) return siteTypeList;
+
+        return siteTypeList
+            .map(id => {
+                const siteType = siteTypes.find(siteType => siteType.id === id)
+                return siteType?.label ?? id ?? "";
+            })
+            .filter(Boolean)
+            .join(", ");
+    }
+
     // GET natural units --------------------------------------------------------
     let naturalUnits = [];
     try {
@@ -36,6 +81,12 @@ async function buildSiteTable() {
         naturalUnits = response.data;
     } catch (error) {
         console.error("Error loading natural units:", error)
+    }
+
+    function formatNaturalUnit(naturalUnitId){
+        if (!naturalUnitId) return "";
+        const naturalUnit = naturalUnits.find(naturalUnit => naturalUnit.id === naturalUnitId) || null;
+        return naturalUnit?.label ?? naturalUnitId;
     }
 
     // GET institutions ---------------------------------------------------------
@@ -59,21 +110,26 @@ async function buildSiteTable() {
     // GET coordinate systems ---------------------------------------------------
     await fetchDanteAttribute("coordinateSystem");
 
+    function formatTaxonomy(taxonomyId){
+        if (!taxonomyId) return "";
+        const taxonomy = cachedTaxonomies.find(taxonomy => taxonomy.uri === taxonomyId) || null;
+        return taxonomy?.prefLabel.en ?? taxonomyId;
+    }
+
     // Create Table -------------------------------------------------------------
     siteTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and
-        // improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: sites,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"label abbreviation", field:"labelAbbreviation", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"activity number", field:"activityNumber", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"site number", field:"siteNumber", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"research project list (multiple selection)", field: "researchProjectList", headerSortTristate:true,
+            {title:"*label", titleDownload:"label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"label abbreviation", titleDownload:"labelAbbreviation", field:"labelAbbreviation", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"activity number", titleDownload:"activityNumber", field:"activityNumber", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"site number", titleDownload:"siteNumber", field:"siteNumber", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"research project list (multiple selection)", titleDownload:"researchProjectList", field: "researchProjectList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to ids
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -100,18 +156,10 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const rpIds = cell.getValue();                
-                    if (Array.isArray(rpIds)) {
-                        return rpIds
-                                .map(id => {
-                                    const rp = researchProjects.find(rp => rp.id === id)
-                                    return rp?.projectName;})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatResearchProjects(cell.getValue()),
+                accessorDownload: value => formatResearchProjects(value),
             },
-            {title: "literature list (multiple selection)", field:"literatureList", headerSortTristate:true,
+            {title: "literature list (multiple selection)", titleDownload:"literatureList", field:"literatureList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -140,16 +188,8 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const literatureIds = cell.getValue();
-                    if (Array.isArray(literatureIds)) {
-                        return literatureIds
-                                .map(id => {
-                                    const lit = literature.find(item => item.id === id)
-                                    return formatLiterature(lit)})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatLit(literature, cell.getValue()),
+                accessorDownload: value => formatLit(literature, value),
             },
             {title:"taxonomy", field:"taxonomy.id", headerSort:false,
                 editor:"list", editorParams:{
@@ -175,13 +215,10 @@ async function buildSiteTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const taxonomy = cachedTaxonomies.find(taxonomy => taxonomy.uri === value) || null;
-                    return taxonomy?.prefLabel.en || "";
-                },
+                formatter: cell => formatTaxonomy(cell.getValue()),
+                accessorDownload: value => formatTaxonomy(value),
             },
-            {title: "site types (multiple selection)", field: "siteTypeList", headerSortTristate:true,
+            {title: "site types (multiple selection)", titleDownload:"siteTypeList", field: "siteTypeList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map site type objects only to site type id
                     return Array.isArray(value) ? value.map(siteType => siteType.id? siteType.id : siteType) : [];
@@ -190,7 +227,7 @@ async function buildSiteTable() {
                     values: [
                         ...siteTypes.map(siteType => ({
                             value: siteType.id,
-                            label: siteType.label
+                            label: siteType.label + (siteType.structuralConcept ? ` (${siteType.structuralConcept})` : "")
                         }))
                     ],
                     autocomplete:false,
@@ -201,7 +238,7 @@ async function buildSiteTable() {
                     values: [
                         ...siteTypes.map(siteType => ({
                             value: siteType.id,
-                            label: siteType.label
+                            label: siteType.label + (siteType.structuralConcept ? ` (${siteType.structuralConcept})` : "")
                         }))
                     ],
                     multiselect: true
@@ -212,18 +249,10 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const siteTypeIds = cell.getValue();                
-                    if (Array.isArray(siteTypeIds)) {
-                        return siteTypeIds
-                                .map(id => {
-                                    const siteType = siteTypes.find(siteType => siteType.id === id)
-                                    return siteType?.label;})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatSiteTypes(cell.getValue()),
+                accessorDownload: value => formatSiteTypes(value),
             },
-            {title:"site type uncertain", field:"siteTypeUncertain", hozAlign:"center", headerSortTristate:true,
+            {title:"site type uncertain", titleDownload:"siteTypeUncertain", field:"siteTypeUncertain", hozAlign:"center", headerSortTristate:true,
                 headerFilter: function(cell, onRendered, success, cancel){
                     let state = "all";
                     const box = document.createElement("input");
@@ -266,7 +295,7 @@ async function buildSiteTable() {
                     }
                 }
             },
-            {title:"natural unit", field:"naturalUnit.id", headerSortTristate:true,
+            {title:"natural unit", titleDownload:"naturalUnit", field:"naturalUnit.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: [
                         { value: null, label: "none" },
@@ -290,13 +319,10 @@ async function buildSiteTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const naturalUnit = naturalUnits.find(naturalUnit => naturalUnit.id === value) || null;
-                    return naturalUnit?.label || "";
-                },
+                formatter: cell => formatNaturalUnit(cell.getValue()),
+                accessorDownload: value => formatNaturalUnit(value),
             },
-            {title:"site condition undisturbed", field:"undisturbed", hozAlign:"center", headerSortTristate:true,
+            {title:"site condition undisturbed", titleDownload:"undisturbed", field:"undisturbed", hozAlign:"center", headerSortTristate:true,
                 headerFilter: function(cell, onRendered, success, cancel){
                     let state = "all";
                     const box = document.createElement("input");
@@ -339,7 +365,7 @@ async function buildSiteTable() {
                     }
                 }
             },
-            {title: "institution list (multiple selection)", field:"institutionList", headerSortTristate:true,
+            {title: "institution list (multiple selection)", titleDownload:"institutionList", field:"institutionList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -368,18 +394,10 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const institutionIds = cell.getValue();
-                    if (Array.isArray(institutionIds)) {
-                        return institutionIds
-                                .map(id => {
-                                    const institution = institutions.find(item => item.id === id)
-                                    return institution?.label;})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatInst(institutions, cell.getValue()),
+                accessorDownload: value => formatInst(institutions, value),
             },
-            {title: "site directors (multiple selection)", field:"siteDirectors", headerSortTristate:true,
+            {title: "site directors (multiple selection)", titleDownload:"siteDirectors", field:"siteDirectors", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -408,18 +426,10 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const userIds = cell.getValue();
-                    if (Array.isArray(userIds)) {
-                        return userIds
-                                .map(id => {
-                                    const user = users.find(item => item.id === id)
-                                    return formatName(user)})
-                                .join("; ");
-                    }
-                }
+                formatter: cell => formatUser(users, cell.getValue()),
+                accessorDownload: value => formatUser(users, value),
             },
-            {title: "archaeologists (multiple selection)", field:"archaeologists", headerSortTristate:true,
+            {title: "archaeologists (multiple selection)", titleDownload:"archaeologists", field:"archaeologists", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -448,18 +458,10 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const userIds = cell.getValue();
-                    if (Array.isArray(userIds)) {
-                        return userIds
-                                .map(id => {
-                                    const user = users.find(item => item.id === id)
-                                    return formatName(user)})
-                                .join("; ");
-                    }
-                }
+                formatter: cell => formatUser(users, cell.getValue()),
+                accessorDownload: value => formatUser(users, value),
             },
-            {title: "botanists (multiple selection)", field:"botanists", headerSortTristate:true,
+            {title: "botanists (multiple selection)", titleDownload:"botanists", field:"botanists", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -488,20 +490,12 @@ async function buildSiteTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const userIds = cell.getValue();
-                    if (Array.isArray(userIds)) {
-                        return userIds
-                                .map(id => {
-                                    const user = users.find(item => item.id === id)
-                                    return formatName(user)})
-                                .join("; ");
-                    }
-                }
+                formatter: cell => formatUser(users, cell.getValue()),
+                accessorDownload: value => formatUser(users, value),
             },
             {title:"remarks", field:"remarksSite", editor:"input", headerFilter:true, headerSort:false},
             // Coordinate ---------------------------------------------------------------------------------------------
-            {title:"coordinate system", field:"coordinate.coordinateSystem.id", headerSortTristate:true,
+            {title:"coordinate system", titleDownload:"coordinateSystem", field:"coordinate.coordinateSystem.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: [
                         { value: null, label: "none" },
@@ -525,11 +519,8 @@ async function buildSiteTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const crs = cachedCoordinateSystems.find(crs => crs.uri === value) || null;
-                    return [crs?.prefLabel.en, crs?.notation].filter(Boolean).join(" - ") || "";
-                },
+                formatter: cell => formatCoordinateSystem(cell.getValue()),
+                accessorDownload: value => formatCoordinateSystem(value),
             },
             {title:"longitude", field:"coordinate.longitude", headerFilter:"input", headerSortTristate:true,
                 editor:"number", editorParams:{
@@ -549,25 +540,25 @@ async function buildSiteTable() {
                     step:0.1,
                 },
             },
-            {title:"longitude WGS84", field:"coordinate.longitudeWgs84", headerFilter:"input", headerSortTristate:true,
+            {title:"longitude WGS84", titleDownload:"longitudeWGS84", field:"coordinate.longitudeWgs84", headerFilter:"input", headerSortTristate:true,
                 editor:"number", editorParams:{
                     min:0,
                     step:0.1,
                 },
             },
-            {title:"latitude WGS84", field:"coordinate.latitudeWgs84", headerFilter:"input", headerSortTristate:true,
+            {title:"latitude WGS84", titleDownload:"latitudeWGS84", field:"coordinate.latitudeWgs84", headerFilter:"input", headerSortTristate:true,
                 editor:"number", editorParams:{
                     min:0,
                     step:0.1,
                 },
             },
-            {title:"remarks coordinate", field:"remarksCoordinate", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"remarks coordinate", titleDownload:"remarksCoordinate", field:"coordinate.remarksCoordinate", editor:"input", headerFilter:true, headerSortTristate:true},
             // Address ------------------------------------------------------------------------------------------------
             {title:"country", field:"address.country", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"county", field:"address.county", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"district", field:"address.district", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"parish", field:"address.parish", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"street or place", field:"address.street_or_place", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"street or place", titleDownload:"streetOrPlace", field:"address.street_or_place", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"town", field:"address.town", editor:"input", headerFilter:true, headerSortTristate:true},
         ],
         initialSort: [
@@ -576,15 +567,15 @@ async function buildSiteTable() {
     });
 
 
-    // GET sites and populate table ---------------------------------
-    axios.get("http://localhost:8080/sites")
-    .then(response => {
-        siteTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading sites:", error));
-    
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
 
-    // PUT: update site ---------------------------------------------
+    activeTable = "siteTable";
+
+
+    // PUT: update site ---------------------------------------------------------
     siteTable.on("cellEdited", async function(cell){
 
         const editedField = cell.getField();
@@ -661,6 +652,7 @@ async function buildSiteTable() {
                     latitude: site.coordinate.latitude,
                     latitudeWgs84: site.coordinate.latitudeWgs84,
                     altitude: site.coordinate.altitude,
+                    remarksCoordinate: site.coordinate.remarksCoordinate,
                 },
                 address: {
                     country: site.address.country,
@@ -717,21 +709,143 @@ async function buildSiteTable() {
     });
 }
 
-
- // Export table ---------------------------------------------------------
-
- document.getElementById("download-csv").addEventListener("click", function(){
-    siteTable.download("csv", "data.csv");
-});
-
+// Export table -----------------------------------------------------------------
 document.getElementById("download-json").addEventListener("click", function(){
-    siteTable.download("json", "data.json");
+    if (activeTable === "siteTable") {
+        const rawData = siteTable.getData("active");
+        
+        const transformed = rawData.map(row => {
+            // Taxonomy
+            const taxonomyId = row.taxonomy?.id ?? null;
+            const taxonomy   = cachedTaxonomies.find(taxonomy => taxonomy.uri === taxonomyId);
+            // Natural unit
+            const naturalUnitId     = row.naturalUnit?.id ?? null;
+            const naturalUnitValues = siteTable.getColumn("naturalUnit.id").getDefinition().editorParams.values;
+            const naturalUnit       = naturalUnitValues.find(nu => nu.value === naturalUnitId);
+            // Coordinate system
+            const coordinateSystemId = row.coordinate?.coordinateSystem?.id ?? null;
+            const coordinateSystem = cachedCoordinateSystems.find(cs => cs.uri === coordinateSystemId);
+            const hasCoordinateValues =
+                coordinateSystemId ||
+                row.coordinate?.longitude != null ||
+                row.coordinate?.latitude != null ||
+                row.coordinate?.altitude != null ||
+                row.coordinate?.longitudeWgs84 != null ||
+                row.coordinate?.latitudeWgs84 != null ||
+                row.coordinate?.remarksCoordinate != null;
+            
+            return {
+                id: row.id,
+                label: row.label,
+                labelAbbreviation: row.labelAbbreviation,
+                activityNumber: row.activityNumber,
+                siteNumber: row.siteNumber,
+                researchProjectList: (row.researchProjectList || []).map(researchProjectId => {
+                    const researchProjectValues = siteTable.getColumn("researchProjectList").getDefinition().editorParams.values;
+                    const researchProject = researchProjectValues.find(rp => rp.value === researchProjectId);
+                    return { id: researchProjectId, name: researchProject?.label };
+                }),
+                literatureList: (row.literatureList || []).map(literatureId => {
+                    const literatureValues = siteTable.getColumn("literatureList").getDefinition().editorParams.values;
+                    const literature = literatureValues.find(l => l.value === literatureId);
+                    return { id: literatureId, name: literature?.label };
+                }),
+                taxonomy: taxonomyId
+                    ? { id: taxonomyId, label: taxonomy?.prefLabel?.en ?? "" }
+                    : null,
+                siteTypes: (row.siteTypeList || []).map(siteTypeId => {
+                    const siteTypeValues = siteTable.getColumn("siteTypeList").getDefinition().editorParams.values;
+                    const siteType = siteTypeValues.find(st => st.value === siteTypeId);
+                    return { id: siteTypeId, name: siteType?.label };
+                }),
+                siteTypeUncertain: row.siteTypeUncertain,
+                naturalUnit: naturalUnitId
+                    ? { id: naturalUnitId, name: naturalUnit?.label}
+                    : null,
+                undisturbed: row.undisturbed,
+                institutionList: (row.institutionList || []).map(institutionId => {
+                    const institutionValues = siteTable.getColumn("institutionList").getDefinition().editorParams.values;
+                    const institution = institutionValues.find(i => i.value === institutionId);
+                    return { id: institutionId, name: institution?.label };
+                }),
+                siteDirectors: (row.siteDirectors || []).map(siteDirectorId => {
+                    const siteDirectorValues = siteTable.getColumn("siteDirectors").getDefinition().editorParams.values;
+                    const siteDirector = siteDirectorValues.find(sd => sd.value === siteDirectorId);
+                    return { id: siteDirectorId, name: siteDirector?.label };
+                }),
+                archaeologists: (row.archaeologists || []).map(archaeologistId => {
+                    const archaeologistValues = siteTable.getColumn("archaeologists").getDefinition().editorParams.values;
+                    const archaeologist = archaeologistValues.find(a => a.value === archaeologistId);
+                    return { id: archaeologistId, name: archaeologist?.label };
+                }),
+                botanists: (row.botanists || []).map(botanistId => {
+                    const botanistValues = siteTable.getColumn("botanists").getDefinition().editorParams.values;
+                    const botanist = botanistValues.find(b => b.value === botanistId);
+                    return { id: botanistId, name: botanist?.label };
+                }),
+                remarks: row.remarksSite,
+                coordinate: hasCoordinateValues
+                    ? {
+                        ...(coordinateSystemId && {
+                            coordinateSystem: {
+                                id: coordinateSystemId,
+                                label: [coordinateSystem?.prefLabel.en, coordinateSystem?.notation].filter(Boolean).join(" - ")
+                            }
+                        }),
+                        longitude:      row.coordinate.longitude,
+                        latitude:       row.coordinate.latitude,
+                        altitude:       row.coordinate.altitude,
+                        longitudeWgs84: row.coordinate.longitudeWgs84,
+                        latitudeWgs84:  row.coordinate.latitudeWgs84,
+                        remarks:        row.coordinate.remarksCoordinate,
+                    }
+                    : null,
+                address: row.address
+                    ? {
+                        country:       row.address.country,
+                        county:        row.address.county,
+                        district:      row.address.district,
+                        parish:        row.address.parish,
+                        streetOrPlace: row.address.street_or_place,
+                        town:          row.address.town,
+                    }
+                    : null,
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Sites.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 });
+
+document.getElementById("download-csv").addEventListener("click", function(){
+    if (activeTable === "siteTable") {
+        siteTable.download(
+            "csv", "ArboDat+_Download_Sites.csv"
+        );
+    }    
+});    
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    siteTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "siteTable") {
+        siteTable.download(
+            "xlsx",
+            "ArboDat+_Download_Sites.xlsx",
+            {sheetName:"ArboDat+ Sites"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    siteTable.download("html", "data.html", {style:true});
+    if (activeTable === "siteTable") {
+        siteTable.download(
+            "html",
+            "ArboDat+_Download_Sites.html",
+        );
+    }
 });

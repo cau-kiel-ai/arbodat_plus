@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,4 +29,11 @@ public interface ResultRepository extends JpaRepository <Result, UUID> {
                                          @Param("cf")        ClassificationConfer cf,
                                          @Param("restType")   RestType restType,
                                          @Param("stateOfPreservation")StateOfPreservation stateOfPreservation);
+
+    // Called per FEATURE (batch), not per sample -> no N+1
+    List<Result> findBySampleFeatureId(UUID featureId);
+
+    // Result<->AbsoluteDating pairs directly from the join table – avoids lazy loading of the collections (N+1)
+    @Query("select r.id, ad.id from Result r join r.absoluteDatingList ad where r.sample.id in :sampleIds")
+    List<Object[]> findAbsoluteDatingIdPairsBySampleIdIn(@Param("sampleIds") Collection<UUID> sampleIds);
 }

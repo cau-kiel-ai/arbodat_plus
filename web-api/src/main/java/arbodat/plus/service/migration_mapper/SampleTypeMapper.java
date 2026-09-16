@@ -31,6 +31,7 @@ public class SampleTypeMapper {
         // ArboDat+_sampleType
         // unknown
         sampleTypeMap.put("-99", "ArboDat+_sampleType_unknown");
+        sampleTypeMap.put(null, "ArboDat+_sampleType_unknown");
         // other
         sampleTypeMap.put("Sonst", "ArboDat+_sampleType_other");
     }

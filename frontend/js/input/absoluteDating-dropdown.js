@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Customise here --------------------------------------------------------------
+    // Customise here ---------------------------------------------------------------------
     const dropdown = document.getElementById("subsample_Dropdown");
     const clearIcon = document.getElementById("subsample_clearIcon");
     
@@ -8,34 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputField = document.getElementById("subsample");
     const submit_update_button = document.getElementById("absDating_submit_update_button");
 
-    const sample_dropdown = document.getElementById("absDating_sample_dropdown");
-    
     const literature_container = document.getElementById("absDating_literature_container");
-
-    // Attributes
-    const material_dropdown = document.getElementById("material");
-    const remarks_textarea = document.getElementById("absDating_remarks");
-    const datingMethod_dropdown = document.getElementById("dating_method");
-        // Dendro dating
-    const dendroLabInput = document.getElementById("dendro_lab");
-    const dendroNumberInput = document.getElementById("dendro_number");
-    const dendroAgeInput = document.getElementById("dendro_age");
-    const waneyEdgeCheckbox = document.getElementById("waney_edge");
-        // C14 dating
-    const c14LabDropdown = document.getElementById("c14_lab");
-    const c14NumberInput = document.getElementById("c14_number");
-    const c14AgeBPInput = document.getElementById("c14_age_bp");
-    const c14StdDevInput = document.getElementById("c14_std_dev");
-    const c14CalTextarea = document.getElementById("c14_calibration_bc_ad_2s");
-    const deltaC13Input = document.getElementById("delta_C13");
-    const c13DevInput = document.getElementById("c13_dev");
-    const pMCInput = document.getElementById("pMC");
-    const pMCDevInput = document.getElementById("pMC_dev");
-        // Other dating
-    const otherLabInput = document.getElementById("other_lab");
-    const otherNumberInput = document.getElementById("other_number");
-    const otherAgeInput = document.getElementById("other_age");
-    // -----------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------
 
     let activeIndex = -1;
     let suppressDropdown = false;
@@ -46,10 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
     inputField.addEventListener("focus", () => {
 
         // Check if sample is selcted
-        const sample_id = sample_dropdown.value;
+        const sample_id = absoluteDating_sample_dropdown.value;
         if (!sample_id) {
-            alert("before you can enter or select a subsample, you must select a sample");
-            sample_dropdown.focus();
+            toast.info("Before you can enter or select a subsample, you must select a sample.");
+            inputField.blur();
         }
 
         if (suppressDropdown) {
@@ -74,12 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             // Filter absoulte datings by selected sample
-            cachedItems = data.filter(item => item.sample.id === sample_id); // Customise here
+            cachedItems = data.filter(absoluteDating => absoluteDating.sample?.id === sample_id); // Customise here
             activeIndex = -1; // Reset the active index
             populateDropdown(cachedItems);
         })
         .catch(error => {
-        console.error('Error during absolute dating GET request:', error);
+            console.error('Error during absolute dating GET request:', error);
         });
 
         dropdown.classList.remove("hidden");
@@ -111,17 +85,19 @@ document.addEventListener("DOMContentLoaded", () => {
             selectItem(matchedItem);
         }
         else { // Reset Form
-            id.value = "";
+            id.value = '';
             // modify button: 'updatde' -> 'create'
             submit_update_button.innerHTML = "create";
             // Customise here -------------------------
-            absDating_literatureList = []
-            literature_container.innerHTML = "";
-
-            material_dropdown.value = '';
-            remarks_textarea.value = '';
-            datingMethod_dropdown.value = '';
-            datingMethod_dropdown.dispatchEvent(new Event('change'));
+            const selectedSiteValue    = absoluteDating_site_dropdown.value;
+            const selectedFeatureValue = absoluteDating_feature_dropdown.value;
+            const selectedSampleValue  = absoluteDating_sample_dropdown.value;
+            const subSampleValue = inputField.value;
+            resetAbsoluteDatingForm();
+            absoluteDating_site_dropdown.value    = selectedSiteValue;
+            absoluteDating_feature_dropdown.value = selectedFeatureValue;
+            absoluteDating_sample_dropdown.value  = selectedSampleValue;
+            inputField.value = subSampleValue;
             // ----------------------------------------
         }
     });
@@ -149,56 +125,22 @@ document.addEventListener("DOMContentLoaded", () => {
         // Customise here -------------------------------------------
         inputField.value = item.subSample;
         
-        // Reset literatureList and literature_container
-        absDating_literatureList = []
+        // Reset literature list and container
+        absoluteDatingLiteratureList = []
         literature_container.innerHTML = "";
 
-        // Add literatur to literatureList and literature_container
+        // Add literature to list and container
         item.literatureList.forEach(item => {
-            const literatureId = item.id;
-            const literatureTitle = item.title;
-
-            // Create JSON object to store the data
-            const literatureData = { id: literatureId };
-            
-            // Save object into the literature array
-            const index = absDating_literatureList.push(literatureData) - 1;
-
-            // Display the saved literature in a box under the form
-            const saved_literatureBox = document.createElement("div");
-            saved_literatureBox.style.border = "1px solid #ccc";
-            saved_literatureBox.style.padding = "10px";
-            saved_literatureBox.style.marginTop = "8px";
-            saved_literatureBox.style.marginBottom = "10px";
-            saved_literatureBox.style.marginLeft = "32%";
-            saved_literatureBox.style.width = "95%";
-            saved_literatureBox.style.backgroundColor = "#f9f9f9";
-
-            // And title and delete button
-            saved_literatureBox.innerHTML = `
-                <span style="
-                    display: inline-block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 95%;
-                ">${literatureTitle}</span>
-                <span style="color: red; float: right; cursor: pointer;" 
-                    onclick="deleteLiterature(this, ${index})">
-                    &#10005;
-                </span>
-            `;
-            
-            // Append the saved lit box to the container
-            literature_container.appendChild(saved_literatureBox);
+            const itemText = formatLiterature(item);            
+            const literatureData = { id: item.id };
+            const index = absoluteDatingLiteratureList.push(literatureData) - 1;
+            addLiteratureItemBox(itemText, index, "absoluteDatingLiteratureList", "absDating_literature_container");
         });
         
-
-        material_dropdown.value = item.material?.id ?? '';
-        remarks_textarea.value = item.remarks;        
-        datingMethod_dropdown.value = item.datingMethod?.id ?? '';
+        $('#material').val(item.material?.id ?? '').trigger('change');
+        remarksTextarea.value = item.remarks;
+        $('#dating_method').val(item.datingMethod?.id ?? '').trigger('change');
         // dating method accordions
-        datingMethod_dropdown.dispatchEvent(new Event('change'));
         selected_datingMethod = datingMethodDropdown.selectedOptions[0].text;
         if (selected_datingMethod === "Dendrochronology") {
             dendroLabInput.value = item.dendrochronologicalDating?.laboratory?.label ?? '';
@@ -206,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dendroAgeInput.value = item.dendrochronologicalDating?.dendrochronologicalAge ?? '';
             waneyEdgeCheckbox.checked = item.dendrochronologicalDating?.waneyEdge ?? false;
         } else if (selected_datingMethod === "Radiocarbon Dating") {
-            c14LabDropdown.value = item.c14Dating?.c14Laboratory?.id ?? '';
+            $('#c14_lab').val(item.c14Dating?.c14Laboratory?.id ?? '').trigger('change');
             c14NumberInput.value = item.c14Dating?.number ?? '';
             c14AgeBPInput.value = item.c14Dating?.c14AgeBp ?? '';
             c14StdDevInput.value = item.c14Dating?.c14StdDev ?? '';
@@ -232,13 +174,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // modify button: 'updatde' -> 'create'
         submit_update_button.innerHTML = "create";
         // Customise here -------------------------
-        absDating_literatureList = []
-        literature_container.innerHTML = "";
-        
-        material_dropdown.value = '';
-        remarks_textarea.value = '';
-        datingMethod_dropdown.value = '';
-        datingMethod_dropdown.dispatchEvent(new Event('change'));
+        const selectedSiteValue    = absoluteDating_site_dropdown.value;
+        const selectedFeatureValue = absoluteDating_feature_dropdown.value;
+        const selectedSampleValue  = absoluteDating_sample_dropdown.value;
+        resetAbsoluteDatingForm();
+        absoluteDating_site_dropdown.value    = selectedSiteValue;
+        absoluteDating_feature_dropdown.value = selectedFeatureValue;
+        absoluteDating_sample_dropdown.value  = selectedSampleValue;
         // ----------------------------------------
 
         inputField.focus();

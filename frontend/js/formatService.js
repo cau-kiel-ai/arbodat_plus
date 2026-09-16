@@ -86,8 +86,8 @@ function formatFraction(item) {
 
   return `${orgOrMin}` +
     `${sieveSize ? ` ${sieveSize}` : ''}` +
-    `${fractionAnalyzed ? ` ${fractionAnalyzed}` : ''}` +
-    `${standardMultiplier ? ` ${standardMultiplier}` : ''}`
+    `${fractionAnalyzed ? ` ${fractionAnalyzed}` : ''}`
+    // + `${standardMultiplier ? ` (standard multiplier: ${standardMultiplier})` : ''}`
 }
 
 function formatDendroDating(item) {
@@ -97,9 +97,15 @@ function formatDendroDating(item) {
   const age = item.dendrochronologicalAge;
   const waneyEdge = item.waneyEdge;
 
-  return `${lab ? lab : ''} ${num ? num : ''}` +
-    `${age ? `, age: ${age ?? 'undefined'}` : ''}` +
+  // Lab + num
+  const prefix = [lab, num].filter(Boolean).join(' ');
+
+  return (
+    prefix +
+    (age && prefix ? ', ' : '') +
+    `${age ? `age: ${age ?? 'undefined'}` : ''}` +
     `${waneyEdge === true ? ' (waneyEdge)' : ''}`
+  );
 }
 
 function formatC14Dating(item) {
@@ -118,11 +124,17 @@ function formatC14Dating(item) {
   const pmc = item.pmc;
   const pmcUncertainty = item.pmcUncertainty;
 
-  return `${c14lab ? c14lab : ''} ${num ? num : ''}` +
-    `${c14AgeBp ? `, C14-age BP: ${c14AgeBp} ± ${c14StdDev}` : ''}` +
+  // Lab + num
+  const prefix = [c14lab, num].filter(Boolean).join(' ');
+
+  return (
+    prefix +
+    (c14AgeBp && prefix ? ', ' : '') +
+    `${c14AgeBp ? `C14-age BP: ${c14AgeBp} ± ${c14StdDev}` : ''}` +
     `${c14CalibrationBcAd2s ? `, C14 cal BC/AD (2s): ${c14CalibrationBcAd2s}` : ''}` +
     `${deltaC13 ? `, Delta C13: ${deltaC13} ± ${deltaC13Uncertainty}` : ''}` +
     `${pmc ? `, pMC: ${pmc} ± ${pmcUncertainty}` : ''}`
+  );
 }
 
 function formatOtherDating(item) {
@@ -131,8 +143,14 @@ function formatOtherDating(item) {
   const num = item.number;
   const age = item.ageDivers;
 
-  return `${lab ? lab : ''} ${num ? num : ''}` +
-    `${age ? `, age: ${age ?? 'undefined'}` : ''}`
+  // Lab + num
+  const prefix = [lab, num].filter(Boolean).join(' ');
+
+  return (
+    prefix +
+    (age && prefix ? ', ' : '') +
+    `${age ? `age: ${age ?? 'undefined'}` : ''}`
+  );
 }
 
 function formatDatings(item) {

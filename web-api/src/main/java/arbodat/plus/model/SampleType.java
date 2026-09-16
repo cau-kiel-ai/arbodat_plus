@@ -17,6 +17,12 @@ public class SampleType {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @JsonIgnore
     @OneToMany(mappedBy = "sampleType")
     private Set<Sample> sampleList;

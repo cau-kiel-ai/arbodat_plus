@@ -45,7 +45,7 @@ public class C14Dating implements Serializable {
     private C14Laboratory c14Laboratory;
 
     @Column(name = "number")
-    private Integer number;
+    private String number;
     // -------------------------------------
 
     @OneToOne(mappedBy = "c14Dating")

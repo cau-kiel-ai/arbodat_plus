@@ -1,7 +1,21 @@
-
 let researchProjectTable;
 
-async function buildResearchProjectTable() {    
+async function buildResearchProjectTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET research projects ----------------------------------------------------
+    let researchProjects = [];
+    try {
+        const response = await axios.get("http://localhost:8080/research_projects");
+        researchProjects = response.data;
+    } catch (error) {
+        console.error("Error loading research projects:", error);
+    }
 
     // GET sites ----------------------------------------------------------------
     let sites = [];
@@ -12,19 +26,40 @@ async function buildResearchProjectTable() {
         console.error("Error loading sites:", error)
     }
 
+    function formatSites(sites, siteList) {
+        if (!siteList) return "";
+
+        // HTML download
+        if (!Array.isArray(siteList)) return siteList;
+
+        return siteList
+            .map(id => {
+                const site = sites.find(site => site.id === id)
+                return site?.label ?? id ?? "";
+            })
+            .filter(Boolean)
+            .join(", ");
+    }
+
+    function formatLicense(licenseId){
+        if (!licenseId) return "";
+        const license = cachedLicenses.find(license => license.uri === licenseId) || null;
+        return license?.prefLabel.en ?? licenseId;
+    }
+
     // Create Table -------------------------------------------------------------
     researchProjectTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height:"100%",
+        data: researchProjects,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*project name", field:"projectName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"*project name", field:"projectName", titleDownload:"projectName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"funder", field:"funder", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"authorisation number", field:"authorisationNumber", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"license", field:"license.id", headerSort:false,
+            {title:"authorisation number", field:"authorisationNumber", titleDownload:"authorisationNumber", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"license", titleDownload:"license", field:"license.id", headerSort:false,
                 editor:"list", editorParams:{
                     values: [
                         { value: null, label: "none" },
@@ -48,14 +83,11 @@ async function buildResearchProjectTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const license = cachedLicenses.find(license => license.uri === value) || null;
-                    return license?.prefLabel.en || "";
-                },
+                formatter: cell => formatLicense(cell.getValue()),
+                accessorDownload: value => formatLicense(value),
             },
-            {title:"export file name", field:"exportFileName", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"site list (multiple selection)", field: "siteList", headerSortTristate:true,
+            {title:"export file name", field:"exportFileName", titleDownload:"exportFileName", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"site list (multiple selection)", titleDownload:"siteList", field: "siteList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map site objects only to site id
                     return Array.isArray(value) ? value.map(site => site.id? site.id : site) : [];
@@ -82,16 +114,8 @@ async function buildResearchProjectTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const siteIds = cell.getValue();                
-                    if (Array.isArray(siteIds)) {
-                        return siteIds
-                                .map(id => {
-                                    const site = sites.find(site => site.id === id)
-                                    return site?.label;})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatSites(sites, cell.getValue()),
+                accessorDownload: value => formatSites(sites, value),
             }
         ],
         initialSort: [
@@ -100,13 +124,13 @@ async function buildResearchProjectTable() {
     });
 
 
-    // GET research projects and populate table ---------------------------------
-    axios.get("http://localhost:8080/research_projects")
-    .then(response => {
-        researchProjectTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading research projects:", error));
-    
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "researchProjectTable";
+
 
     // PUT: update research project ---------------------------------------------
     researchProjectTable.on("cellEdited", async function(cell){
@@ -114,7 +138,7 @@ async function buildResearchProjectTable() {
         const editedField = cell.getField();
         const newValue = cell.getValue();
 
-        // Update all selected rows ------------------------------
+        // Update all selected rows ---------------------------
         const selectedRows = researchProjectTable.getSelectedRows();
         const editedRow = cell.getRow();
         if (!selectedRows.includes(editedRow)) {
@@ -215,20 +239,68 @@ async function buildResearchProjectTable() {
     });
 
 }
- // Export table ---------------------------------------------------------
 
-document.getElementById("download-csv").addEventListener("click", function(){
-    researchProjectTable.download("csv", "data.csv");
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "researchProjectTable") {
+        const rawData = researchProjectTable.getData("active");
+        
+        const transformed = rawData.map(row => {
+            const licenseId = row.license?.id ?? null;
+            const license   = cachedLicenses.find(l => l.uri === licenseId);
+            
+            return {
+                id: row.id,
+                projectName: row.projectName,
+                funder: row.funder,
+                authorisationNumber: row.authorisationNumber,
+                license: licenseId
+                    ? { id: licenseId, label: license?.prefLabel.en ?? "" }
+                    : null,
+                exportFileName: row.exportFileName,
+                siteList: (row.siteList || []).map(siteId => {
+                    const siteValues = researchProjectTable.getColumn("siteList").getDefinition().editorParams.values;
+                    const site = siteValues.find(s => s.value === siteId);
+                    const cleanLabel = site?.label.replace(/\s*\(.*\)$/, "") ?? ""; // Regex to clip " (project names)"
+                    return { id: siteId, label: cleanLabel };
+                }),
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_ResearchProjects.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 });
 
-document.getElementById("download-json").addEventListener("click", function(){
-    researchProjectTable.download("json", "data.json");
+document.getElementById("download-csv").addEventListener("click", function(){
+    if (activeTable === "researchProjectTable") {
+        researchProjectTable.download(
+            "csv",
+            "ArboDat+_Download_ResearchProjects.csv"
+        );        
+    }
 });
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    researchProjectTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "researchProjectTable") {
+        researchProjectTable.download(
+            "xlsx",
+            "ArboDat+_Download_ResearchProjects.xlsx",
+            {sheetName:"ArboDat+ Research Projects"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    researchProjectTable.download("html", "data.html", {style:true});
+    if (activeTable === "researchProjectTable") {
+        researchProjectTable.download(
+            "html",
+            "ArboDat+_Download_ResearchProjects.html"
+        );
+    }
 });

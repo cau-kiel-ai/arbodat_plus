@@ -1,14 +1,48 @@
-
 document.addEventListener("DOMContentLoaded", async function () {
+    const table = getTableFromURL()
+    if (table) {
+        applyTable(table);
+    }
+
     // Get and update dante attributes
     await updateBackendDanteAttributes();
 });
 
-document.getElementById("tableSelector").addEventListener("change", (e) => {
-    renderTable(e.target.value);
+const tableSelector = document.getElementById("tableSelector");
+
+tableSelector.addEventListener("change", (e) => {
+    const table = e.target.value;
+    setTableInURL(table);
+    renderTable(table);
 });
 
-function renderTable(tableId) {
+// Support Back/Forward
+window.addEventListener("popstate", () => {
+    const table = getTableFromURL();
+    applyTable(table);
+});
+
+function getTableFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("table");
+}
+
+function setTableInURL(table) {
+    // Change URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set("table", table);
+    window.history.pushState({}, "", url);
+}
+
+function applyTable(table) {
+    tableSelector.value = table;
+    renderTable(table);
+}
+
+
+let activeTable = null;
+
+function renderTable(table) {
 
     const container = document.getElementById("table");
 
@@ -16,45 +50,45 @@ function renderTable(tableId) {
     container.innerHTML = "";
     document.getElementById("deleteRows-button").classList.add("hidden");
 
-    switch (tableId) {
-        case "researchProject-table":
+    switch (table) {
+        case "researchProject":
             buildResearchProjectTable();
             break;
 
-        case "institution-table":
+        case "institution":
             buildInstitutionTable();
             break;
         
-        case "user-table":
+        case "user":
             buildUserTable();
             break;
 
-        case "site-table":
-            buildSiteTable();
-            break;
-
-        case "feature-table":
-            buildFeatureTable();
+        case "author":
+            buildAuthorTable();
             break;
         
-        case "sample-table":
-            buildSampleTable();
-            break;
-
-        case "dating-table":
-            buildDatingTable();
-            break;
-
-        case "result-table":
-            buildResultTable();
-            break;
-        
-        case "literature-table":
+        case "literature":
             buildLiteratureTable();
             break;
 
-        case "author-table":
-            buildAuthorTable();
+        case "site":
+            buildSiteTable();
+            break;
+
+        case "feature":
+            buildFeatureTable();
+            break;
+        
+        case "sample":
+            buildSampleTable();
+            break;
+
+        case "dating":
+            buildDatingTable();
+            break;
+
+        case "result":
+            buildResultTable();
             break;
     
         default:

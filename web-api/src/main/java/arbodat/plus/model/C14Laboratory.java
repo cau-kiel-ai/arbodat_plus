@@ -18,6 +18,9 @@ public class C14Laboratory implements Serializable {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "notation")
+    private String notation;
+
     @JsonIgnore
     @OneToMany(mappedBy = "c14Laboratory")
     private Set<C14Dating> c14DatingList;

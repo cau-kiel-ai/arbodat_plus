@@ -27,4 +27,35 @@ app.get("/nominatim-reverse", async (req, res) => {
     res.json(data);
 });
 
+// let cache = null;
+// let cacheTime = 0;
+// const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+
+// app.get("/arbodat-taxonomy", async (req, res) => {
+//     const now = Date.now();
+
+//     // Cache valid
+//     if (cache && (now - cacheTime) < CACHE_TTL) {
+//         return res.json(cache);
+//     }
+
+//     const url = "https://api.dante.gbv.de/export/download/arbodat_taxonomy/ArboDat-Taxonomy/arbodat_taxonomy__ArboDat-Taxonomy.jskos.jsonld";
+
+//     const response = await fetch(url);
+
+//     if (!response.ok) {
+//         const text = await response.text();
+//         console.error("DANTE error:", text);
+//         return res.status(response.status).send({ error: "Failed to fetch Arbodat Taxonomy" });
+//     }
+
+//     const data = await response.json();
+
+//     // Refresh cache
+//     cache = data;
+//     cacheTime = now;
+
+//     res.json(data);
+// });
+
 app.listen(PORT, () => console.log(`Node proxy running on port ${PORT}`));

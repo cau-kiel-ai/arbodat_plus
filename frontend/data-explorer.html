@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">    
+<html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>ArboDat+ Explorer</title>
+        <title>ArboDat+ Data Explorer</title>
 
         <link href="img/favicon.png" rel="icon">
         <link href="css/data-explorer.min.css" rel="stylesheet">
@@ -31,62 +31,98 @@
 
         <!-- Export includes -->
         <script type="text/javascript" src="https://oss.sheetjs.com/sheetjs/xlsx.full.min.js"></script>
+
+        <!-- Spinner style -->
+        <style>
+        /* Loading Spinner (Circular) */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            display: none; /* Initially hidden */
+            margin: 20px auto;
+        }
+
+        /* Spinner Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        </style>
     </head>
 
     <body>
 
-        <header class="header_img_input_html">
-        <h1> <img src="img/logo1.png" alt="logo" id="logo_input_html"> </h1>
+        <header class="header">
+            <h1> <img src="img/logo_arbodat_plus.png" alt="logo_arbodat_plus"> </h1>
         </header>
 
-        <div class="table-wrapper">
-
-            <div class="dropdown-container">
-                <select id="tableSelector">
-                    <option value="" disabled selected hidden>select table</option>
-                    <option value="researchProject-table">research projects</option>
-                    <option value="institution-table">institutions</option>
-                    <option value="user-table">users</option>
-                    <option value="site-table">sites</option>
-                    <option value="feature-table">features</option>
-                    <option value="sample-table">samples</option>
-                    <option value="dating-table">datings</option>
-                    <option value="result-table">results</option>
-                    <option value="literature-table">literature</option>
-                    <option value="author-table">authors</option>
-                </select>
-            </div>
+        <div class="table-wrapper">            
 
             <div class="button-container">
-                <button id="deleteRows-button" class="MyButton hidden">Delete selected rows</button>
-            </div>                
+                <button id="deleteRows-button" class="deleteButton hidden">
+                    Delete selected Rows
+                </button>
+
+                <div class="dropdown-container">
+                    Select&nbsp;Table:&nbsp;&nbsp;
+                    <select id="tableSelector" style="padding-top: 4px; padding-bottom: 4px;">
+                        <option value="" disabled selected hidden></option>
+                        <option value="researchProject">research projects</option>
+                        <option value="institution">institutions</option>
+                        <option value="user">users</option>
+                        <option value="author">authors</option>
+                        <option value="literature">literature</option>
+                        <option value="site">sites</option>
+                        <option value="feature">features</option>
+                        <option value="sample">samples</option>
+                        <option value="dating">datings</option>
+                        <option value="result">results</option>
+                    </select>
+                </div>
+
+                Export Table:
+
+                <button id="download-json" class="exportButton">
+                    JSON
+                </button>
+                <button id="download-csv" class="exportButton">
+                    CSV
+                </button>
+                <button id="download-xlsx" class="exportButton">
+                    XLSX
+                </button>
+                <button id="download-html" class="exportButton">
+                    HTML
+                </button>
+            </div>
+
+            <!-- Spinner -->
+            <div id="tableSpinner" class="spinner"></div>
 
             <div class="table-container">
                 <div id="table"></div>
             </div>
-
-            <br><br>
-                <div>
-                    <button class="ExportButton" id="download-csv">Download CSV</button>
-                    <button class="ExportButton" id="download-json">Download JSON</button>
-                    <button class="ExportButton" id="download-xlsx">Download XLSX</button>
-                    <button class="ExportButton" id="download-html">Download HTML</button>
-                </div>
+            
         </div>
 
         <!-- scripts --> 
         <script src="js/data-explorer/renderTable.js"></script>
+        <script src="js/data-explorer/helper.js"></script>
 
         <script src="js/data-explorer/researchProject-table.js"></script>
         <script src="js/data-explorer/institution-table.js"></script>
         <script src="js/data-explorer/user-table.js"></script>
+        <script src="js/data-explorer/author-table.js"></script>
+        <script src="js/data-explorer/literature-table.js"></script>
         <script src="js/data-explorer/site-table.js"></script>
         <script src="js/data-explorer/feature-table.js"></script>
         <script src="js/data-explorer/sample-table.js"></script>
         <script src="js/data-explorer/dating-table.js"></script>
         <script src="js/data-explorer/result-table.js"></script>
-        <script src="js/data-explorer/literature-table.js"></script>
-        <script src="js/data-explorer/author-table.js"></script>
 
         <script src="js/danteAttributes/fetchDanteAttribute.js"></script>
         <script src="js/danteAttributes/updateBackendDanteAttributes.js"></script>
@@ -95,9 +131,9 @@
 
         <footer>
             <ul>
-                <li><a href="copyright.html" target="_blank">license </a></li>
-                <li>Version 1.3</li>
-                <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+                <li><a href="license.html" target="_blank">License</a></li>
+                <li>Version 4.0.0</li>
+                <li><a href="contact.html" target="_blank">Contact<strong> ☏ </strong></a></li>
             </ul>
         </footer>
 
