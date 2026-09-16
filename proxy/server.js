@@ -58,4 +58,4 @@ app.get("/nominatim-reverse", async (req, res) => {
 //     res.json(data);
 // });
 
-app.listen(PORT, () => console.log(`Node proxy running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
