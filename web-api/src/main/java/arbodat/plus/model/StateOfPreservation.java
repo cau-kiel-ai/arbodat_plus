@@ -17,6 +17,12 @@ public class StateOfPreservation {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @JsonIgnore
     @OneToMany(mappedBy = "stateOfPreservation")
     private Set<Result> resultList;

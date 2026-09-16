@@ -31,6 +31,9 @@ public class DanteAttributeController {
     TaxCodeRepository taxCodeRepository;
 
     @Autowired
+    CoordinateSystemRepository coordinateSystemRepository;
+
+    @Autowired
     FeatureTypeRepository featureTypeRepository;
 
     @Autowired
@@ -44,6 +47,12 @@ public class DanteAttributeController {
 
     @Autowired
     SampleInvestigatedRepository sampleInvestigatedRepository;
+
+    @Autowired
+    MaterialRepository materialRepository;
+
+    @Autowired
+    C14LaboratoryRepository c14LaboratoryRepository;
 
     @Autowired
     DatingMethodRepository datingMethodRepository;
@@ -73,6 +82,9 @@ public class DanteAttributeController {
     @GetMapping("/tax_code")
     public List<TaxCode> getAllTaxCode() { return taxCodeRepository.findAll(); }
 
+    @GetMapping("/coordinate_system")
+    public List<CoordinateSystem> getAllCoordinateSystem() { return coordinateSystemRepository.findAll(); }
+
     @GetMapping("/feature_type")
     public List<FeatureType> getAllFeatureType() { return featureTypeRepository.findAll(); }
 
@@ -87,6 +99,12 @@ public class DanteAttributeController {
 
     @GetMapping("/sample_investigated")
     public List<SampleInvestigated> getAllSampleInvestigated() { return sampleInvestigatedRepository.findAll(); }
+
+    @GetMapping("/material")
+    public List<Material> getAllMaterial() { return materialRepository.findAll();}
+
+    @GetMapping("/c14_laboratory")
+    public List<C14Laboratory> getAllC14Laboratory() { return c14LaboratoryRepository.findAll();}
 
     @GetMapping("/dating_method")
     public List<DatingMethod> getAllDatingMethod() { return datingMethodRepository.findAll();}
@@ -164,6 +182,19 @@ public class DanteAttributeController {
                             }
                         }
 
+                        // coordinate -------------------------------------------------------------
+                        case "coordinateSystem" -> {
+                            try {
+                                // Convert map to list of ‘coordinateSystem’
+                                List<CoordinateSystem> coordinateSystemList = objectMapper.convertValue(list, new TypeReference<List<CoordinateSystem>>() {
+                                });
+
+                                coordinateSystemRepository.saveAll(coordinateSystemList);
+                            } catch (Exception e) {
+                                throw new IllegalArgumentException("Error converting to List<CoordinateSystem>", e);
+                            }
+                        }
+
                         // feature -------------------------------------------------------------------
                         case "featureType" -> {
                             try {
@@ -227,6 +258,18 @@ public class DanteAttributeController {
                         }
 
                         // absolute dating --------------------------------------------------------
+                        case "material" -> {
+                            try {
+                                // Convert map to list of ‘material’
+                                List<Material> materialList = objectMapper.convertValue(list, new TypeReference<List<Material>>() {
+                                });
+
+                                materialRepository.saveAll(materialList);
+                            } catch (Exception e) {
+                                throw new IllegalArgumentException("Error converting to List<Material>", e);
+                            }
+                        }
+
                         case "datingMethod" -> {
                             try {
                                 // Convert map to list of ‘datingMethod’
@@ -236,6 +279,18 @@ public class DanteAttributeController {
                                 datingMethodRepository.saveAll(datingMethodList);
                             } catch (Exception e) {
                                 throw new IllegalArgumentException("Error converting to List<DatingMethod>", e);
+                            }
+                        }
+
+                        case "c14Laboratory" -> {
+                            try {
+                                // Convert map to list of ‘c14Laboratory’
+                                List<C14Laboratory> c14LaboratoryList = objectMapper.convertValue(list, new TypeReference<List<C14Laboratory>>() {
+                                });
+
+                                c14LaboratoryRepository.saveAll(c14LaboratoryList);
+                            } catch (Exception e) {
+                                throw new IllegalArgumentException("Error converting to List<C14Laboratory>", e);
                             }
                         }
 

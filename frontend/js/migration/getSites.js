@@ -1,22 +1,20 @@
 async function getSites() {
-
-  const spinner = document.getElementById('spinner');
-  spinner.style.display = 'block';
+  showLoading();
 
   await updateBackendDanteAttributes();
 
   // Get 'ArchBotDaten.mdb' file from the file upload
   const dataFile = document.getElementById('dataFile');
   if (dataFile.files.length === 0) {
-    alert("Please select a 'ArchBotDaten.mdb' file.");
-    spinner.style.display = 'none'; // Hide spinner
+    toast.info("Please select a 'ArchBotDaten.mdb' file.");
+    hideLoading();
     return;
   }
   // Check if 'ArchBotStrukDat.mdb' file is also uploaded
   const strukDataFile = document.getElementById('strukDataFile');
   if (strukDataFile.files.length === 0) {
-    alert("Please select a 'ArchBotStrukDat.mdb' file.");
-    spinner.style.display = 'none'; // Hide spinner
+    toast.info("Please select a 'ArchBotStrukDat.mdb' file.");
+    hideLoading() = 'none';
     return;
   }
 
@@ -46,8 +44,7 @@ async function getSites() {
   } catch (error) {
       console.error("Error uploading file", error);
   } finally {
-    // Hide the spinner after the process is complete (success or failure)
-    spinner.style.display = 'none';
+    hideLoading();
   }
 }
 
@@ -65,6 +62,7 @@ function populateSites(sites) {
 
     // Second column: Selection checkbox
     const checkboxCell = document.createElement("td");
+    checkboxCell.style = "text-align: right;"
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.value = site;

@@ -11,7 +11,7 @@ COPY ./bootstrap-scss ./bootstrap-scss
 RUN find ./sass -name "*.scss" -exec sh -c 'mv "$1" "${1%.scss}.min.scss"' _ {} \;
 
 # Install dart-sass globally
-RUN npm install -g sass
+RUN npm install -g sass@1.62.1
 
 # Compile SCSS to CSS
 RUN sass --style=compressed ./sass:./css 

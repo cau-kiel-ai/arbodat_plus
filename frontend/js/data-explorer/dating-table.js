@@ -1,6 +1,39 @@
 let datingTable;
 
 async function buildDatingTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET absolute datings --------------------------------------------------------------
+    let absoluteDatings = [];
+    try {
+        const response = await axios.get("http://localhost:8080/absolute_datings");
+        absoluteDatings = response.data;
+    } catch (error) {
+        console.error("Error loading absolute datings:", error);
+    }
+
+    // GET sites --------------------------------------------------------------
+    let sites = [];
+    try {
+        const response = await axios.get("http://localhost:8080/sites");
+        sites = response.data;
+    } catch (error) {
+        console.error("Error loading sites:", error)
+    }
+
+    // GET features --------------------------------------------------------------
+    let features = [];
+    try {
+        const response = await axios.get("http://localhost:8080/features");
+        features = response.data;
+    } catch (error) {
+        console.error("Error loading features:", error)
+    }
 
     // GET samples --------------------------------------------------------------
     let samples = [];
@@ -23,24 +56,61 @@ async function buildDatingTable() {
     // GET materials ------------------------------------------------------------
     await fetchDanteAttribute("material");
 
+    function formatMaterial(materialId){
+        if (!materialId) return "";
+        const material = cachedMaterials.find(m => m.uri === materialId) || null;
+        return material?.prefLabel.en ?? materialId;
+    }
+
+    // GET dating methods -------------------------------------------------------
+    await fetchDanteAttribute("datingMethod");
+
+    function formatDatingMethod(datingMethodId){
+        if (!datingMethodId) return "";
+        const datingMethod = cachedDatingMethods.find(dm => dm.uri === datingMethodId) || null;
+        return datingMethod?.prefLabel.en ?? datingMethodId;
+    }
+
+    function formatDendroDat(dendroDatingItem){
+        if (!dendroDatingItem) return "";
+        return formatDendroDating(dendroDatingItem);
+    }
+
+    function formatC14Dat(c14DatingItem){
+        if (!c14DatingItem) return "";
+        return formatC14Dating(c14DatingItem);
+    }
+
+    function formatOtherDat(otherDatingItem){
+        if (!otherDatingItem) return "";
+        return formatOtherDating(otherDatingItem);
+    }
+    
+
     // Create Table -------------------------------------------------------------
     datingTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: absoluteDatings,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*subsample", field:"subSample", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title: "*sample", field:"sample.id", headerSortTristate:true,
-                editor:"list", editorParams:{
-                    values: samples.map(item => ({
-                            value: item.id,
-                            label: item.label
-                        }))
-                    ,
-                },
+            {title:"*subsample", titleDownload:"subSample", field:"subSample", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title: "*sample", titleDownload:"sample", field:"sample.id", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const featureId = rowData?.sample.feature.id;
+
+                    return {
+                        values: samples
+                            .filter(item => item.feature?.id === featureId)
+                            .map(item => ({
+                                value: item.id,
+                                label: item.label
+                            }))
+                    };
+                },                
                 headerFilter:"list", headerFilterParams: {
                     values: samples.map(item => ({
                             value: item.id,
@@ -54,13 +124,72 @@ async function buildDatingTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    const sample = samples.find(item => item.id === value) || null;
-                    return sample?.label || "";
-                }
+                formatter: cell => formatSample(samples, cell.getValue()),
+                accessorDownload: value => formatSample(samples, value),
             },
-            {title: "literature list (multiple selection)", field:"literatureList", headerSortTristate:true,
+            {title: "*feature", titleDownload:"feature", field:"sample.feature.id", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const siteId = rowData?.sample.feature.site.id;
+
+                    return {
+                        values: features
+                            .filter(item => item.site?.id === siteId)
+                            .map(item => ({
+                                value: item.id,
+                                label: item.label
+                            }))
+                    };
+                },
+                headerFilter:"list", headerFilterParams: {
+                    values: features.map(item => ({
+                            value: item.id,
+                            label: item.label
+                    })),
+                    multiselect: true
+                },
+                headerFilterFunc: function(headerValue, rowValue) {
+                    if (!headerValue || (Array.isArray(headerValue) && headerValue.length === 0)) {
+                        return true;
+                    }
+                    return headerValue.includes(rowValue);
+                },
+                formatter: cell => formatFeature(features, cell.getValue()),
+                accessorDownload: value => formatFeature(features, value),
+            },
+            {title: "*site", titleDownload:"site", field:"sample.feature.site.id", headerSortTristate:true,
+                editor:"list", editorParams:{
+                    values: sites.map(item => ({
+                            value: item.id,
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
+                        }))
+                    ,
+                },
+                headerFilter:"list", headerFilterParams: {
+                    values: sites.map(item => ({
+                            value: item.id,
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
+                    })),
+                    multiselect: true
+                },
+                headerFilterFunc: function(headerValue, rowValue) {
+                    if (!headerValue || (Array.isArray(headerValue) && headerValue.length === 0)) {
+                        return true;
+                    }
+                    return headerValue.includes(rowValue);
+                },
+                formatter: cell => formatSite(sites, cell.getValue()),
+                accessorDownload: value => formatSite(sites, value),
+            },
+            {title: "literature list (multiple selection)", titleDownload:"literatureList", field:"literatureList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -89,16 +218,8 @@ async function buildDatingTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const literatureIds = cell.getValue();
-                    if (Array.isArray(literatureIds)) {
-                        return literatureIds
-                                .map(id => {
-                                    const lit = literature.find(item => item.id === id)
-                                    return formatLiterature(lit)})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatLit(literature, cell.getValue()),
+                accessorDownload: value => formatLit(literature, value),
             },
             {title:"material", field:"material.id", headerSortTristate:true,
                 editor:"list", editorParams:{
@@ -109,7 +230,7 @@ async function buildDatingTable() {
                             label: item.prefLabel.en
                         }))
                     ],
-                    emptyValue:null             
+                    emptyValue:null
                 },
                 headerFilter:true, headerFilterParams: {
                     values: cachedMaterials.map(item => ({
@@ -124,25 +245,12 @@ async function buildDatingTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const material = cachedMaterials.find(item => item.uri === value) || null;
-                    return material?.prefLabel.en || "";
-                },
+                formatter: cell => formatMaterial(cell.getValue()),
+                accessorDownload: value => formatMaterial(value),
             },
             {title:"remarks", field:"remarks", editor:"input", headerFilter:true, headerSort:false},
-            {title:"dating method", field:"datingMethod.id", headerSortTristate:true,
-                editor:"list", editorParams:{
-                    values: [
-                        { value: null, label: "none" },
-                        ...cachedDatingMethods.map(item => ({
-                            value: item.uri,
-                            label: item.prefLabel.en
-                        }))
-                    ],
-                    emptyValue:null             
-                },
-                headerFilter:true, headerFilterParams: {
+            {title:"dating method", titleDownload:"datingMethod", field:"datingMethod.id", headerSortTristate:true,
+                headerFilter:"list", headerFilterParams: {
                     values: cachedDatingMethods.map(item => ({
                             value: item.uri,
                             label: item.prefLabel.en
@@ -155,13 +263,10 @@ async function buildDatingTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const datingMethod = cachedDatingMethods.find(item => item.uri === value) || null;
-                    return datingMethod?.prefLabel.en || "";
-                },
+                formatter: cell => formatDatingMethod(cell.getValue()),
+                accessorDownload: value => formatDatingMethod(value),
             },
-            {title:"dendrochronological dating", field:"dendrochronologicalDating", headerSortTristate:true,
+            {title:"dendrochronological dating", titleDownload:"dendrochronologicalDating", field:"dendrochronologicalDating", headerSortTristate:true,
                 headerFilter:true,
                 headerFilterFunc: function(headerValue, rowValue) {
                     if (!headerValue) return true;
@@ -172,12 +277,14 @@ async function buildDatingTable() {
 
                     return label.includes(header);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    return value ? formatDendroDating(value) : '';
+                formatter: cell => {
+                    const val = cell.getValue();
+                    if (typeof val === "string") return val; // bereits durch accessorDownload formatiert
+                    return formatDendroDat(val);
                 },
+                accessorDownload: value => formatDendroDat(value)
             },
-            {title:"C14 dating", field:"c14Dating", headerSortTristate:true,
+            {title:"C14 dating", titleDownload:"c14Dating", field:"c14Dating", headerSortTristate:true,
                 headerFilter:true,
                 headerFilterFunc: function(headerValue, rowValue) {
                     if (!headerValue) return true;
@@ -188,12 +295,14 @@ async function buildDatingTable() {
 
                     return label.includes(header);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    return value ? formatC14Dating(value) : '';
+                formatter: cell => {
+                    const val = cell.getValue();
+                    if (typeof val === "string") return val;
+                    return formatC14Dat(val);
                 },
+                accessorDownload: value => formatC14Dat(value)
             },
-            {title:"other dating", field:"otherDating", headerSortTristate:true,
+            {title:"other dating", titleDownload:"otherDating", field:"otherDating", headerSortTristate:true,
                 headerFilter:true,
                 headerFilterFunc: function(headerValue, rowValue) {
                     if (!headerValue) return true;
@@ -204,10 +313,12 @@ async function buildDatingTable() {
 
                     return label.includes(header);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    return value ? formatOtherDating(value) : '';
+                formatter: cell => {
+                    const val = cell.getValue();
+                    if (typeof val === "string") return val;
+                    return formatOtherDat(val);
                 },
+                accessorDownload: value => formatOtherDat(value)
             },
         ],
         initialSort: [
@@ -215,12 +326,14 @@ async function buildDatingTable() {
         ]
     });
 
-    // GET absolute datings and populate table ----------------------------------
-    axios.get("http://localhost:8080/absolute_datings")
-    .then(response => {
-        datingTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading absolute datings:", error));
+
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "datingTable";
+
 
     // PUT: update absolute datings ---------------------------------------------
     datingTable.on("cellEdited", async function(cell){
@@ -258,6 +371,7 @@ async function buildDatingTable() {
 
             const payload = {
                 ...absolute_dating,
+                sample: absolute_dating.sample ? { id: absolute_dating.sample.id } : null,
                 literatureList: literatureAsObjects,
                 datingMethod: datingMethodAsObjects,
             };
@@ -306,20 +420,109 @@ async function buildDatingTable() {
     });
 }
 
-// Export table ---------------------------------------------------------
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "datingTable") {
+        const rawData = datingTable.getData("active");
+        
+        const transformed = rawData.map(row => {
+            // Sample
+            const sampleId = row.sample?.id;
+            const sampleValues = datingTable.getColumn("sample.id").getDefinition().editorParams({
+                getRow: () => ({
+                    getData: () => row
+                })
+            }).values;
+            const sample = sampleValues.find(s => s.value === sampleId);
+            // Feature
+            const featureId     = row.sample?.feature?.id;
+            const featureValues = datingTable.getColumn("sample.feature.id").getDefinition().editorParams({
+                getRow: () => ({
+                    getData: () => row
+                })
+            }).values;
+            const feature       = featureValues.find(f => f.value === featureId);
+            // Site
+            const siteId     = row.sample?.feature?.site?.id;
+            const siteValues = datingTable.getColumn("sample.feature.site.id").getDefinition().editorParams.values;
+            const site       = siteValues.find(s => s.value === siteId);
+            // Material
+            const materialId = row.material?.id ?? null;
+            const material   = cachedMaterials.find(m => m.uri === materialId);
+            // Dating Method
+            const datingMethodId = row.datingMethod?.id ?? null;
+            const formatDatingMethod = datingTable
+                .getColumn("datingMethod.id")
+                .getDefinition()
+                .formatter;
+            
+            return {
+                id:        row.id,
+                subSample: row.subSample,
+                sample:    sampleId && {
+                    id:   sampleId,
+                    name: sample.label
+                },
+                feature: featureId && {
+                    id:   featureId,
+                    name: feature.label
+                },
+                site: siteId && {
+                    id:   siteId,
+                    name: site.label
+                },
+                literatureList: (row.literatureList || []).map(literatureId => {
+                    const literatureValues = datingTable.getColumn("literatureList").getDefinition().editorParams.values;
+                    const literature = literatureValues.find(l => l.value === literatureId);
+                    return { id: literatureId, name: literature?.label };
+                }),
+                material: materialId
+                    ? { id: materialId, label: material?.prefLabel?.en ?? "" }
+                    : null,
+                remarks: row.remarks, 
+                datingMethod: datingMethodId
+                    ? { id: datingMethodId, name: formatDatingMethod({ getValue: () => datingMethodId }) }
+                    : null,
+                dendrochronologicalDating: row.dendrochronologicalDating,
+                c14Dating: row.c14Dating,
+                otherDating: row.otherDating,
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Datings.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+});
 
 document.getElementById("download-csv").addEventListener("click", function(){
-    datingTable.download("csv", "data.csv");
-});
-
-document.getElementById("download-json").addEventListener("click", function(){
-    datingTable.download("json", "data.json");
-});
+    if (activeTable === "datingTable") {
+        datingTable.download(
+            "csv",
+            "ArboDat+_Download_Datings.csv"
+        );
+    }    
+});    
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    datingTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "datingTable") {
+        datingTable.download(
+            "xlsx",
+            "ArboDat+_Download_Datings.xlsx",
+            {sheetName:"ArboDat+ Datings"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    datingTable.download("html", "data.html", {style:true});
+    if (activeTable === "datingTable") {
+        datingTable.download(
+            "html",
+            "ArboDat+_Download_Datings.html"
+        );
+    }
 });

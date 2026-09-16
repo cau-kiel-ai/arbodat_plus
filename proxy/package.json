@@ -1,5 +1,5 @@
 {
-  "name": "node-proxy",
+  "name": "proxy",
   "description": "Proxy for Nominatim Reverse-Geocoding",
   "type": "module",
   "main": "server.js",

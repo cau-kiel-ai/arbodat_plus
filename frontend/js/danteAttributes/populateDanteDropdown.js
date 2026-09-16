@@ -6,7 +6,7 @@ function populateDanteDropdown (attribute, dropdown) {
     switch (attribute) {
 
         // researchProject --------------------------
-        case ("license"):
+        case "license":
             cachedData = cachedLicenses;
             break;
 
@@ -15,7 +15,7 @@ function populateDanteDropdown (attribute, dropdown) {
             cachedData = cachedTaxonomies;
             break;  
 
-        case ("siteType"):
+        case "siteType":
             cachedData = cachedSiteTypes;
             break;
 
@@ -29,36 +29,36 @@ function populateDanteDropdown (attribute, dropdown) {
             break;
 
         // feature --------------------------------------
-        case ("featureType"):
+        case "featureType":
             cachedData = cachedFeatureTypes;
             break;
 
-        case ("preservationCondition"):
+        case "preservationCondition":
             cachedData = cachedPreservationConditions;
             break;
 
         // sample ---------------------------------------
-        case ("sampleType"):
+        case "sampleType":
             cachedData = cachedSampleTypes;
             break;
 
-        case ("chronozone"):
+        case "chronozone":
             cachedData = cachedChronozones;
             break;
 
         // sampleInvestigated
-        case ("seedsAndFruits"):
-        case ("charcoalInvestigated"):
-        case ("woodSubfossile"):
+        case "seedsAndFruits":
+        case "charcoalInvestigated":
+        case "woodSubfossile":
             cachedData = cachedSampleInvestigated;
             break;
 
         // absoluteDating -------------------------------
-        case ("material"):
+        case "material":
             cachedData = cachedMaterials;
             break;
 
-        case ("datingMethod"):
+        case "datingMethod":
             cachedData = cachedDatingMethods;
             break;
 
@@ -68,15 +68,15 @@ function populateDanteDropdown (attribute, dropdown) {
             break;
 
         // result ---------------------------------------
-        case ("stateOfPreservation"):            
+        case "stateOfPreservation":            
             cachedData = cachedStateOfPreservation;
             break;
 
-        case ("restType"):
+        case "restType":
             cachedData = cachedRestTypes;
             break;
 
-        case ("classificationConfer"):
+        case "classificationConfer":
             cachedData = cachedClassificationConfers;
             break;          
         // ----------------------------------------------
@@ -88,16 +88,20 @@ function populateDanteDropdown (attribute, dropdown) {
 
     for (const item of cachedData) {
 
-        if (attribute == "naturalUnit") {
+        if (attribute === "naturalUnit" ||
+            attribute === "siteType"    ||
+            attribute === "restType"
+        ) {
+            const optionsArray = Array.from(dropdown.options);
+
             // Check if such an entry already exists
-            const exists = Array.from(dropdown.options).some(opt => opt.value === item.uri);
+            const exists = optionsArray.some(opt => opt.value === item.uri);
 
             if (!exists) {
                 let insertAfterIndex = -1;
                 if (item.ancestors) {
                     item.ancestors.reverse().forEach((ancestor, index) => {
                         // Check if such an entry already exists and if so determine index
-                        const optionsArray = Array.from(dropdown.options);
                         const optionIndex = optionsArray.findIndex(opt => opt.value === ancestor.uri)
     
                         if (optionIndex === -1) {
@@ -109,6 +113,13 @@ function populateDanteDropdown (attribute, dropdown) {
                             const label = ancestor.prefLabel?.de ?? ancestor.prefLabel?.en ?? "";
                             option.textContent = spaces + label;
                             option.setAttribute("data-label", label);
+
+                            // Disable guide term
+                            if (ancestor.type.includes("http://vocab.getty.edu/ontology#GuideTerm")) {
+                                option.disabled = true;
+                                option.style.fontWeight = "bold";
+                                option.style.color = "gray";
+                            }
     
                             if (insertAfterIndex === -1) {
                                 dropdown.appendChild(option);
@@ -123,8 +134,9 @@ function populateDanteDropdown (attribute, dropdown) {
                 }
                 
                 // ArboDat+_naturalUnit
-                if (item.uri === "ArboDat+_naturalUnit_unknown" || item.uri === "ArboDat+_naturalUnit_notChosen") {
-
+                if (item.uri === "ArboDat+_naturalUnit_unknown" ||
+                    item.uri === "ArboDat+_naturalUnit_notChosen"
+                ) {
                     // Create "ArboDat+_naturalUnit" option
                     let option = document.createElement('option');
                     option.textContent = "ArboDat+_naturalUnit";
@@ -137,21 +149,122 @@ function populateDanteDropdown (attribute, dropdown) {
                     option = document.createElement('option');
                     option.value = "ArboDat+_naturalUnit_unknown";
                     option.textContent = "\u00A0\u00A0" + "unknown";
+                    option.setAttribute("data-label", "unknown");
                     dropdown.appendChild(option);
                     
                     // Create "ArboDat+_naturalUnit_notChosen" option
                     option = document.createElement('option');
                     option.value = "ArboDat+_naturalUnit_notChosen";
                     option.textContent = "\u00A0\u00A0" + "not chosen";
+                    option.setAttribute("data-label", "not chosen");
+                    dropdown.appendChild(option);
+                }
+
+                // ArboDat+_siteType
+                else if (
+                    item.uri === "ArboDat+_siteType_unknown" ||
+                    item.uri === "ArboDat+_siteType_notChosen" ||
+                    item.uri === "ArboDat+_siteType_otherAnthropogenicDeposit" ||
+                    item.uri === "ArboDat+_siteType_otherNaturalDeposit" ||
+                    item.uri === "ArboDat+_siteType_otherRuralSetting" ||
+                    item.uri === "ArboDat+_siteType_otherSettlement" ||
+                    item.uri === "ArboDat+_siteType_otherPlaceOfCult"
+                ) {
+                    // Create "ArboDat+_siteType" option
+                    let option = document.createElement('option');
+                    option.textContent = "ArboDat+_siteType";
+                    option.disabled = true;
+                    option.style.fontWeight = "bold";
+                    option.style.color = "gray";
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_unknown" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_unknown";
+                    option.textContent = "\u00A0\u00A0" + "unknown type of site";
+                    option.setAttribute("data-label", "unknown type of site");
+                    dropdown.appendChild(option);
+                    
+                    // Create "ArboDat+_siteType_notChosen" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_notChosen";
+                    option.textContent = "\u00A0\u00A0" + "not chosen";
+                    option.setAttribute("data-label", "not chosen");
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_otherAnthropogenicDeposit" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_otherAnthropogenicDeposit";
+                    option.textContent = "\u00A0\u00A0" + "other anthropogenic deposit";
+                    option.setAttribute("data-label", "other anthropogenic deposit");
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_otherNaturalSediment" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_otherNaturalSediment";
+                    option.textContent = "\u00A0\u00A0" + "other natural sediment";
+                    option.setAttribute("data-label", "other natural sediment");
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_otherRuralSetting" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_otherRuralSetting";
+                    option.textContent = "\u00A0\u00A0" + "other rural setting";
+                    option.setAttribute("data-label", "other rural setting");
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_otherSettlement" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_otherSettlement";
+                    option.textContent = "\u00A0\u00A0" + "other settlement";
+                    option.setAttribute("data-label", "other settlement");
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_siteType_otherPlaceOfCult" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_siteType_otherPlaceOfCult";
+                    option.textContent = "\u00A0\u00A0" + "other place of cult";
+                    option.setAttribute("data-label", "other place of cult");
+                    dropdown.appendChild(option);
+                }
+
+                // ArboDat+_restType
+                else if (
+                    item.uri === "ArboDat+_restType_unknown" ||
+                    item.uri === "ArboDat+_restType_notChosen"
+                ) {
+                    // Create "ArboDat+_restType" option
+                    let option = document.createElement('option');
+                    option.textContent = "ArboDat+_restType";
+                    option.disabled = true;
+                    option.style.fontWeight = "bold";
+                    option.style.color = "gray";
+                    dropdown.appendChild(option);
+
+                    // Create "ArboDat+_restType_unknown" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_restType_unknown";
+                    option.textContent = "\u00A0\u00A0" + "unknown";
+                    option.setAttribute("data-label", "unknown");
+                    dropdown.appendChild(option);
+                    
+                    // Create "ArboDat+_restType_notChosen" option
+                    option = document.createElement('option');
+                    option.value = "ArboDat+_restType_notChosen";
+                    option.textContent = "\u00A0\u00A0" + "not chosen";
+                    option.setAttribute("data-label", "not chosen");
                     dropdown.appendChild(option);
 
                 } else {
+                    // Skip guide term
+                    if (item.type.includes("http://vocab.getty.edu/ontology#GuideTerm")) { continue }
+
                     // Create 'option' and set URI as value
                     const option = document.createElement('option');
                     option.value = item.uri;
 
                     const spaces = "\u00A0".repeat((item.ancestors.length) * 3);
-                    const label = item.prefLabel.zxx;
+                    const label = Object.values(item.prefLabel)[0];
                     option.textContent = spaces + label;
                     option.setAttribute("data-label", label);
 
@@ -160,7 +273,7 @@ function populateDanteDropdown (attribute, dropdown) {
                     } else {
                         dropdown.insertBefore(option, dropdown.options[insertAfterIndex + 1] || null);
                     }
-                }                
+                }
             }
             continue;         
         }
@@ -212,7 +325,7 @@ function populateDanteDropdown (attribute, dropdown) {
 function populateNarrower(dropdown, narrower, attribute, structuralConcept) {
     
     // Termination condition
-    if (!narrower || narrower.length === 0) {
+    if (!narrower || narrower.length === 0 || (narrower.length === 1 && narrower[0] === null)) {
         return;
     }
     
@@ -233,7 +346,7 @@ function populateNarrower(dropdown, narrower, attribute, structuralConcept) {
 
         dropdown.appendChild(option);
 
-        // ToDo: Comment in if more than one hierarchy (recursion)
+        // INFO: Comment in if more than one hierarchy (recursion)
         //       (+ adjust paddingLeft for hierarchy level: perhaps as a parameter of the function
         //                                                  and for each level add two space "\u00A0\u00A0")
         // populateNarrower(dropdown, narrower[i].narrower);

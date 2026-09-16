@@ -17,6 +17,12 @@ public class SampleInvestigated {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @JsonIgnore
     @OneToMany(mappedBy = "seedsAndFruits")
     private Set<Sample> SampleSeedsAndFruitsList;

@@ -15,7 +15,7 @@ services:
       timeout: 10s
       retries: 10
     networks:
-      - spring-postgres
+      - arbodat_plus-network
 
   web-api:
     build: web-api
@@ -29,7 +29,7 @@ services:
       database:
         condition: service_healthy
     networks:
-      - spring-postgres
+      - arbodat_plus-network
 
   frontend-dev:
     image: nginx
@@ -41,7 +41,7 @@ services:
     depends_on:
       - web-api
     networks:
-      - spring-postgres
+      - arbodat_plus-network
 
   frontend:
     build: frontend
@@ -51,14 +51,14 @@ services:
     depends_on:
       - web-api
     networks:
-      - spring-postgres
+      - arbodat_plus-network
 
-  node-proxy:
-    build: node-proxy
+  proxy:
+    build: proxy
     ports:
       - "3000:3000"
     networks:
-      - spring-postgres
+      - arbodat_plus-network
 
 networks:
-  spring-postgres:
+  - arbodat_plus-network:

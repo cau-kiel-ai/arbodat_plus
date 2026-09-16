@@ -414,6 +414,7 @@ public class NaturalUnitMapper {
         naturalUnitMap.put("999", "ArboDat+_naturalUnit_unknown");
         // not chosen
         naturalUnitMap.put("-99", "ArboDat+_naturalUnit_notChosen");
+        naturalUnitMap.put(null, "ArboDat+_naturalUnit_notChosen");
     }
 
     public String getUri(String key) {

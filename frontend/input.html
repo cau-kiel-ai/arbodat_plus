@@ -86,126 +86,50 @@
         }
       </style>
 
+      <!-- select2 -->
+      <style>
+        .select2-container .select2-selection--single {
+          display: flex;
+          align-items: center;
+          height: 52px !important;
+          border: 2px solid #ccc;
+          border-radius: 4px;
+        }
+        .select2-container .select2-selection--multiple {
+          border: 2px solid #ccc;
+          min-height: 52px;
+        }
+        .select2-container .select2-selection--single .select2-selection__rendered {
+          order: 1;
+          padding: 12px;
+          font-size: 16px;
+          color: #000000;
+        }
+        .select2-container .select2-selection--single .select2-selection__clear {
+          order: 2;
+          margin-left: auto;
+          transform: translateX(50%);
+          font-size: 24px;
+          font-weight: 200;
+          line-height: 24px;
+        }
+        .select2-container .select2-selection--multiple .select2-selection__clear {
+          font-size: 24px;
+          font-weight: 200;
+          line-height: 24px;
+        }
+      </style>
+
   </head>
 
   <body >
     
-    <header class="header_img_input_html">
-      <h1> <img src="img/logo1.png" alt="logo" id="logo_input_html"> </h1>
+    <header class="header">
+      <h1> <img src="img/logo_arbodat_plus.png" alt="logo_arbodat_plus"> </h1>
     </header> 
-    
-    <!-- Literature Popup -->
-    <div id="literaturModal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Ceate new literature</h2>
-
-        <form id="literatureForm">
-          <!-- Literature field -->
-          <fieldset>
-            <legend> Literature details</legend>
-              <div class="row">
-                <div class="col-25">
-                  <label for="doi">DOI:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="doi" autocomplete="off">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="publicationYear">publication year:</label>
-                </div>
-                <div class="col-75">
-                  <input type="number" id="publicationYear" autocomplete="off">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="title">title:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="title" class="form-control" list="titleList" autocomplete="off">
-                  <datalist id="titleList"></datalist>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="shortCitation">short citation:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="shortCitation" autocomplete="off">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="longCitation">long citation:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="longCitation" autocomplete="off">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="litAbstract">abstract:</label>
-                </div>
-                <div class="col-75">
-                  <textarea name="abstract" id="litAbstract" cols="30" rows="5"></textarea>
-                </div>
-              </div>
-              <br>
-            </fieldset>
-
-            <!-- Authors field -->
-            <fieldset>
-              <legend>Authors</legend>
-              <div class="row">
-                <div class="col-25">
-                  <label for="lastName" data-tooltip="Create a new person or double-click to view all exsiting author names.">last name:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="lastName" required class="form-control" list="lastnameList" autocomplete="off">
-                  <datalist id="lastnameList"></datalist>
-                </div>
-              </div>                        
-              <div class="row">
-                <div class="col-25">
-                  <label for="firstName">first name:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="firstName" autocomplete="off">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-25">
-                  <label for="middleName">middle name:</label>
-                </div>
-                <div class="col-75">
-                  <input type="text" id="middleName" autocomplete="off">
-                </div>
-              </div>                        
-              
-              <!-- Button to add author-->
-              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                <button type="button" class="btn btn-primary" id="addAuthorButton">Add this author</button>
-              </div>
-
-              <!-- Container to display added authors -->
-              <div id="authorContainer" style="margin-top: 20px; width: 40%;"></div>
-
-            </fieldset>    
-          </form>
-
-          <!-- 'Create Literature' Button -->
-          <div class="text-center" style="margin-top: 15px">
-            <button type="button" class="btn btn-primary" onclick="createLiterature(authorList)">Create literature</button>
-          </div>
-
-      </div>
-    </div>
 
     <!-- Accordion -->
-    <div class="container-md">
+    <div class="container-md" style="margin-top: 120px;">
       <div class="accordion" id="accordionPanels">
         
         <!-- Research Project -->
@@ -217,21 +141,20 @@
             </button>
           </h2>
 
-          <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+          <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
             <div class="accordion-body">
 
-              <form id="rp" role="form">
+              <form id="researchProjectForm">
                 <fieldset>
-                  <legend>Project</legend>
 
-                  <input type="hidden" id="projectId">
+                  <input type="hidden" id="researchProjectId">
 
                   <div class="row">
                     <div class="col-25">
                       <label for="projectName" title="Identification of the Project. Select from the list or enter a new project." >project name: *</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" name="projectName" id="projectName" required>
+                      <input type="text" placeholder="" id="projectName" required>
                       <span class="clear-icon" id="clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
                       <ul id="projectDropdown" class="dropdown hidden"></ul>
                     </div>
@@ -242,7 +165,7 @@
                       <label  for="funder" data-tooltip="Who funded the project? e.g. German Research Foundation." >funder name:</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" name="funder" id="funder">
+                      <input type="text" id="funder">
                     </div>
                   </div>
 
@@ -251,18 +174,33 @@
                       <label for="authorisationNumber" data-tooltip="Grant or funding reference number.">authorisation number:</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" name="authorisationNumber" id="authorisationNumber">
+                      <input type="text" id="authorisationNumber">
                     </div>
                   </div>
 
                   <div class="row">
                     <div class="col-25">
-                      <label for="rp_license" data-tooltip="Please choose from the list.">license: </label>
+                      <label for="licenseDropdown" data-tooltip="Please choose from the list.">license: </label>
                     </div>
                     <div class="col-75">
-                      <select name="rp_license" id="rp_license">
-                        <option value="">select license</option>
+                      <select id="licenseDropdown" style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#licenseDropdown').select2({
+                              placeholder: '',
+                              allowClear: true
+                            });
+
+                            // remove arrow
+                            $('#licenseDropdown')
+                              .next('.select2-container')
+                              .find('.select2-selection__arrow')
+                              .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
@@ -271,7 +209,7 @@
                       <label for="exportFileName">export file name:</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" name="exportFileName" id="exportFileName">
+                      <input type="text" id="exportFileName">
                     </div>
                   </div>
 
@@ -288,7 +226,7 @@
 
           <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
-              INSTITUTIONS AND USER
+              INSTITUTION AND USER
             </button>
           </h2>
 
@@ -298,16 +236,16 @@
               <!-- Institution -->
               <form id="institutionForm" role="form">
                 <fieldset>
-                  <legend>Institutions</legend>
+                  <legend>Institution</legend>
 
                   <input type="hidden" id="institutionId">
 
                   <div class="row">
                     <div class="col-25">
-                      <label for="institutionLabel">label:</label>
+                      <label for="institutionLabel">label: *</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" id="institutionLabel" name="institutionLabel" style="padding-right: 50px;" required>
+                      <input type="text" id="institutionLabel" placeholder="" name="institutionLabel" style="padding-right: 50px;" required>
                       <span class="clear-icon" id="clearIconInstitution" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
                       <ul id="institution_Dropdown" class="dropdown hidden"></ul>
                     </div>
@@ -322,7 +260,7 @@
                     </div>
                   </div>
 
-                  <button type="button" id="custom_inst_button" class="MySubmitButton" onclick="create_update_institution()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                  <button type="button" id="institutionSubmitButton" class="MySubmitButton" onclick="create_update_institution()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
                 
                 </fieldset>
               </form>
@@ -330,7 +268,7 @@
               <br>
               
               <!-- User -->
-              <form id="user_and_institution" role="form">
+              <form id="userForm">
                 <fieldset>
                   <legend>User</legend>
 
@@ -352,7 +290,7 @@
                       <label for="first_name">first name: *</label>
                     </div>
                     <div class="col-75">
-                      <input type="text" id="first_name" name="first_name" required>
+                      <input type="text" id="first_name" name="first_name" autocomplete="off" required>
                     </div>
                   </div>
 
@@ -381,33 +319,204 @@
                     <div class="col-75">
                       <input type="text" id="orcid" name="orcid" >
                     </div>
-                  </div> 
-
-                  <div id="inst_ror_site">
-                    <div class="row">
-                      <div class="col-25">
-                        <label for="user_institution" data-tooltip="Select an institution from the list.">institutions:</label>
-                      </div>
-                      <div class="col-75">
-                        <select id="user_institution">
-                        </select>
-                      </div>
+                  </div>
+                  
+                  <div
+                    class="row"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-left: none;
+                      border-radius: 0 4px 4px 0;
+                      margin-top: 12px;
+                      padding-bottom: 6px;
+                      padding-top: 6px;
+                      margin-right: auto;
+                    "
+                  >
+                    <div class="col-25">
+                      <label for="userInstitutions" data-tooltip="Add institutions from the list.">institutions:</label>
                     </div>
+
+                    <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">
+                      <select id="userInstitutions"></select>
+                      <!-- Button to add institution -->
+                      <button type="button"
+                              class="btn btn-primary"
+                              id="addInstitutionButton">
+                        Add
+                      </button>
+                    </div>
+
+                    <!-- Container to display added institutions -->
+                    <div class="col-25"></div>
+                    <div class="col-75" id="institutionContainer" style="padding-left: 14px; margin-top: 0px;"></div>
                   </div>
 
-                  <!-- Button to add institution -->
-                  <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                    <button type="button" class="btn btn-primary" id="addInstitutionButton">Add this institution</button>
-                  </div>
+                  <button type="button" id="userSubmitButton" class="MySubmitButton" onclick="create_update_user()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                  
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
 
-                  <!-- Container to display added institutions -->
+        <!-- Literature -->
+        <div class="accordion-item">
+
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseLiterature" aria-expanded="false" aria-controls="panelsStayOpen-collapseLiterature">
+              LITERATURE
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseLiterature" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              
+              <!-- Author -->
+              <form id="authorForm" role="form">
+                <fieldset>
+                  <legend>Author</legend>
+
+                  <input type="hidden" id="authorId">
+
                   <div class="row">
+                    <div class="col-25">
+                      <label for="authorLastName">last name: *</label>
+                    </div>
                     <div class="col-75">
-                      <div id="institutionContainer" style="margin-top: 20px; width: 95%;"></div>
+                      <input type="text" id="authorLastName" placeholder="" style="padding-right: 50px;" required>
+                      <span class="clear-icon" id="authorClearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="authorDropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="authorFirstName">first name: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="authorFirstName" placeholder="" autocomplete="off" required>
                     </div>
                   </div>
 
-                  <button type="button" id="custom_usr_button" class="MySubmitButton" onclick="create_update_user()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="authorMiddleNames" data-tooltip="If the author has more than one middle name or other name additions, please provide them here.">middle name:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="authorMiddleNames" placeholder="">
+                    </div>
+                  </div>
+
+                  <button type="button" id="authorSubmitButton" class="MySubmitButton" onclick="create_update_author()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
+                
+                </fieldset>
+              </form>
+
+              <br>
+              
+              <!-- Literature -->
+              <form id="literatureForm" role="form">
+                <fieldset>
+                  <legend>Literature</legend>
+
+                  <input type="hidden" id="literatureId">
+                  
+                  <!-- title -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literatureTitle">title: *</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="literatureTitle" placeholder="" style="padding-right: 50px;" required>
+                      <span class="clear-icon" id="literatureClearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="literatureDropdown" class="dropdown hidden"></ul>
+                    </div>
+                  </div>
+                  
+                  <!-- publication year -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literaturePublicationYear">publication year:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="number" id="literaturePublicationYear" autocomplete="off" style="width: 90px;">
+                    </div>
+                  </div>
+
+                  <!-- authors -->
+                  <div
+                    class="row"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-left: none;
+                      border-radius: 0 4px 4px 0;
+                      margin-top: 12px;
+                      padding-bottom: 6px;
+                      padding-top: 6px;
+                      margin-right: auto;
+                    "
+                  >
+                    <div class="col-25">
+                      <label for="literatureAuthors" data-tooltip="Add authors from the list.">authors:</label>
+                    </div>
+
+                    <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">                      
+                      <select id="literatureAuthors"></select>
+                      <!-- Button to add author -->
+                      <button type="button"
+                              class="btn btn-primary"
+                              id="addAuthorButton">
+                        Add
+                      </button>
+                    </div>
+
+                    <!-- Container to display added Authors -->
+                    <div class="col-25"></div>
+                    <div class="col-75" id="literatureAuthorContainer" style="padding-left: 14px; margin-top: 0px;"></div>
+                  </div>
+
+                  <!-- DOI -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literatureDOI">DOI:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="literatureDOI" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <!-- short citation -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literatureShortCitation">short citation:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="literatureShortCitation" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <!-- long citation -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literatureLongCitation">long citation:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="text" id="literatureLongCitation" autocomplete="off">
+                    </div>
+                  </div>
+
+                  <!-- abstract -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="literatureAbstract">abstract:</label>
+                    </div>
+                    <div class="col-75">
+                      <textarea id="literatureAbstract" cols="30" rows="5"></textarea>
+                    </div>
+                  </div>
+
+                  <button type="button" id="literatureSubmitButton" class="MySubmitButton" onclick="create_update_literature()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button> 
                   
                 </fieldset>
               </form>
@@ -427,61 +536,97 @@
           <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
             <div class="accordion-body">
 
-              <form id="site" role="form">
+              <form id="siteForm" role="form">
+
+                <!-- Reference -->
                 <fieldset>
-                  <legend></legend>
+                  <legend>References</legend>
 
-                  <input type="hidden" id="rp_id_site">
-                  <input type="hidden" id="siteId">
-                  <input type="hidden" id="lit_id_site">
-
-                  <div class="row">
+                  <!-- reference research projects -->
+                  <div
+                    class="row"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-left: none;
+                      border-radius: 0 4px 4px 0;
+                      padding-bottom: 6px;
+                      padding-top: 6px;
+                      margin-right: auto;
+                    "
+                  >
                     <div class="col-25">
-                      <label for="projectName_in_site" data-tooltip = "Please add: Which project is the site assigned to? Multiple choice is possible.">reference project:&nbsp;*</label>
+                      <label
+                        for="siteResearchProjects"
+                        data-tooltip = "Please add: Which project is the site assigned to? Multiple choice is possible."
+                      >
+                        reference research projects:&nbsp;*
+                      </label>
                     </div>
-                    <div class="col-75">
-                      <select name="projectName_in_site" id="projectName_in_site"></select>
+
+                    <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">
+                      <select name="siteResearchProjects" id="siteResearchProjects"></select>
+                      <!-- Button to add project --> 
+                      <button type="button"
+                              class="btn btn-primary"
+                              id="addResearchProjectButton">
+                        Add
+                      </button>
                     </div>
+
+                    <!-- Container to display added projects -->
+                    <div class="col-25"></div>
+                    <div class="col-75" id="researchProjectContainer" style="padding-left: 14px; margin-top: 0px;"></div>
                   </div>
 
-                  <!-- Button to add project --> 
-                  <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                    <button type="button" class="btn btn-primary" id="add_rp_button">Add this project</button>
-                  </div>
-
-                  <!-- Container to display added projects -->
-                  <div class="row">
-                    <div class="col-75">
-                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <div id="rp_in_site_Container" style="margin-top: 10px; width: 95%;"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <br><br>
-
-                  <div class="row">
+                  <!-- site label -->
+                  <div class="row" style="margin-top: 6px;">
                     <div class="col-25">
-                      <label for="literature_in_site" data-tooltip="Please reference relevant literature by adding or creating new literature entries.">reference literature:</label>
+                      <label for="site_label">site label: *</label>
                     </div>
                     <div class="col-75">
-                      <select name="literature_in_site" id="literature_in_site"></select>
+                      <input type="hidden" id="site_id">
+                      <input type="text" id="site_label" placeholder="" required style="padding-right: 50px;" autocomplete="off">
+                      <span class="clear-icon" id="site_label_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
+                      <ul id="site_label_Dropdown" class="dropdown hidden"></ul>
                     </div>
                   </div>
 
-                  <!-- Button to add literature --> 
-                  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                    <button type="button" class="btn btn-primary" onclick="openLiteratureWindow()">Create new literature</button>
-                    <button type="button" class="btn btn-primary" id="add_lit_button">Add this literature</button>
-                  </div>
-
-                  <!-- Container to display added literature -->
-                  <div class="row">
-                    <div class="col-75">
-                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <div id="lit_in_site_Container" style="margin-top: 10px; width: 95%;"></div>
-                      </div>
+                  <!-- reference literature -->
+                  <div
+                    class="row"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-left: none;
+                      border-radius: 0 4px 4px 0;
+                      margin-top: 12px;
+                      padding-bottom: 6px;
+                      padding-top: 6px;
+                      margin-right: auto;
+                    "
+                  >
+                    <div class="col-25">
+                      <label
+                        for="siteLiterature"
+                        data-tooltip="Please reference relevant literature by adding them. New literature can be created in the 'LITERATURE' section."
+                      >
+                        reference literature:
+                      </label>
                     </div>
+
+                    <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">
+                      <select id="siteLiterature"></select>
+                      <!-- Button to add literature --> 
+                      <button type="button"
+                              class="btn btn-primary"
+                              id="addLiteratureButtonSite"
+                      >
+                        Add
+                      </button>
+                    </div>
+
+                    <!-- Container to display added literature -->
+                    <div class="col-25"></div>
+                    <div class="col-75" id="siteLiteratureContainer" style="padding-left: 14px; margin-top: 0px;"></div>
                   </div>
 
                 </fieldset>
@@ -490,10 +635,10 @@
 
                 <fieldset>
                   <!-- 2nd accordion -->
-                  <div class="container-md">
+                  <div class="container-md" style="width: 100%; padding: 0%; margin-top: 0;">
                     <div class="accordion">
 
-                      <!-- site general info -->
+                      <!-- General information -->
                       <div class="accordion-item" id="siteGeneral_AccordionItem">                              
                         <h2 class="accordion-header">
                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#siteGeneral_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
@@ -502,7 +647,7 @@
                         </h2>
 
                         <div id="siteGeneral_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0px;">
                             <fieldset>
 
                               <div class="row">
@@ -516,16 +661,7 @@
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="site_label" >site label: *</label>
-                                </div>
-                                <div class="col-75">
-                                  <input type="text" id="site_label" required>
-                                </div>
-                              </div>
-
-                              <div class="row">
-                                <div class="col-25">
-                                  <label for="site_label_abbreviation" data-tooltip="Abbreviation of the site name.">site label abbreviation:</label>
+                                  <label for="site_label_abbreviation" data-tooltip="Abbreviation of the site name.">label abbreviation:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="site_label_abbreviation" placeholder="">
@@ -543,28 +679,63 @@
 
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="taxonomy" data-tooltip="The selected taxonomy will be used in the results section, e.g. PCODE.">taxonomy:</label>
+                                  <label
+                                    for="taxonomy"
+                                    data-tooltip="Please select a taxonomy from the list. The selected taxonomy will be used in the results section, e.g. 'ArboDat PCODE'."
+                                  >
+                                    taxonomy:
+                                  </label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="taxonomy">
-                                    <option value="">select taxonomy</option>
+                                  <select id="taxonomy" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#taxonomy').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#taxonomy')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="select-site-type" data-tooltip="Multiple site types can be selected by pressing 'ctrl'.">site type:</label> 
+                                  <label data-tooltip="Multiple site types can be selected from the list.">site type:</label> 
                                 </div>
                                 <div class="col-75">
-                                  <select id="select-site-type" multiple size="20">
-                                  </select>
+                                  <select id="site_type" multiple style="width: 100%"></select>
+                                  <!-- Select2 Multi-select boxes (pillbox) -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#site_type').select2({
+                                          placeholder: '',
+                                          allowClear: true,
+                                          templateSelection: function(item) {
+                                            return (item.text || '').trim();
+                                          }
+                                        });
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="site_type_uncertain" data-tooltip="Is the site type uncertain? Than please check this box. If necessary, you can specify any details in the remarks box at the bottom of this section below.">site type uncertain</label>
+                                  <label
+                                    data-tooltip="Is the site type uncertain? Than please check this box. If necessary, you can specify any details in the remarks box at the bottom of this section below."
+                                  >
+                                    site type uncertain:
+                                  </label>
                                 </div>
                                 <div class="col-75">
                                   <input type="checkbox" id="site_type_uncertain" style="margin-top: 18px;">
@@ -573,18 +744,40 @@
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="natural_unit" data-tooltip="Please select one natural unit from the list.">natural unit:</label>
+                                  <label data-tooltip="Please select a natural unit from the list.">natural unit:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="select-natural-unit">
-                                    <option value="">select natural unit</option>
+                                  <select id="natural_unit" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#natural_unit').select2({
+                                          placeholder: '',
+                                          allowClear: true,
+                                          templateSelection: function(item) {
+                                            return (item.text || '').trim();
+                                          }
+                                        });
+
+                                        // remove arrow
+                                        $('#natural_unit')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="site_condition_undisturbed" data-tooltip="Is the site condition undisturbed? Than please check this box. If necessary, you can specify any details in the remarks box below.">site condition undisturbed</label>
+                                  <label
+                                    data-tooltip="Is the site condition undisturbed? Than please check this box. If necessary, you can specify any details in the remarks box at the bottom of this section below."
+                                  >
+                                    site condition undisturbed:
+                                  </label>
                                 </div>
                                 <div class="col-75">
                                   <input type="checkbox" id="site_condition_undisturbed" style="margin-top: 18px;">
@@ -596,109 +789,171 @@
                         </div>
                       </div>
 
-                      <!-- excavation team (head, botanist, archaeologist) and institutions -->
+                      <!-- Institutions and excavation team (site directors, botanists, archaeologist) -->
                       <div class="accordion-item" id="sitePeople_AccordionItem">
                         <h2 class="accordion-header">
                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sitePeople_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
-                            EXCAVATION TEAM AND INSTITUTIONS
+                            INSTITUTIONS AND EXCAVATION TEAM 
                           </button>
                         </h2>
 
                         <div id="sitePeople_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0px;">
                             <fieldset>
 
-                              <div id="inst_ror_site">
-                                <div class="row">
-                                  <div class="col-25">
-                                    <label for="site_institution" data-tooltip="Enter a new institution in 'institutions and users' or select from the list.">institution:</label>
-                                  </div>
-                                  <div class="col-75">
-                                    <select id="site_institution">
-                                      <option value="" hidden selected></option>
-                                    </select>
-                                  </div>
+                              <!-- institutions -->
+                              <div
+                                class="row"
+                                style="
+                                  border: 0.5px solid #ccc;
+                                  border-left: none;
+                                  border-radius: 0 4px 4px 0;
+                                  padding-bottom: 6px;
+                                  padding-top: 6px;
+                                  margin-right: auto;
+                                "
+                              >
+                                <div class="col-25">
+                                  <label
+                                    for="siteInstitutions"
+                                    data-tooltip="Add institutions from the list. New institutions can be created in the 'INSTITUTION AND USER' section."
+                                  >
+                                    institutions:
+                                  </label>
                                 </div>
-                              </div>
-                              <!-- Button to add institution -->
-                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn btn-primary" id="addInstitutionButtonSite">Add this institution</button>
-                              </div>
-                              <!-- Container to display added institutions -->
-                              <div class="row">
-                                <div class="col-75">
-                                  <div id="institutionContainerSite" style="margin-top: 20px; width: 95%;"></div>
-                                </div>
-                              </div>
-                              <br><br>
 
-                              <div class="row">
-                                <div class="col-25"> 
-                                  <label for="head_of_exc" data-tooltip="Please enter the name of the site director.">head of excavation:</label>
+                                <div class="col-75" style="display:flex; gap:10px; align-items:center;">
+                                  <select id="siteInstitutions"></select>
+                                  <!-- Button to add institution --> 
+                                  <button type="button"
+                                          class="btn btn-primary"
+                                          id="addInstitutionButtonSite">
+                                    Add
+                                  </button>
                                 </div>
-                                <div class="col-75">
-                                  <select id="head_of_exc" class="user_site_Dropdown">
-                                  </select>
-                                </div>
-                              </div>
-                              <!-- Button to add head of excavation -->
-                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn btn-primary" id="addHeadButton">Add this person</button>
-                              </div>
-                              <!-- Container to display added persons -->
-                              <div class="row">
-                                <div class="col-75">
-                                  <div id="HeadOfExcContainer" style="margin-top: 20px; width: 95%;"></div>
-                                </div>
-                              </div>
-                              <br><br>
 
-                              <div class="row">
-                                <div class="col-25"> 
-                                  <label for="archeologist">archaeologists:</label>
-                                </div>
-                                <div class="col-75">
-                                  <select id="archeologist" class="user_site_Dropdown"></select>
-                                </div>
+                                <!-- Container to display added institutions -->
+                                <div class="col-25"></div>
+                                <div class="col-75" id="siteInstitutionContainer" style="padding-left: 12px; margin-top: 0px;"></div>
                               </div>
-                              <!-- Button to add archaeologist -->
-                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn btn-primary" id="addArcheologistButton">Add this person</button>
-                              </div>
-                              <!-- Container to display added persons -->
-                              <div class="row">
-                                <div class="col-75">
-                                  <div id="ArcheologistContainer" style="margin-top: 20px; width: 95%;"></div>
-                                </div>
-                              </div>
-                              <br><br>
 
-                              <div class="row">
+                              <!-- heads of excavation -->
+                              <div
+                                class="row"
+                                style="
+                                  border: 0.5px solid #ccc;
+                                  border-left: none;
+                                  border-radius: 0 4px 4px 0;
+                                  padding-bottom: 6px;
+                                  padding-top: 6px;
+                                  margin-top: 12px;
+                                  margin-right: auto;
+                                "
+                              >
                                 <div class="col-25"> 
-                                  <label for="botanist">botanists:</label>
+                                  <label
+                                    for="siteDirectors"
+                                    data-tooltip="Add heads of excavation from the list. New users can be created in the 'INSTITUTION AND USER' section."
+                                  >
+                                    heads of excavation:
+                                  </label>
                                 </div>
-                                <div class="col-75">
-                                  <select id="botanist" class="user_site_Dropdown"></select>
+
+                                <div class="col-75" style="display:flex; gap:10px; align-items:center;">
+                                  <select id="siteDirectors"></select>
+                                  <!-- Button to add head of excavation --> 
+                                  <button type="button"
+                                          class="btn btn-primary"
+                                          id="addSiteDirectorButton">
+                                    Add
+                                  </button>
                                 </div>
+
+                                <!-- Container to display added heads of excavation -->
+                                <div class="col-25"></div>
+                                <div class="col-75" id="siteDirectorContainer" style="padding-left: 12px; margin-top: 0px;"></div>
                               </div>
-                              <!-- Button to add botanist -->
-                              <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                <button type="button" class="btn btn-primary" id="addBotanistButton">Add this person</button>
-                              </div>
-                              <!-- Container to display added persons -->
-                              <div class="row">
-                                <div class="col-75">
-                                  <div id="BotanistContainer" style="margin-top: 20px; width: 95%;"></div>
+
+                              <!-- archaeologists -->
+                              <div
+                                class="row"
+                                style="
+                                  border: 0.5px solid #ccc;
+                                  border-left: none;
+                                  border-radius: 0 4px 4px 0;
+                                  padding-bottom: 6px;
+                                  padding-top: 6px;
+                                  margin-top: 12px;
+                                  margin-right: auto;
+                                "
+                              >
+                                <div class="col-25"> 
+                                  <label
+                                    for="archeologists"
+                                    data-tooltip="Add archeologists from the list. New users can be created in the 'INSTITUTION AND USER' section."
+                                  >
+                                    archaeologists:
+                                  </label>
                                 </div>
+
+                                <div class="col-75" style="display:flex; gap:10px; align-items:center;">
+                                  <select id="archeologists"></select>
+                                  <!-- Button to add archeologists --> 
+                                  <button type="button"
+                                          class="btn btn-primary"
+                                          id="addArcheologistButton">
+                                    Add
+                                  </button>
+                                </div>
+
+                                <!-- Container to display added archeologists -->
+                                <div class="col-25"></div>
+                                <div class="col-75" id="ArcheologistContainer" style="padding-left: 12px; margin-top: 0px;"></div>
                               </div>
-                              <br>
+
+                              <!-- botanists -->
+                              <div
+                                class="row"
+                                style="
+                                  border: 0.5px solid #ccc;
+                                  border-left: none;
+                                  border-radius: 0 4px 4px 0;
+                                  padding-bottom: 6px;
+                                  padding-top: 6px;
+                                  margin-top: 12px;
+                                  margin-right: auto;
+                                "
+                              >
+                                <div class="col-25"> 
+                                  <label
+                                    for="botanists"
+                                    data-tooltip="Add botanists from the list. New users can be created in the 'INSTITUTION AND USER' section."
+                                  >
+                                    botanists:
+                                  </label>
+                                </div>
+
+                                <div class="col-75" style="display:flex; gap:10px; align-items:center;">
+                                  <select id="botanists"></select>
+                                  <!-- Button to add botanists --> 
+                                  <button type="button"
+                                          class="btn btn-primary"
+                                          id="addBotanistButton">
+                                    Add
+                                  </button>
+                                </div>
+
+                                <!-- Container to display added botanists -->
+                                <div class="col-25"></div>
+                                <div class="col-75" id="BotanistContainer" style="padding-left: 12px; margin-top: 0px;"></div>
+                              </div>
 
                             </fieldset>
                           </div>
                         </div>
                       </div>
 
-                      <!-- coordinates, map, addresses -->
+                      <!-- Coordinates and address -->
                       <div class="accordion-item" id="siteCoords_AccordionItem">
                         <h2 class="accordion-header">
                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#siteCoords_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
@@ -707,17 +962,39 @@
                         </h2>
 
                         <div id="siteCoords_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0px;">
                             <fieldset>
+                              
+                              <!-- Coordinates -->
+                              <legend>Coordinates</legend>
 
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="site_coordinate_system" data-tooltip="DHDN / 3-degree Gauss and 'local' are not being transformed into WGS84 automatically but you can enter these manually.">coordinate reference system:</label>
+                                  <label
+                                    data-tooltip="'DHDN / 3-degree Gauss' and 'local' are not being transformed into WGS84 automatically, but you can enter these manually."
+                                  >
+                                    coordinate system:
+                                  </label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="site_coordinate_system">
-                                    <option value="" >select coordinate reference system</option>
+                                  <select id="site_coordinate_system" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#site_coordinate_system').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#site_coordinate_system')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
   
@@ -754,7 +1031,7 @@
                               <!-- longitude wgs84 -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="site_longitude_wgs84" data-tooltip="This field is filled in automatically for all selected CRS but '3-degree Gauss' and 'local'.">longitude wgs84:</label>
+                                  <label for="site_longitude_wgs84" data-tooltip="This field is filled in automatically for all selected coordinate systems except 'DHDN / 3-degree Gauss' and 'local'.">longitude wgs84:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="site_longitude_wgs84">
@@ -764,14 +1041,15 @@
                               <!-- latitude wgs84 -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="site_latitude_wgs84" data-tooltip="This field is filled in automatically for all selected CRS but '3-degree Gauss' and 'local'.">latitude wgs84:</label>
+                                  <label for="site_latitude_wgs84" data-tooltip="This field is filled in automatically for all selected coordinate systems except 'DHDN / 3-degree Gauss' and 'local'.">latitude wgs84:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="site_latitude_wgs84">
                                 </div>
                               </div>
+
                             </fieldset>
-                        
+
                             <fieldset>
                               <!-- Leaflet Map -->
                               <div id="site_map"></div>
@@ -781,17 +1059,24 @@
                                   height: 300px;
                                 }
                               </style>
+
+                              <br>
   
                               <!-- Address -->
-                              <legend> </legend>
+                              <legend
+                                title="The address section is filled in automatically based on the given coordinates using reverse geocoding. Some fields may remain empty if no data is available and can be completed manually.">
+                                Address
+                              </legend>
+
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="country" data-tooltip="The address section is filled in automatically based on the given coordinates using reverse geocoding. Some fields may remain empty if no data is available and can be completed manually.">country:</label>
+                                  <label for="country" >country:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="text" id="country">
+                                  <input type="text" id="country" autocomplete="off">
                                 </div>
                               </div>
+
                               <div class="row">
                                 <div class="col-25"> 
                                   <label for="county">county:</label>
@@ -800,22 +1085,25 @@
                                   <input type="text" id="county">
                                 </div>
                               </div>
+
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="district" data-tooltip="German: 'Landkreis'">district:</label>
+                                  <label for="district" >district:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="district">
                                 </div>
                               </div>
+
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="parish" data-tooltip="German: 'Gemarkung, Gemeinde, Ort'">parish:</label>
+                                  <label for="parish" >parish:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="parish">
                                 </div>
                               </div>
+
                               <div class="row">
                                 <div class="col-25"> 
                                   <label for="street_or_place">street or place:</label>
@@ -824,6 +1112,7 @@
                                   <input type="text" id="street_or_place">
                                 </div>
                               </div>
+
                               <div class="row">
                                 <div class="col-25"> 
                                   <label for="town">town:</label>
@@ -832,23 +1121,32 @@
                                   <input type="text" id="town">
                                 </div>
                               </div>
+
                             </fieldset>
                           </div>
                         </div>
                       </div>
-                      <br>
 
                       <!-- remarks -->
-                      <div class="row">
-                        <div class="col-25">
-                          <label for="remarks_site" style="color: rgb(33, 37, 41);">remarks:</label>
+                      <div class="row" style="padding-top: 10px;">
+                        <div class="col-25" style="padding-left: 32px;">
+                          <label for="site_remarks" style="color: rgb(33, 37, 41);">remarks:</label>
                         </div>
                         <div class="col-75">
-                          <textarea name="remarks_site" id="remarks_site" rows="3"></textarea>
+                          <textarea name="site_remarks" id="site_remarks" rows="3"></textarea>
                         </div>
                       </div>
 
-                      <button type="button" id="site_button" class="MySubmitButton" onclick="create_site()" style="width: unset; padding-left: 10px; padding-right: 10px;">submit&nbsp;site</button>
+                      <button
+                        type="button"
+                        id="site_submit_update_button"
+                        class="MySubmitButton"
+                        style="width: unset; padding-left: 10px; padding-right: 10px;"
+                        onclick="create_update_site()"
+                      >
+                      create
+                      </button>
+
                     </div>
                   </div>
                 </fieldset>
@@ -869,28 +1167,30 @@
           <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
             <div class="accordion-body">
 
-              <form id="feature" role="form">
+              <form id="feature">
                 <fieldset>
-                  <legend></legend>
+                  <legend>References</legend>
 
+                  <!-- reference site -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="which_site">reference site: *</label>
+                      <label for="featureSite">reference site: *</label>
                     </div>
                     <div class="col-75">
-                      <select id="which_site" required>
-                        <option value="">select site</option>
+                      <select id="featureSite" required>
+                        <option value=""></option>
                       </select>
                     </div>
                   </div>
                   
+                  <!-- feature label -->
                   <div class="row">
                     <div class="col-25">
                       <label for="feature_label" data-tooltip="German: 'Befundnummer'">feature label: *</label>
                     </div>
                     <div class="col-75">
                       <input type="hidden" id="feature_id">
-                      <input type="text" id="feature_label" required style="padding-right: 50px;" autocomplete="off">
+                      <input type="text" id="feature_label" placeholder="" required style="padding-right: 50px;" autocomplete="off">
                       <span class="clear-icon" id="feature_label_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
                       <ul id="feature_label_Dropdown" class="dropdown hidden"></ul>
                     </div>
@@ -901,16 +1201,17 @@
                 <br>
 
                 <fieldset>
-
+                  <!-- excavation area -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="excavation_area" data-tooltip="German: ’Grabungsfläche'">excavation area:</label>
+                      <label for="excavation_area">excavation area:</label>
                     </div>
                     <div class="col-75">
                       <input type="text" id="excavation_area">
                     </div>
                   </div>
 
+                  <!-- feature condition -->
                   <div class="row">
                     <div class="col-25"> 
                       <label for="feature_condition" data-tooltip="Feature ok?">feature condition satisfactory:</label>
@@ -920,37 +1221,75 @@
                     </div>
                   </div>
 
+                  <!-- preservation condition -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="preservation_condition_feature" data-tooltip="Please select from the list to report the preservation of the plant remains.">preservation condition:</label>
+                      <label
+                        data-tooltip="Please select from the list to report the preservation of the plant remains."
+                      >
+                        preservation condition:
+                      </label>
                     </div>
                     <div class="col-75">
-                      <select id="preservation_condition_feature">
-                        <option value="">select preservation condition</option>  
+                      <select id="preservation_condition" style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#preservation_condition').select2({
+                              placeholder: '',
+                              allowClear: true,
+                            });
+
+                            // remove arrow
+                            $('#preservation_condition')
+                              .next('.select2-container')
+                              .find('.select2-selection__arrow')
+                              .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
+                  <!-- feature type -->
                   <div class="row">
                     <div class="col-25"> 
-                      <label for="feature_type">feature type:</label>
+                      <label>feature type:</label>
                     </div>
                     <div class="col-75">
-                      <select id="feature_type">
-                        <option value="">select feature type</option>  
+                      <select id="feature_type" style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#feature_type').select2({
+                              placeholder: '',
+                              allowClear: true,
+                            });
+
+                            // remove arrow
+                            $('#feature_type')
+                              .next('.select2-container')
+                              .find('.select2-selection__arrow')
+                              .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
-                  <div class="row" id="exc_year">
+                  <!-- excavation years -->
+                  <div class="row">
                     <div class="col-25">
                       <label for="excavation_years">year(s) of excavation: </label>
                     </div>
                     <div class="col-75">
-                      <select type="int" id="excavation_years" multiple size="6"></select>
+                      <select type="int" id="excavation_years" multiple size='6' style="width: 84px;"></select>
                     </div>
                   </div>
 
+                  <!-- building context -->
                   <div class="row">
                     <div class="col-25"> 
                       <label for="building_context" data-tooltip="Check this box if the feature belongs to a building. Specifications such as house numbers can be made in the 'remarks' box below.">building context:</label>
@@ -960,39 +1299,26 @@
                     </div>
                   </div>
 
-                  <!--div class="row">
-                    <div class="col-25">
-                      <label for="arch_dating_feature">archaeological dating(s):</label>
-                    </div>
-                    <div class="col-75">
-                      <select class="selectpicker" id="arch_dating_feature" multiple onclick="Dante_getArcheologicalDating()">
-                        <option value="" > click to load list </option>
-                        <option disabled value="" >----------------------------------</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-25">
-                      <label for="cult_group_feature">cultural group(s):</label>
-                    </div>
-                    <div class="col-75">
-                      <select class="selectpicker" id="cult_group_feature" multiple onclick="Dante_getCulturalGroup()">
-                        <option value="" > click to load list </option>
-                        <option disabled value="" >----------------------------------</option>
-                      </select>
-                    </div>
-                  </div-->
-
+                  <!-- remarks -->
                   <div class="row">
                     <div class="col-25"> 
                       <label for="remarks_feature">remarks:</label>
                     </div>
                     <div class="col-75">
-                      <textarea name="remarks_feature" id="remarks_feature" rows="3"></textarea>
+                      <textarea id="remarks_feature" rows='3'></textarea>
                     </div>
                   </div>
 
-                  <button type="button" id="feature_submit_update_button" class="MySubmitButton" onclick="create_feature()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+                  <!-- create/update button -->
+                  <button
+                    type="button"
+                    id="feature_submit_update_button"
+                    class="MySubmitButton"
+                    onclick="create_update_feature()"
+                    style="width: unset; padding-left: 10px; padding-right: 10px;"
+                  >
+                    create
+                  </button>
 
                 </fieldset>
               </form>
@@ -1010,18 +1336,31 @@
           <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse">
             <div class="accordion-body">
 
-              <form id="sampleForm">
-                
-                <!-- Reference and label -->
+              <form id="sampleForm">                
+                <!-- Reference -->
                 <fieldset>
+                  <legend>References</legend>
+
+                  <!-- reference site -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="sampleSite">reference site: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="sampleSite" required>
+                        <option value=""></option>
+                      </select>
+                    </div>
+                  </div>
+
                   <!-- reference feature -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="feature_dropdown">reference feature: *</label>
+                      <label for="sampleFeature">reference feature: *</label>
                     </div>
                     <div class="col-75">
-                      <select id="feature_dropdown" required>
-                        <option value="">select feature</option>
+                      <select id="sampleFeature" required>
+                        <option value=""></option>
                       </select>
                     </div>
                   </div>
@@ -1033,17 +1372,19 @@
                     </div>
                     <div class="col-75">
                       <input type="hidden" id="sample_id">
-                      <input type="text" id="sample_label" required style="padding-right: 50px;" autocomplete="off">
+                      <input type="text" id="sample_label" placeholder="" required style="padding-right: 50px;" autocomplete="off">
                       <span class="clear-icon" id="sample_label_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
                       <ul id="sample_label_Dropdown" class="dropdown hidden"></ul>
                     </div>
                   </div>
+
                 </fieldset>
 
                 <br>
+
                 <!-- 2nd accordion -->
                 <fieldset>
-                  <div class="container-md">
+                  <div class="container-md" style="width: 100%; padding: 0%; margin-top: 0;">
                     <div class="accordion">
 
                       <!-- sample location -->
@@ -1054,9 +1395,8 @@
                           </button>
                         </h2>
                         <div id="sampleLoc_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
-                              <legend>Sample location</legend>
 
                               <!-- stratum -->
                               <div class="row">
@@ -1104,7 +1444,7 @@
                                   <label for="depth_from" data-tooltip="Please specify the drill core depth in cm.">depth from ... to [cm]:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="number" step="0.1" id="depth_from" placeholder="drill core depth from">
+                                  <input type="number" step="0.1" id="depth_from" placeholder="from">
                                   <input type="number" step="0.1" id="depth_to"   placeholder="to">
                                 </div>
                               </div>
@@ -1114,7 +1454,7 @@
                         </div>
                       </div>
 
-                      <!-- coordinates incl. map -->
+                      <!-- coordinates -->
                       <div class="accordion-item" id="sampleCoords_AccordionItem">
                         <h2 class="accordion-header">
                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sampleCoords_AccordionCollapseElem" aria-expanded="false" aria-controls="siteGeneral_AccordionCollapseElem">
@@ -1122,16 +1462,37 @@
                           </button>
                         </h2>
                         <div id="sampleCoords_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
+                              
+                              <!-- coordinate system -->
                               <div class="row">
                                 <div class="col-25">
-                                  <label for="sample_coordinate_system">coordinate reference system:</label>
+                                  <label
+                                    data-tooltip="'DHDN / 3-degree Gauss' and 'local' are not being transformed into WGS84 automatically, but you can enter these manually."
+                                  >
+                                    coordinate system:
+                                  </label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="sample_coordinate_system">
-                                    <option value="">select coordinate reference system</option>
+                                  <select id="sample_coordinate_system" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#sample_coordinate_system').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#sample_coordinate_system')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
     
@@ -1168,7 +1529,7 @@
                               <!-- longitude wgs84 -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="sample_longitude_wgs84" data-tooltip="This field is filled in automatically." >longitude wgs84:</label>
+                                  <label for="sample_longitude_wgs84" data-tooltip="This field is filled in automatically for all selected coordinate systems except 'DHDN / 3-degree Gauss' and 'local'." >longitude wgs84:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="sample_longitude_wgs84">
@@ -1178,14 +1539,13 @@
                               <!-- latitude wgs84 -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="sample_latitude_wgs84" data-tooltip="This field is filled in automatically." >latitude wgs84:</label>
+                                  <label for="sample_latitude_wgs84" data-tooltip="This field is filled in automatically for all selected coordinate systems except 'DHDN / 3-degree Gauss' and 'local'." >latitude wgs84:</label>
                                 </div>
                                 <div class="col-75">
                                   <input type="text" id="sample_latitude_wgs84">
                                 </div>
                               </div>
     
-                              </style>
                             </fieldset>
                           </div>
                         </div>
@@ -1199,33 +1559,65 @@
                           </button>
                         </h2>
                         <div id="sampleMeasure_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
+
                               <!-- botanical determination by -->
-                              <div class="row">
-                                <div class="col-25"> 
-                                  <label for="bot_det_by" data-tooltip="Multiple selections are allowed (Please use the 'ctrl' button to mark multiple.). Please use the remarks box below to specify the tasks assigned to different staff members, e.g., charcoal analysis – author, seed identification – author.">botanical determination by:</label>
+                              <div
+                                class="row"
+                                style="
+                                  border: 0.5px solid #ccc;
+                                  border-left: none;
+                                  border-radius: 0 4px 4px 0;
+                                  padding-bottom: 6px;
+                                  padding-top: 6px;
+                                  margin-right: auto;
+                                "
+                              >
+                                <div class="col-25">
+                                  <label
+                                    for="botanicalDeterminationsBy"
+                                    data-tooltip="Please use the remarks box below to specify the tasks assigned to different staff members, e.g., charcoal analysis – author, seed identification – author."
+                                  >
+                                    botanical determination by:
+                                  </label>
                                 </div>
-                                <div class="col-75">
-                                  <select id="bot_det_by" multiple></select>
+
+                                <div class="col-75" style="display:flex; gap:10px; align-items:center;">
+                                  <select id="botanicalDeterminationsBy"></select>
+                                  <!-- Button to add botanist --> 
+                                  <button type="button"
+                                          class="btn btn-primary"
+                                          id="addBotanicalDeterminationByButton">
+                                    Add
+                                  </button>
                                 </div>
+
+                                <!-- Container to display added botanists -->
+                                <div class="col-25"></div>
+                                <div class="col-75" id="botanicalDeterminationByContainer" style="padding-left: 12px; margin-top: 0px;"></div>
                               </div>
 
                               <!-- year of botanical determination -->
-                              <div class="row">
-                                <div class="col-25"> 
-                                  <label for="bot_det_yr" data-tooltip="Please enter the year of botanical determination in the form yyyy.">botanical determination year:</label>
+                              <div class="row" style="margin-top: 10px;">
+                                <div class="col-25""> 
+                                  <label
+                                    for="bot_det_yr"
+                                    data-tooltip="Please enter the year of botanical determination in the form yyyy."
+                                  >
+                                    botanical determination year:
+                                  </label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="int" id="bot_det_yr">
+                                  <input type="int" id="bot_det_yr" style="width: 70px;">
                                 </div>
                               </div>
                               <br>
 
-                              <fieldset id="fractions">
+                              <fieldset id="fractions" style="padding: 0;">
                                 <div id="one_fraction">
                                   <br>
-                                  <legend data-tooltip="To enter information about a fraction, please first indicate whether it was analyzed by selecting an option from this list.">fraction 1:</legend>
+                                  <legend>fraction 1:</legend>
 
                                   <!-- fraction analyzed -->
                                   <div class="row">
@@ -1245,7 +1637,7 @@
                                   <!-- orgOrMin -->
                                   <div class="row">
                                     <div class="col-25"> 
-                                      <label>organic / minerals:</label>
+                                      <label for="">organic / minerals:</label>
                                     </div>
                                     <div class="col-75">
                                       <div class="form-check form-check-inline">
@@ -1280,7 +1672,7 @@
                                   </div>
                                 </div>
                               </fieldset>
-                              <button type="button" class="Add" style="margin-right: 30px;" onclick="addFraction()" >add fraction</button>
+                              <button type="button" class="Add" onclick="addFraction()" >add fraction</button>
                               <script>
                                 document.addEventListener("DOMContentLoaded", () => {
                                   updateRemoveFractionButtonVisibility();
@@ -1296,9 +1688,24 @@
                                   <label for="sample_type">sample type:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="sample_type">
-                                    <option value="" >select sample type</option>
+                                  <select id="sample_type" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#sample_type').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#sample_type')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
@@ -1335,8 +1742,9 @@
                           </button>
                         </h2>
                         <div id="sampleInventory_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
+
                               <!-- seeds and fruits -->
                               <div class="row">
                                 <div class="col-25"> 
@@ -1345,9 +1753,24 @@
                                   </label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="seedsAndFruits">
-                                    <option value="" hidden selected></option>
+                                  <select id="seedsAndFruits" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#seedsAndFruits').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#seedsAndFruits')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
                               
@@ -1357,9 +1780,24 @@
                                   <label for="woodSubfossile">wood, subfossil:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="woodSubfossile">
-                                    <option value="" hidden selected></option>
+                                  <select id="woodSubfossile" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#woodSubfossile').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#woodSubfossile')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
@@ -1369,9 +1807,24 @@
                                   <label for="charcoalInvestigated">charcoal investigated:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="charcoalInvestigated">
-                                    <option value="" hidden selected></option>
+                                  <select id="charcoalInvestigated" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#charcoalInvestigated').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#charcoalInvestigated')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
@@ -1395,8 +1848,6 @@
                                 </div>
                               </div>
 
-                              <br>
-
                               <!-- sample volume -->
                               <div class="row">
                                 <div class="col-25"> 
@@ -1410,7 +1861,7 @@
                               <!-- volume determination -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label data-tooltip="Wet in case of permanently influenced by groundwater or by pond water.">volume determination:</label>
+                                  <label for="" data-tooltip="Wet in case of permanently influenced by groundwater or by pond water.">volume determination:</label>
                                 </div>
                                 <div class="col-75">
                                   <div class="form-check form-check-inline">
@@ -1436,17 +1887,33 @@
                           </button>
                         </h2>
                         <div id="sampleDating_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
+
                               <!-- chronozone -->
                               <div class="row">
                                 <div class="col-25"> 
-                                  <label for="chronozone" data-tooltip="e.g. 'Subatlantic', 'Boreal', 'Older Dryas', ...">chronozone:</label>
+                                  <label for="chronozone">chronozone:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="chronozone">
-                                    <option value="" >select chronozone</option>
+                                  <select id="chronozone" style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#chronozone').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#chronozone')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
@@ -1473,18 +1940,26 @@
                           </div>
                         </div>
                       </div>
-                      <br>
+
                       <!-- remarks -->
-                      <div class="row">
-                        <div class="col-25"> 
+                      <div class="row" style="padding-top: 10px;">
+                        <div class="col-25" style="padding-left: 32px;">
                           <label for="sample_remarks" style="color: rgb(33, 37, 41);">remarks:</label>
                         </div>
                         <div class="col-75">
-                          <textarea id="sample_remarks" rows="3"></textarea>
+                          <textarea name="sample_remarks" id="sample_remarks" rows="3"></textarea>
                         </div>
                       </div>
 
-                      <button type="button" class="MySubmitButton" id="sample_submit_update_button" onclick="submit_update_Sample()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+                      <button
+                        type="button"
+                        class="MySubmitButton"
+                        id="sample_submit_update_button"
+                        onclick="create_update_sample()"
+                        style="width: unset; padding-left: 10px; padding-right: 10px;"
+                      >
+                        create
+                      </button>
 
                     </div>
                   </div>
@@ -1509,14 +1984,38 @@
                 <fieldset>
                   <legend>References</legend>
 
+                  <!-- reference site -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="absDating_site_dropdown">reference site: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="absDating_site_dropdown" required>
+                        <option value=""></option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- reference feature -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="absDating_feature_dropdown">reference feature: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="absDating_feature_dropdown" required>
+                        <option value=""></option>
+                      </select>
+                    </div>
+                  </div>
+
                   <!-- reference sample -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="absDating_sample_dropdown" data-tooltip="Please select the corresponding sample.">reference sample: *</label>
+                      <label for="absDating_sample_dropdown">reference sample: *</label>
                     </div>
                     <div class="col-75">
                       <select id="absDating_sample_dropdown" required>
-                        <option value="">select sample</option>
+                        <option value=""></option>
                       </select>
                     </div>
                   </div>
@@ -1528,44 +2027,54 @@
                     </div>
                     <div class="col-75">
                       <input type="hidden" id="absDating_id">
-                      <input type="text" id="subsample" required style="padding-right: 50px;" autocomplete="off">
+                      <input type="text" id="subsample" placeholder="" required style="padding-right: 50px;" autocomplete="off">
                       <span class="clear-icon" id="subsample_clearIcon" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; color: black; font-size: 16px;">&#10005;</span>
                       <ul id="subsample_Dropdown" class="dropdown hidden"></ul>
                     </div>
                   </div>
 
                   <!-- reference literature -->
-                  <input type="hidden" id="absDating_literature_id">
-
-                  <div class="row">
+                  <div
+                    class="row"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-left: none;
+                      border-radius: 0 4px 4px 0;
+                      margin-top: 12px;
+                      padding-bottom: 6px;
+                      padding-top: 6px;
+                      margin-right: auto;
+                    "
+                  >
                     <div class="col-25">
-                      <label data-tooltip="Please link associated literature here.">choose reference literature:</label>
+                      <label
+                        for="datingLiterature"
+                        data-tooltip="Please reference relevant literature by adding them. New literature can be created in the 'LITERATURE' section."
+                      >
+                        reference literature:
+                      </label>
                     </div>
-                    <div class="col-75">
-                      <input type="text" id="absDating_literature_Input" style="padding-right: 50px;" list="absDating_literature_List">
-                      <span class="clear-icon" id="absDating_literature_clearIcon" style="top: 26px;">&#10005;</span>
-                      <datalist id="absDating_literature_List"></datalist>
-                      <ul id="absDating_literature_Dropdown" class="dropdown hidden"></ul>
+
+                    <div class="col-75" style="padding-left: 14px; display:flex; gap:10px; align-items:center;">
+                      <select id="datingLiterature"></select>
+                      <!-- Button to add literature --> 
+                      <button type="button"
+                              class="btn btn-primary"
+                              id="addLiteratureButtonAbsoluteDating"
+                      >
+                        Add
+                      </button>
                     </div>
+
+                    <!-- Container to display added literature -->
+                    <div class="col-25"></div>
+                    <div class="col-75" id="absDating_literature_container" style="padding-left: 14px; margin-top: 0px;"></div>
                   </div>
 
-                  <!-- 'Create new literature' and 'Add literature' Button --> 
-                  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn btn-primary" onclick="openLiteratureWindow()">Create new literature</button>
-                    <button type="button" class="btn btn-primary" onclick="absDating_addLiterature()">Add this literature</button>
-                  </div>
-
-                  <!-- Container to display added literature -->
-                  <div class="row">
-                    <div class="col-75">
-                      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <div id="absDating_literature_container" style="margin-top: 10px; width: 95%;"></div>
-                      </div>
-                    </div>
-                  </div>
                 </fieldset>
 
                 <br>
+
                 <!-- Absolute dating -->
                 <fieldset>
                   <legend>Absolute dating</legend>
@@ -1576,9 +2085,24 @@
                       <label>material:</label>
                     </div>
                     <div class="col-75">
-                      <select id="material">
-                        <option value="">select material</option>
+                      <select id="material" style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#material').select2({
+                              placeholder: '',
+                              allowClear: true
+                            });
+
+                            // remove arrow
+                            $('#material')
+                              .next('.select2-container')
+                              .find('.select2-selection__arrow')
+                              .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
@@ -1594,22 +2118,36 @@
 
                   <!-- dating method -->
                   <div class="row">
-                    <div class="col-25"> 
+                    <div class="col-25" style="margin-top: 0;">
                       <label>dating method:</label>
                     </div>
-                    <div class="col-75">
-                      <select id="dating_method">
-                        <option value="">select dating method</option>
+                    <div class="col-75" style="margin-top: 0;">
+                      <select id="dating_method" style="width: 100%;">
+                        <option value=""></option>
                       </select>
-                    </div>
-                  </div>                        
-                </fieldset>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#dating_method').select2({
+                              placeholder: '',
+                              allowClear: true
+                            });
 
-                <br>
-                <fieldset>
+                            // remove arrow
+                            $('#dating_method')
+                              .next('.select2-container')
+                              .find('.select2-selection__arrow')
+                              .remove();
+                        });
+                      </script>
+                    </div>
+                  </div>
+
                   <!-- 2nd accordion -->
-                  <div class="container-md">
+                  <div class="container-md" style="width: 100%; padding: 0%; margin: 0; margin-top: 19px;">
                     <div class="accordion">
+
+                      <datalist id="lab_list"></datalist>
                     
                       <!--Dendrochronological dating-->
                       <div class="accordion-item disabled" id="dendroDating_AccordionItem" style="pointer-events: none; opacity: 0.5;">
@@ -1619,7 +2157,8 @@
                           </button>
                         </h2>
                         <div id="dendroDating_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
+
                             <fieldset>
                               <!-- laboratory -->
                               <div class="row">
@@ -1627,13 +2166,14 @@
                                   <label for="dendro_lab" data-tooltip="Enter a label to create a new laboratory or select an existing laboratory from the list.">laboratory:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="text"
-                                          id="dendro_lab"
-                                          placeholder=""
-                                          class="form-control"
-                                          autocomplete="off"
-                                          list="dendro_lab_list">
-                                  <datalist id="dendro_lab_list"></datalist>
+                                  <input
+                                    type="text"
+                                    id="dendro_lab"
+                                    placeholder=""
+                                    class="form-control"
+                                    autocomplete="off"
+                                    list="lab_list"
+                                  >
                                 </div>
                               </div>
 
@@ -1643,7 +2183,7 @@
                                   <label for="dendro_number" data-tooltip="The laboratory number.">number:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="number" step="1" id="dendro_number">
+                                  <input type="text" id="dendro_number">
                                 </div>
                               </div>
 
@@ -1667,6 +2207,7 @@
                                   <input type="checkbox" id="waney_edge" style="margin-top: 18px;">
                                 </div>
                               </div>
+
                             </fieldset>                                  
                           </div>
                         </div>
@@ -1680,17 +2221,33 @@
                           </button>
                         </h2>
                         <div id="c14Dating_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
                             <fieldset>
+
                               <!-- C14 lab -->
                               <div class="row">
                                 <div class="col-25"> 
                                   <label for="c14_lab" data-tooltip="Please select a C14 laboratory from the list.">C14 laboratory:</label>
                                 </div>
                                 <div class="col-75">
-                                  <select id="c14_lab">
-                                    <option value="">select C14 laboratory</option>
+                                  <select id="c14_lab" required style="width: 100%;">
+                                    <option value=""></option>
                                   </select>
+                                  <!-- Select2 dropdown -->
+                                  <script>
+                                    $(document).ready(function() {
+                                        $('#c14_lab').select2({
+                                          placeholder: '',
+                                          allowClear: true
+                                        });
+
+                                        // remove arrow
+                                        $('#c14_lab')
+                                          .next('.select2-container')
+                                          .find('.select2-selection__arrow')
+                                          .remove();
+                                    });
+                                  </script>
                                 </div>
                               </div>
 
@@ -1746,6 +2303,7 @@
                                   <input type="number" step="0.01" id="pMC_dev" placeholder="±">
                                 </div>
                               </div>
+
                             </fieldset>
                           </div>
                         </div>
@@ -1759,7 +2317,8 @@
                           </button>
                         </h2>
                         <div id="otherDating_AccordionCollapseElem" class="accordion-collapse collapse">
-                          <div class="accordion-body">
+                          <div class="accordion-body" style="margin-bottom: 0;">
+
                             <fieldset>
                               <!-- laboratory -->
                               <div class="row">
@@ -1767,13 +2326,14 @@
                                   <label for="other_lab" data-tooltip="Enter a label to create a new laboratory or select an existing laboratory from the list.">laboratory:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="text"
-                                        id="other_lab"
-                                        placeholder=""
-                                        class="form-control"
-                                        autocomplete="off"
-                                        list="other_lab_list">
-                                  <datalist id="other_lab_list"></datalist>
+                                  <input
+                                    type="text"
+                                    id="other_lab"
+                                    placeholder=""
+                                    class="form-control"
+                                    autocomplete="off"
+                                    list="lab_list"
+                                  >
                                 </div>
                               </div>
 
@@ -1783,7 +2343,7 @@
                                   <label for="other_number" data-tooltip="The laboratory number.">number:</label>
                                 </div>
                                 <div class="col-75">
-                                  <input type="number" step="1" id="other_number">
+                                  <input type="text" id="other_number">
                                 </div>
                               </div>
 
@@ -1797,6 +2357,7 @@
                                   <!--input type="int" id="other_age_devation" placeholder="±"-->
                                 </div>
                               </div>
+
                             </fieldset>
                           </div>
                         </div>
@@ -1804,7 +2365,8 @@
                     </div>
                   </div>
 
-                  <button type="button" class="MySubmitButton" id="absDating_submit_update_button" onclick="submit_update_AbsoulteDating()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+                  <button type="button" class="MySubmitButton" id="absDating_submit_update_button" onclick="create_update_absoulteDating()" style="width: unset; padding-left: 10px; padding-right: 10px;">create</button>
+
                 </fieldset>
               </form>
             </div>
@@ -1814,17 +2376,54 @@
         <!-- Results -->
         <div class="accordion-item">
           <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSeven" aria-expanded="false" aria-controls="panelsStayOpen-collapseSeven">
+            <button
+              class="accordion-button collapsed"
+              type="button" data-bs-toggle="collapse"
+              data-bs-target="#panelsStayOpen-collapseSeven"
+              aria-expanded="false"
+              aria-controls="panelsStayOpen-collapseSeven"
+            >
               RESULTS
             </button>
           </h2>
           <div id="panelsStayOpen-collapseSeven" class="accordion-collapse collapse">
             <div class="accordion-body">
-              <form id="resultForm">
 
-                <!-- General Info / Reference Selection -->
+              <span style="padding: 4px;">
+                ⓘ Results can only be submitted. In the
+                <a href="data-explorer.html" target="_blank">Data Explorer</a>,
+                results can be viewed, edited and deleted.
+              </span>
+
+              <form id="resultForm" style="padding-top: 4px;">               
+
+                <!-- References -->
                 <fieldset>
                   <legend>References</legend>
+
+                  <!-- reference site -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="result_site_dropdown">reference site: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="result_site_dropdown" required>
+                        <option value=""></option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- reference feature -->
+                  <div class="row">
+                    <div class="col-25">
+                      <label for="result_feature_dropdown">reference feature: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="result_feature_dropdown" required>
+                        <option value=""></option>
+                      </select>
+                    </div>
+                  </div>
 
                   <!-- reference sample -->
                   <div class="row">
@@ -1833,7 +2432,7 @@
                     </div>
                     <div class="col-75">
                       <select id="result_sample_dropdown" required>
-                        <option value="">select sample</option>
+                        <option value=""></option>
                       </select>
                     </div>
                   </div>
@@ -1841,49 +2440,100 @@
                   <!-- reference absolute datings -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="which_datings" data-tooltip="Please select from the list of subsamples, 
-                      previously entered in the dating-section.">related datings:</label>
+                      <label
+                        for="result_datings"
+                        data-tooltip="Multiple subsamples can be selected from the list of,
+                        previously entered in the DATING section."
+                      >
+                        related datings:
+                      </label>
                     </div>
                     <div class="col-75">
-                      <select id="which_datings" multiple></select>
+                      <select id="result_datings" multiple style="width: 100%"></select>
+                      <!-- Select2 Multi-select boxes (pillbox) -->
+                      <script>
+                        $(document).ready(function() {
+                            $('#result_datings').select2({
+                              placeholder: '',
+                              allowClear: true,
+                              templateSelection: function(item) {
+                                return (item.text || '').trim();
+                              }
+                            });
+                        });
+                      </script>
                     </div>
                   </div>
+
                 </fieldset>
 
                 <br>
+
+                <!-- General -->
                 <fieldset>
                   <legend>General</legend>
 
-                  <!-- reference fraction -->
+                  <!-- fraction -->
                   <div class="row">
                     <div class="col-25">
-                      <label for="which_fraction" data-tooltip="Please choose from the list or add a new fraction under sample -> measurement details. 
-                        The list shows available fraction details in the order: ORG/MIN, sive size, standard multiplier.">reference fraction: *</label>
+                      <label
+                        for="result_fraction"
+                        data-tooltip="Please choose from the list or add a new fraction under SAMPLE -> MEASUREMENT DETAILS.
+                        The list shows available fraction details in the order: ORG/MIN, sive size, standard multiplier."
+                      >
+                        fraction: *
+                      </label>
                     </div>
-                    <div class="col-75">
-                      <select id="which_fraction" required>
-                        <option value="">select fraction</option>
+                    <div class="col-75" padding-right: 20px;>
+                      <select id="result_fraction" required style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                          $('#result_fraction').select2({
+                            placeholder: '',
+                            allowClear: true,
+                          });
+                          // remove arrow
+                          $('#result_fraction')
+                            .next('.select2-container')
+                            .find('.select2-selection__arrow')
+                            .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
                   <!-- fraction fieldset -->
-                  <fieldset id="result_fraction">
-
+                  <fieldset 
+                    id="result_fraction"
+                    style="
+                      border: 0.5px solid #ccc;
+                      border-top: none;
+                      border-radius: 0 0 4px 4px;
+                      margin-top: 4px;
+                      margin-bottom: 6px;
+                      margin-left: auto;
+                      margin-right: 1.5px;
+                      padding-top: 0px;
+                      padding-bottom: 17px;
+                    "
+                  >
                     <!-- fraction analyzed -->
                     <div class="row">
                       <div class="col-25"> 
-                        <label for="result_fractionAnalyzed">fraction analyzed?</label>
+                        <label for="result_fractionAnalyzed">fraction analyzed:</label>
                       </div>
                       <div class="col-75">
-                        <input type="text" id="result_fractionAnalyzed" disabled style="margin-top: 12px; width: 30%;">
+                        <input type="text" id="result_fractionAnalyzed" disabled style="margin-top: 10px; width: 145px;">
                       </div>
                     </div>
 
                     <!-- org or min -->
                     <div class="row">
                       <div class="col-25"> 
-                        <label>organic / minerals:</label>
+                        <label for="">organic / minerals:</label>
                       </div>
                       <div class="col-75" style="margin-top: 18px;">
                         <div class="form-check form-check-inline">
@@ -1903,28 +2553,40 @@
                         <label for="result_sieveSize">sieve size [mm]:</label>
                       </div>
                       <div class="col-75">
-                        <input type="number" id="result_sieveSize" disabled>
+                        <input type="number" id="result_sieveSize" disabled style="width: 145px;">
                       </div>
                     </div>
 
                     <!-- multiplier -->
                     <div class="row">
                       <div class="col-25"> 
-                        <label for="result_multiplier" data-tooltip="The multiplicator is needed for the extrapolation to the whole sample and depends on the sieved fraction.">multiplier:</label>
+                        <label
+                          for="result_multiplier"
+                          data-tooltip="The multiplicator is needed for the extrapolation
+                          to the whole sampleand depends on the sieved fraction."
+                        >
+                          multiplier:
+                        </label>
                       </div>
                       <div class="col-75">
-                        <input type="number" step="0.01" id="result_multiplier" style="width: 65%;">
+                        <input type="number" step="0.01" id="result_multiplier" style="width: 145px;">
                       </div>
-                    </div>                          
+                    </div>
+
                   </fieldset>
 
                   <!-- entry date -->
                   <div class="row">
                     <div class="col-25"> 
-                      <label>entry date:</label>
+                      <label for="entryDate">entry date:</label>
                     </div>
                     <div class="col-75">
-                      <input type="date" class="set-today" id="entryDate">
+                      <input
+                        type="date"
+                        id="entryDate"
+                        class="set-today"
+                        style="width: 120px; padding-left: 8px; margin-top: 8px; border: 2px solid #ccc; border-radius: 4px;"
+                      >
                       <script>
                         window.onload= function() {
                           const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
@@ -1940,115 +2602,179 @@
                       <label for="state_of_preservation" data-tooltip="Please select from the list.">state of preservation: *</label>
                     </div>
                     <div class="col-75">
-                      <select id="state_of_preservation" required>
-                        <option value="">select state of preservation</option>
+                      <select id="state_of_preservation" required style="width: 100%;">
+                        <option value=""></option>
                       </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                          $('#state_of_preservation').select2({
+                            placeholder: '',
+                            allowClear: true
+                          });
+                          // remove arrow
+                          $('#state_of_preservation')
+                            .next('.select2-container')
+                            .find('.select2-selection__arrow')
+                            .remove();
+                        });
+                      </script>
                     </div>
                   </div>
 
-                  <br><br>
-                  <legend>Taxonomy</legend>
-                  <span id="taxonomy_info"></span>
-                  <fieldset id="resultFormTaxonomy">
+                </fieldset>
 
-                    <!-- classification confer -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="cf" data-tooltip="Indicates the highest taxonomic level to which the specimen could be reliably identified.">classification confer: *</label>
-                      </div>
-                      <div class="col-75">
-                        <select id="cf" required>
-                          <option value="">select classification confer</option>
-                        </select>
-                      </div>
-                    </div>
+                <br>
 
-                    <!-- tax code -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="taxCode" data-tooltip="Please select from the corresponding list of taxonomy codes, which was specified under ' site -> general information -> taxonomy '. ">tax code: *</label>
-                      </div>
-                      <div class="col-75" style="margin-top: 15px;">
-                        <select id="taxCode" required style="width: 100%"></select>
-                      </div>
+                <fieldset id="resultFormTaxonomy">
+                  <legend style="margin-bottom: 2px;">Taxonomy</legend>
+                  <span id="taxonomy_info" style="display: none; border: 1.5px solid #ccc; border-radius: 3px; padding: 4px;"></span>
+
+                  <!-- classification confer -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="cf" data-tooltip="Indicates the highest taxonomic level to which the specimen could be reliably identified.">classification confer: *</label>
                     </div>
-                    <!-- dropdown filter -->
-                    <script>
-                      $(document).ready(function() {
-                          $('#taxCode').select2({
-                            placeholder: "select tax code",
+                    <div class="col-75">
+                      <select id="cf" required style="width: 100%;">
+                        <option value=""></option>
+                      </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                          $('#cf').select2({
+                            placeholder: '',
                             allowClear: true
                           });
-                      });
-                    </script>
-
-                    <!-- remarks taxonomy -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="remarks_taxonomy">remarks taxonomy:</label>
-                      </div>
-                      <div class="col-75">
-                        <textarea id="remarks_taxonomy" rows="3"></textarea>
-                      </div>
+                          // remove arrow
+                          $('#cf')
+                            .next('.select2-container')
+                            .find('.select2-selection__arrow')
+                            .remove();
+                        });
+                      </script>
                     </div>
+                  </div>
 
-                    <br><br>
-                    <legend title="Data entries can be queried, filtered and altered for download via the 'Data Explorer' module.">Results</legend>
-
-                    <!-- rest type -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="restType" data-tooltip="The type of plant remains.">rType: *</label>
-                      </div>
-                      <div class="col-75">
-                        <select id="restType" required>
-                          <option value="">select rest type</option>
-                        </select>
-                      </div>
+                  <!-- tax code -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="taxCode" data-tooltip="Please select from the corresponding list of taxonomy codes, which was specified under ' site -> general information -> taxonomy '. ">tax code: *</label>
                     </div>
-
-                    <!-- rest count -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="r_count" data-tooltip="The number of finds of one type of plant remains.">rCount:</label>
-                      </div>
-                      <div class="col-75">
-                        <input type="number" step="1" min="0" id="r_count">
-                      </div>
+                    <div class="col-75">
+                      <select id="taxCode" required style="width: 100%;">
+                        <option value=""></option>
+                      </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                          $('#taxCode').select2({
+                            placeholder: '',
+                            allowClear: true
+                          });
+                          // remove arrow
+                          $('#taxCode')
+                            .next('.select2-container')
+                            .find('.select2-selection__arrow')
+                            .remove();
+                        });
+                      </script>
                     </div>
+                  </div>
 
-                    <!-- rest fragment -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="r_fragment" data-tooltip="The number of fragments.">rFragment:</label>
-                      </div>
-                      <div class="col-75">
-                        <input type="number" step="1" min="0" id="r_fragment">
-                      </div>
+                  <!-- remarks taxonomy -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="remarks_taxonomy">remarks taxonomy:</label>
                     </div>
+                    <div class="col-75">
+                      <textarea id="remarks_taxonomy" rows="3"></textarea>
+                    </div>
+                  </div>
 
-                    <!-- rest weight -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="r_weight" data-tooltip="The weight of the plant remains in gram.">rWeight [g]:</label>
-                      </div>
-                      <div class="col-75">
-                        <input type="number" name="r_weight" step=0.0001 id="r_weight">
-                      </div>
-                    </div>
-                    
-                    <!-- estimation -->
-                    <div class="row">
-                      <div class="col-25"> 
-                        <label for="estimation" data-tooltip="Please tick if this is an estimation.">estimation:</label>
-                      </div>
-                      <div class="col-75">
-                        <input type="checkbox" id="estimation" style="margin-top: 18px;">
-                      </div>
-                    </div>
-                  </fieldset>
+                  <br>
 
-                  <button type="button" class="MySubmitButton" onclick="submitResult()" style="width: unset; padding-left: 10px; padding-right: 10px;">submit&nbsp;result</button>
+                  <legend>Results</legend>
+
+                  <!-- rest type -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="restType" data-tooltip="The type of plant remains.">rType: *</label>
+                    </div>
+                    <div class="col-75">
+                      <select id="restType" required style="width: 100%;">
+                        <option value=""></option>
+                      </select>
+                      <!-- Select2 dropdown -->
+                      <script>
+                        $(document).ready(function() {
+                          $('#restType').select2({
+                            placeholder: '',
+                            allowClear: true,
+                            templateSelection: function(item) {
+                              return (item.text || '').trim();
+                            }
+                          });
+                          // remove arrow
+                          $('#restType')
+                            .next('.select2-container')
+                            .find('.select2-selection__arrow')
+                            .remove();
+                        });
+                      </script>
+                    </div>
+                  </div>
+
+                  <!-- rest count -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="r_count" data-tooltip="The number of finds of one type of plant remains.">rCount:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="number" step="1" min="0" id="r_count">
+                    </div>
+                  </div>
+
+                  <!-- rest fragment -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="r_fragment" data-tooltip="The number of fragments.">rFragment:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="number" step="1" min="0" id="r_fragment">
+                    </div>
+                  </div>
+
+                  <!-- rest weight -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="r_weight" data-tooltip="The weight of the plant remains in gram.">rWeight [g]:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="number" name="r_weight" step=0.0001 id="r_weight">
+                    </div>
+                  </div>
+                  
+                  <!-- estimation -->
+                  <div class="row">
+                    <div class="col-25"> 
+                      <label for="estimation" data-tooltip="Please tick if this is an estimation.">estimation:</label>
+                    </div>
+                    <div class="col-75">
+                      <input type="checkbox" id="estimation" style="margin-top: 18px;">
+                    </div>
+                  </div>
+
+                  <!-- submit button -->
+                  <button
+                    type="button"
+                    class="MySubmitButton"
+                    onclick="submitResult()"
+                    style="width: unset; margin-top: 0; padding-left: 10px; padding-right: 10px;"
+                  >
+                    submit
+                  </button>
+
                 </fieldset>
               </form>
             </div>
@@ -2108,52 +2834,63 @@
     <!-- DANTE attributes -->
     <script src="js/danteAttributes/fetchDanteAttribute.js"></script>
     <script src="js/danteAttributes/populateDanteDropdown.js"></script>
+    <script src="js/danteAttributes/updateBackendDanteAttributes.js"></script>
+    <script>updateBackendDanteAttributes()</script>
 
     <!-- general -->
     <script src="js/formatService.js"></script>
     <script src="js/leafletMap.js"></script>
     <script src="js/transformCoordinatesToWGS84.js"></script>
     <script src="js/reverseGeocoding.js"></script>
-    
-    <script src="js/input/literatureModal.js"></script>
+    <script src="js/toast.js"></script>
 
     <!-- research project -->
     <script src="js/input/researchProject.js"></script>
+    <script src="js/input/researchProject-dropdown.js"></script>
+    <script src="js/input/researchProject-boxes.js"></script>
 
     <!-- user and institution -->
     <script src="js/input/institution.js"></script>
+    <script src="js/input/institution-dropdown.js"></script>
     <script src="js/input/institution-boxes.js"></script>
     <script src="js/input/user.js"></script>
+    <script src="js/input/user-dropdown.js"></script>
+    <script src="js/input/user-boxes.js"></script>
+
+    <!-- literature -->
+    <script src="js/input/author.js"></script>
+    <script src="js/input/author-dropdown.js"></script>
+    <script src="js/input/author-boxes.js"></script>
+    <script src="js/input/literature.js"></script>
+    <script src="js/input/literature-dropdown.js"></script>
+    <script src="js/input/literature-boxes.js"></script>
 
     <!-- site -->
     <script src="js/input/site.js"></script>
-    <script src="js/input/site-researchProject-boxes.js"></script>
-    <script src="js/input/site-literature-boxes.js"></script>
-    <script src="js/input/site-user-boxes.js"></script>
+    <script src="js/input/site-dropdown.js"></script>
 
     <!-- feature -->
     <script src="js/input/feature.js"></script>
-    <script src="js/input/feature-label-dropdown.js"></script>
+    <script src="js/input/feature-dropdown.js"></script>
     
     <!-- sample -->
     <script src="js/input/sample.js"></script>
-    <script src="js/input/sample-label-dropdown.js"></script>      
+    <script src="js/input/sample-dropdown.js"></script>      
     <script src="js/input/sample-fraction-boxes.js"></script>
     
     <!-- absolute dating -->
     <script src="js/input/absoluteDating.js"></script>
-    <script src="js/input/absoluteDating-subsample-dropdown.js"></script>
+    <script src="js/input/absoluteDating-dropdown.js"></script>
 
     <!-- result -->
     <script src="js/input/result.js"></script>
     <!------------------------------------------------------------------------>
 
-
     <footer>
       <ul>
-          <li><a href="copyright.html" target="_blank">license </a></li>
-          <li>Version 1.3</li>
-          <li><a href="contact.html" target="_blank">contact <strong> ☏ </strong> </a></li>
+        <li><a href="license.html" target="_blank">License</a></li>
+        <li>Version 4.0.0</li>
+        <li><a href="contact.html" target="_blank">Contact<strong> ☏ </strong></a></li>
       </ul>
     </footer>
 

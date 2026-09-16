@@ -2,7 +2,7 @@
 FROM gradle:8.8-jdk17 AS build
 WORKDIR /app
 COPY . .
-RUN gradle build
+RUN gradle build --no-build-cache
 
 # Stage 2: Run
 FROM eclipse-temurin:17-jdk

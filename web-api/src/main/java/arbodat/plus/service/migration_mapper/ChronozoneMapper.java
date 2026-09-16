@@ -51,10 +51,9 @@ public class ChronozoneMapper {
         chronozoneMap.put("Chrono?", "ArboDat+_chronozone_unknown");
         // not chosen
         chronozoneMap.put("n.gew.", "ArboDat+_chronozone_notChosen");
+        chronozoneMap.put(null, "ArboDat+_chronozone_notChosen");
         // empty
         chronozoneMap.put("-99", "ArboDat+_chronozone_notChosen");
-        // null
-        chronozoneMap.put(null, "ArboDat+_chronozone_notChosen");
     }
 
     public String getUri(String key) {

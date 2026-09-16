@@ -87,7 +87,7 @@ async function fetchDanteAttribute(attribute) {
 
         case ("siteType"):
             if (cachedSiteTypes_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_site_type/top?properties=narrower";
+                url = "https://api.dante.gbv.de/search?voc=arbodat_site_type&query=*&properties=ancestors,altLabel";
                 break;
             } else {
                 return;
@@ -95,7 +95,7 @@ async function fetchDanteAttribute(attribute) {
 
         case "naturalUnit":
             if (cachedNaturalUnits_loaded == false) {
-                url = "https://api.dante.gbv.de/search?voc=arbodat_natural_unit&properties=ancestors";
+                url = "https://api.dante.gbv.de/search?voc=arbodat_natural_unit&query=*&properties=ancestors,altLabel";
                 break;
             } else {
                 return;
@@ -113,7 +113,7 @@ async function fetchDanteAttribute(attribute) {
         // feature --------------------------------------
         case ("featureType"):
             if (cachedFeatureTypes_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_feature_type/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_feature_type/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -121,7 +121,7 @@ async function fetchDanteAttribute(attribute) {
 
         case ("preservationCondition"):
             if (cachedPreservationConditions_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_preservation_condition/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_preservation_condition/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -130,7 +130,7 @@ async function fetchDanteAttribute(attribute) {
         // sample ---------------------------------------
         case ("sampleType"):
             if (cachedSampleTypes_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_sample_type/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_sample_type/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -150,7 +150,7 @@ async function fetchDanteAttribute(attribute) {
         case ("charcoalInvestigated"):
         case ("woodSubfossile"):
             if (cachedSampleInvestigated_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_sample_investigated/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_sample_investigated/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -167,7 +167,7 @@ async function fetchDanteAttribute(attribute) {
 
         case ("datingMethod"):
             if (cachedDatingMethods_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_dating_method/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_dating_method/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -185,7 +185,7 @@ async function fetchDanteAttribute(attribute) {
         // result ---------------------------------------
         case ("stateOfPreservation"):
             if (cachedStateOfPreservation_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_result_condition/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_result_condition/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -193,7 +193,7 @@ async function fetchDanteAttribute(attribute) {
 
         case ("restType"):
             if (cachedRestTypes_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_rest_type/top?properties=narrower";
+                url = "https://api.dante.gbv.de/search?voc=arbodat_rest_type&query=*&properties=ancestors,altLabel";
                 break;
             } else {
                 return;
@@ -201,7 +201,7 @@ async function fetchDanteAttribute(attribute) {
 
         case ("classificationConfer"):
             if (cachedClassificationConfers_loaded == false) {
-                url = "http://api.dante.gbv.de/voc/arbodat_classification_confer/top?properties=narrower";
+                url = "http://api.dante.gbv.de/voc/arbodat_classification_confer/top?properties=narrower,altLabel";
                 break;
             } else {
                 return;
@@ -243,62 +243,79 @@ async function fetchDanteAttribute(attribute) {
                     // unknown
                     entry.uri !== "http://uri.gbv.de/terminology/arbodat_site_type/a1b9947c-431f-42cb-964c-4245f5280251"
                 );
-                cachedSiteTypes.forEach(entry => {
-                    if (entry.narrower) {
-                        entry.narrower = entry.narrower.filter(n =>
-                            // places of cult and religious institutions
-                            n.uri !== "http://uri.gbv.de/terminology/arbodat_site_type/89c30567-d997-4bba-8857-5253f97a06d6" &&
-                            // other rural setting
-                            n.uri !== "http://uri.gbv.de/terminology/arbodat_site_type/b75eec64-e0be-4725-923e-2b88e844f3cb" &&
-                            // other settlement
-                            n.uri !== "http://uri.gbv.de/terminology/arbodat_site_type/6dd843bd-de5c-461a-a85a-68a9cb92786b"
-                        );
-                    }
-                });
 
                 // Add local entries ------------------------------------------
-                entries =
-                    {   type: ["http://vocab.getty.edu/ontology#GuideTerm"],
-                        prefLabel: {en: "ArboDat+_siteType"},
-                        narrower: [
-                            {
-                                uri: "ArboDat+_siteType_unknown",
-                                prefLabel: {en: "unknown"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_notChosen",
-                                prefLabel: {en: "not chosen"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_otherAnthropogenicDeposit",
-                                prefLabel: {en: "other anthropogenic deposit"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_otherNaturalDeposit",
-                                prefLabel: {en: "other natural deposit"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_otherRuralSetting",
-                                prefLabel: {en: "other rural setting"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_otherSettlement",
-                                prefLabel: {en: "other settlement"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            },
-                            {
-                                uri: "ArboDat+_siteType_otherPlaceOfCult",
-                                prefLabel: {en: "other place of cult"},
-                                type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                            }
-                        ]
-                    }  
-                cachedSiteTypes.push(entries);
+                unknown_entry =   {
+                    uri: "ArboDat+_siteType_unknown",
+                    prefLabel: {en: "unknown type of site"},
+                    altLabel: {
+                        de: ["Fundstellentyp unbekannt"],
+                        fr: ["Type de site inconnu"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                notChosen_entry =   {
+                    uri: "ArboDat+_siteType_notChosen",
+                    prefLabel: {en: "not chosen"},
+                    altLabel: {
+                        de: ["nicht gewählt"],
+                        fr: ["Non Choisi"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                otherAnthropogenicDeposit_entry =   {
+                    uri: "ArboDat+_siteType_otherAnthropogenicDeposit",
+                    prefLabel: {en: "other anthropogenic deposit"},
+                    altLabel: {
+                        de: ["sonstige anthropogene Ablagerung"],
+                        fr: ["Autres dépôts anthropogènes"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                otherNaturalSediment_entry =   {
+                    uri: "ArboDat+_siteType_otherNaturalSediment",
+                    prefLabel: {en: "other natural sediment"},
+                    altLabel: {
+                        de: ["sonstige natürliche Ablagerung"],
+                        fr: ["Autres dépôts naturels"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                otherRuralSetting_entry =   {
+                    uri: "ArboDat+_siteType_otherRuralSetting",
+                    prefLabel: {en: "other rural setting"},
+                    altLabel: {
+                        de: ["sonstige ländliche Einrichtung"],
+                        fr: ["Autre établissement rural"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                otherSettlement_entry =   {
+                    uri: "ArboDat+_siteType_otherSettlement",
+                    prefLabel: {en: "other settlement"},
+                    altLabel: {
+                        de: ["sonstige Siedlung"],
+                        fr: ["Autre habitat de plein air"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                otherPlaceOfCult_entry =   {
+                    uri: "ArboDat+_siteType_otherPlaceOfCult",
+                    prefLabel: {en: "other place of cult"},
+                    altLabel: {
+                        de: ["sonstiger Kultplatz (inkl. Brandopferplatz)"],
+                        fr: ["Autre endroit ou lieu de culte"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+
+                cachedSiteTypes.push(unknown_entry);
+                cachedSiteTypes.push(notChosen_entry);
+                cachedSiteTypes.push(otherAnthropogenicDeposit_entry);
+                cachedSiteTypes.push(otherNaturalSediment_entry);
+                cachedSiteTypes.push(otherRuralSetting_entry);
+                cachedSiteTypes.push(otherSettlement_entry);
+                cachedSiteTypes.push(otherPlaceOfCult_entry);
                 // ------------------------------------------------------------
 
                 cachedSiteTypes_loaded = true;
@@ -309,14 +326,22 @@ async function fetchDanteAttribute(attribute) {
 
                 // Add local entries ------------------------------------------
                 unknown_entry =   {
-                                    uri:       "ArboDat+_naturalUnit_unknown",
-                                    prefLabel: {zxx: "unknown"},
-                                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                                   }
+                                    uri: "ArboDat+_naturalUnit_unknown",
+                                    prefLabel: { zxx: "unknown" },
+                                    altLabel: { zxx: [
+                                        "unbekannt",
+                                        "Inconnu"
+                                    ]},
+                                    type: [ "http://www.w3.org/2004/02/skos/core#Concept" ]
+                                  }
                 notChosen_entry = {
-                                    uri:       "ArboDat+_naturalUnit_notChosen",
-                                    prefLabel: {zxx: "not chosen"},
-                                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                                    uri: "ArboDat+_naturalUnit_notChosen",
+                                    prefLabel: { zxx: "not chosen" },
+                                    altLabel: { zxx: [
+                                        "nicht gewählt",
+                                        "Non Choisi"                                        
+                                    ]},
+                                    type: [ "http://www.w3.org/2004/02/skos/core#Concept" ]
                                    }
 
                 cachedNaturalUnits.push(unknown_entry);
@@ -339,22 +364,38 @@ async function fetchDanteAttribute(attribute) {
                 // Add local entries ------------------------------------------
                 unknown_entry =   {
                                     uri:       "ArboDat+_featureType_unknown",
-                                    prefLabel: {en: "unknown"},
+                                    prefLabel: {en: "unknown type of feature"},
+                                    altLabel: {
+                                        de: ["Befundtyp unbekannt"],
+                                        fr: ["Contexte inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 notChosen_entry = {
                                     uri:       "ArboDat+_featureType_notChosen",
                                     prefLabel: {en: "not chosen"},
+                                    altLabel: {
+                                        de: ["nicht gewählt"],
+                                        fr: ["Non Choisi"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 otherTypeOfFeature_entry =   {
                                     uri:       "ArboDat+_featureType_otherTypeOfFeature",
                                     prefLabel: {en: "other type of feature"},
+                                    altLabel: {
+                                        de: ["sonstiger Befundtyp"],
+                                        fr: ["Autre type de contexte"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 otherRitualFeature_entry = {
                                     uri:       "ArboDat+_featureType_otherRitualFeature",
                                     prefLabel: {en: "other ritual feature"},
+                                    altLabel: {
+                                        de: ["sonstiger ritueller Befund"],
+                                        fr: ["Autre contexte rituel/culte"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
 
@@ -380,16 +421,24 @@ async function fetchDanteAttribute(attribute) {
                 unknown_entry =   {
                                     uri:       "ArboDat+_sampleType_unknown",
                                     prefLabel: {en: "unknown"},
+                                    altLabel: {
+                                        de: ["unbekannt"],
+                                        fr: ["Inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
-                other_entry = {
-                                    uri:       "ArboDat+_sampleType_other",
-                                    prefLabel: {en: "other"},
+                others_entry = {
+                                    uri:       "ArboDat+_sampleType_others",
+                                    prefLabel: {en: "others"},
+                                    altLabel: {
+                                        de: ["Sonstiges"],
+                                        fr: ["Autres"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
 
                 cachedSampleTypes.push(unknown_entry);
-                cachedSampleTypes.push(other_entry);
+                cachedSampleTypes.push(others_entry);
                 // ------------------------------------------------------------
 
                 cachedSampleTypes_loaded = true;
@@ -401,7 +450,11 @@ async function fetchDanteAttribute(attribute) {
                 // Add local entries ------------------------------------------
                 unknown_entry =   {
                                     uri:       "ArboDat+_chronozone_unknown",
-                                    prefLabel: {en: "unknown"},
+                                    prefLabel: {en: "Chronozone unknown"},
+                                    altLabel: {
+                                        de: ["unbekannt"],
+                                        fr: ["Inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 notChosen_entry = {
@@ -428,6 +481,10 @@ async function fetchDanteAttribute(attribute) {
                 unknown_entry =   {
                                     uri:       "ArboDat+_sampleInvestigated_unknown",
                                     prefLabel: {en: "unknown"},
+                                    altLabel: {
+                                        de: ["unbekannt"],
+                                        // fr: ["Inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
 
@@ -450,11 +507,19 @@ async function fetchDanteAttribute(attribute) {
                 unknown_entry =   {
                                     uri:       "ArboDat+_datingMethod_unknown",
                                     prefLabel: {en: "unknown"},
+                                    altLabel: {
+                                        de: ["unbekannt"],
+                                        fr: ["inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 other_entry = {
                                     uri:       "ArboDat+_datingMethod_other",
                                     prefLabel: {en: "other"},
+                                    altLabel: {
+                                        de: ["sonstige"],
+                                        fr: ["autre"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
 
@@ -479,11 +544,19 @@ async function fetchDanteAttribute(attribute) {
                 unknown_entry =   {
                                     uri:       "ArboDat+_stateOfPreservation_unknown",
                                     prefLabel: {en: "unknown"},
+                                    altLabel: {
+                                        de: ["unbekannt"],
+                                        fr: ["inconnu"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
                 notChosen_entry = {
                                     uri:       "ArboDat+_stateOfPreservation_notChosen",
                                     prefLabel: {en: "not chosen"},
+                                    altLabel: {
+                                        de: ["nicht gewählt"],
+                                        fr: ["Non Choisi"]
+                                    },
                                     type: ["http://www.w3.org/2004/02/skos/core#Concept"]
                                    }
 
@@ -498,23 +571,27 @@ async function fetchDanteAttribute(attribute) {
                 cachedRestTypes = response.data;
                 
                 // Add local entries ------------------------------------------
-                entries =
-                    {   type: ["http://vocab.getty.edu/ontology#GuideTerm"],
-                        prefLabel: {en: "ArboDat+_restType"},
-                        narrower: [
-                                    {
-                                        uri:       "ArboDat+_restType_unknown",
-                                        prefLabel: {en: "unknown"},
-                                        type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                                    },
-                                    {
-                                        uri:       "ArboDat+_restType_notChosen",
-                                        prefLabel: {en: "not chosen"},
-                                        type: ["http://www.w3.org/2004/02/skos/core#Concept"]
-                                    }
-                                  ]
-                    }  
-                cachedRestTypes.push(entries);
+                unknown_entry =   {
+                    uri: "ArboDat+_restType_unknown",
+                    prefLabel: {en: "unknown"},
+                    altLabel: {
+                        de: ["unbekannt"],
+                        fr: ["inconnu"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+                notChosen_entry =   {
+                    uri: "ArboDat+_restType_notChosen",
+                    prefLabel: {en: "not chosen"},
+                    altLabel: {
+                        de: ["nicht gewählt"],
+                        fr: ["Non Choisi"]
+                    },
+                    type: ["http://www.w3.org/2004/02/skos/core#Concept"]
+                }
+
+                cachedRestTypes.push(unknown_entry);
+                cachedRestTypes.push(notChosen_entry);
                 // ------------------------------------------------------------
 
                 cachedRestTypes_loaded = true;
@@ -543,15 +620,15 @@ async function fetchDanteTaxCodes(uri) {
         try {
             let taxCodes = [];
 
-            let partialResponse = [];
             let response = [];
+            let partialResponse = [];
             let offset = 0;
             do {
-                partialResponse = await axios.get(`https://api.dante.gbv.de/search?voc=arbodat_taxonomy&properties=notation,hiddenLabel,ancestors&limit=1000&offset=${offset}&sort`);
+                partialResponse = await axios.get(`https://api.dante.gbv.de/search?voc=arbodat_taxonomy&limit=1000&offset=${offset}&sort&query=*&properties=notation,hiddenLabel,ancestors`);
                 response.push(...partialResponse.data);
                 offset += 1000;
             } while (partialResponse.data.length > 0)
-
+            
             for (let i = 0; i < response.length; i++) {
                 const item = response[i];
                 

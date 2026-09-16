@@ -1,6 +1,21 @@
 let featureTable;
 
 async function buildFeatureTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET features -------------------------------------------------------------
+    let features = [];
+    try {
+        const response = await axios.get("http://localhost:8080/features");
+        features = response.data;
+    } catch (error) {
+        console.error("Error loading features:", error);
+    }
 
     // GET sites ----------------------------------------------------------------
     let sites = [];
@@ -18,22 +33,38 @@ async function buildFeatureTable() {
     years.push(year);
     }
 
+    function formatPreservationCondition(preservationConditionId){
+        if (!preservationConditionId) return "";
+        const preservationCondition = cachedPreservationConditions.find(pc => pc.uri === preservationConditionId) || null;
+        return preservationCondition?.prefLabel.en ?? preservationConditionId;
+    }
+
+    function formatFeatureType(featureTypeId){
+        if (!featureTypeId) return "";
+        const featureType = cachedFeatureTypes.find(ft => ft.uri === featureTypeId) || null;
+        return featureType?.prefLabel.en ?? featureTypeId;
+    }
+
     // Create Table -------------------------------------------------------------
     featureTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: features,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title: "*site", field:"site.id", headerSortTristate:true,
+            {title:"*label", titleDownload:"label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title: "*site", titleDownload:"site", field:"site.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: [
                         ...sites.map(item => ({
                             value: item.id,
-                            label: item.label
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
                         }))
                     ],
                     emptyValue:null
@@ -41,7 +72,11 @@ async function buildFeatureTable() {
                 headerFilter:"list", headerFilterParams: {
                     values: sites.map(item => ({
                             value: item.id,
-                            label: item.label
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
                     })),
                     multiselect: true
                 },
@@ -51,14 +86,11 @@ async function buildFeatureTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    const site = sites.find(item => item.id === value) || null;
-                    return site?.label || "";
-                }
+                formatter: cell => formatSite(sites, cell.getValue()),
+                accessorDownload: value => formatSite(sites, value),
             },
-            {title:"excavation area", field:"excavationArea", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"feature condition", field:"featureCondition", hozAlign:"center", headerSortTristate:true,
+            {title:"excavation area", titleDownload:"excavationArea", field:"excavationArea", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"feature condition", titleDownload:"featureCondition", field:"featureCondition", hozAlign:"center", headerSortTristate:true,
                 headerFilter: function(cell, onRendered, success, cancel){
                     let state = "all";
                     const box = document.createElement("input");
@@ -101,7 +133,7 @@ async function buildFeatureTable() {
                     }
                 }
             },
-            {title:"preservation condition", field:"preservationCondition.id", headerSortTristate:true,
+            {title:"preservation condition", titleDownload:"preservationCondition", field:"preservationCondition.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: [
                         { value: null, label: "none" },
@@ -125,13 +157,10 @@ async function buildFeatureTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const preservationCondition = cachedPreservationConditions.find(item => item.uri === value) || null;
-                    return preservationCondition?.prefLabel.en || "";
-                },
+                formatter: cell => formatPreservationCondition(cell.getValue()),
+                accessorDownload: value => formatPreservationCondition(value),
             },
-            {title:"feature type", field:"featureType.id", headerSortTristate:true,
+            {title:"feature type", titleDownload:"featureType", field:"featureType.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: [
                         { value: null, label: "none" },
@@ -155,11 +184,8 @@ async function buildFeatureTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const featureType = cachedFeatureTypes.find(item => item.uri === value) || null;
-                    return featureType?.prefLabel.en || "";
-                },
+                formatter: cell => formatFeatureType(cell.getValue()),
+                accessorDownload: value => formatFeatureType(value),
             },
             {title: "excavationYears", field:"excavationYears", headerSortTristate:true,
                 editor:"list", editorParams:{
@@ -179,7 +205,7 @@ async function buildFeatureTable() {
                     valueMap:"label"
                 },
             },
-            {title:"building context", field:"buildingContext", hozAlign:"center", headerSortTristate:true,
+            {title:"building context", titleDownload:"buildingContext", field:"buildingContext", hozAlign:"center", headerSortTristate:true,
                 headerFilter: function(cell, onRendered, success, cancel){
                     let state = "all";
                     const box = document.createElement("input");
@@ -229,14 +255,16 @@ async function buildFeatureTable() {
         ]
     });
 
-    // GET features and populate table --------------------------------------
-    axios.get("http://localhost:8080/features")
-    .then(response => {
-        featureTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading features:", error));    
 
-    // PUT: update features -------------------------------------------------
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "featureTable";
+
+
+    // PUT: update features -----------------------------------------------------
     featureTable.on("cellEdited", async function(cell){
 
         const editedField = cell.getField();
@@ -256,6 +284,7 @@ async function buildFeatureTable() {
 
             const payload = {
                 ...feature,
+                site: feature.site ? { id: feature.site.id } : null,
             };
     
             axios.put(`http://localhost:8080/features/${featureId}`, JSON.stringify(payload), {
@@ -302,20 +331,76 @@ async function buildFeatureTable() {
     });
 }
 
- // Export table ---------------------------------------------------------
-
- document.getElementById("download-csv").addEventListener("click", function(){
-    featureTable.download("csv", "data.csv");
-});
-
+// Export table -----------------------------------------------------------------
 document.getElementById("download-json").addEventListener("click", function(){
-    featureTable.download("json", "data.json");
+    if (activeTable === "featureTable") {
+        const rawData = featureTable.getData("active");
+    
+        const transformed = rawData.map(row => {
+            // Site
+            const siteId     = row.site.id;
+            const siteValues = featureTable.getColumn("site.id").getDefinition().editorParams.values;
+            const site       = siteValues.find(s => s.value === siteId);
+            // Preservation condition
+            const preservationConditionId = row.preservationCondition?.id ?? null;
+            const preservationCondition   = cachedPreservationConditions.find(pc => pc.uri === preservationConditionId);
+            // Feature type
+            const featureTypeId = row.featureType?.id ?? null;
+            const featureType = cachedFeatureTypes.find(ft => ft.uri === featureTypeId) || null;
+            
+            return {
+                id: row.id,
+                label: row.label,
+                site: {
+                    id:   siteId,
+                    name: site.label
+                },
+                preservationCondition: preservationConditionId
+                    ? { id: preservationConditionId, label: preservationCondition?.prefLabel?.en ?? "" }
+                    : null,
+                featureType: featureTypeId
+                    ? { id: featureTypeId, label: featureType?.prefLabel?.en ?? "" }
+                    : null,
+                excavationYears: row.excavationYears,
+                buildingContext: row.buildingContext,
+                remarks: row.remarksFeature,
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Features.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 });
+
+document.getElementById("download-csv").addEventListener("click", function(){
+    if (activeTable === "featureTable") {
+        featureTable.download(
+            "csv",
+            "ArboDat+_Download_Features.csv"
+        );
+    }    
+});    
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    featureTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "featureTable") {
+        featureTable.download(
+            "xlsx",
+            "ArboDat+_Download_Features.xlsx",
+            {sheetName:"ArboDat+ Features"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    featureTable.download("html", "data.html", {style:true});
+    if (activeTable === "featureTable") {
+        featureTable.download(
+            "html",
+            "ArboDat+_Download_Features.html"
+        );
+    }
 });

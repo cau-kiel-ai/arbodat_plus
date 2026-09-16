@@ -114,8 +114,8 @@ public class AbsoluteDatingController {
 
     @PutMapping("/{absoluteDatingId}")
     public String update(@RequestBody  AbsoluteDating transferredAbsoluteDating,
-                         @PathVariable UUID           absoluteDatingId) {
-
+                         @PathVariable UUID           absoluteDatingId)
+    {
         AbsoluteDating absoluteDating = absoluteDatingRepository.findById(absoluteDatingId)
                 .orElseThrow(() -> new IllegalArgumentException("invalid absoluteDating id: " + absoluteDatingId));
 
@@ -237,8 +237,8 @@ public class AbsoluteDatingController {
 
     @PutMapping("/{absoluteDatingId}/updateDatingMethod")
     public String updateDatingMethod(@RequestBody  DatingMethod transferredDatingMethod,
-                                     @PathVariable UUID         absoluteDatingId) {
-
+                                     @PathVariable UUID         absoluteDatingId)
+    {
         AbsoluteDating absoluteDating = absoluteDatingRepository.findById(absoluteDatingId)
                 .orElseThrow(() -> new IllegalArgumentException("invalid absoluteDating id: " + absoluteDatingId));
 
@@ -255,8 +255,8 @@ public class AbsoluteDatingController {
 
     @PutMapping("/{absoluteDatingId}/updateMaterial")
     public String updateMaterial(@RequestBody  Material transferredMaterial,
-                                 @PathVariable UUID     absoluteDatingId) {
-
+                                 @PathVariable UUID     absoluteDatingId)
+    {
         AbsoluteDating absoluteDating = absoluteDatingRepository.findById(absoluteDatingId)
                 .orElseThrow(() -> new IllegalArgumentException("invalid absoluteDating id: " + absoluteDatingId));
 
@@ -274,8 +274,8 @@ public class AbsoluteDatingController {
     @PutMapping("/{absoluteDatingId}/updateC14Dating/{number}")
     public String updateC14LaboratoryAndNumber(@RequestBody  C14Laboratory transferredC14Laboratory,
                                                @PathVariable UUID          absoluteDatingId,
-                                               @PathVariable Integer       number) {
-
+                                               @PathVariable String       number)
+    {
         // Get absoluteDating
         AbsoluteDating absoluteDating = absoluteDatingRepository.findById(absoluteDatingId)
                 .orElseThrow(() -> new IllegalArgumentException("invalid absoluteDating id: " + absoluteDatingId));
@@ -296,8 +296,8 @@ public class AbsoluteDatingController {
     public String updateLaboratoryAndNumber(@RequestBody  Laboratory transferredLaboratory,
                                             @PathVariable UUID       absoluteDatingId,
                                             @PathVariable String     datingMethod,
-                                            @PathVariable Integer    number) {
-
+                                            @PathVariable String     number)
+    {
         // Get absoluteDating
         AbsoluteDating absoluteDating = absoluteDatingRepository.findById(absoluteDatingId)
                 .orElseThrow(() -> new IllegalArgumentException("invalid absoluteDating id: " + absoluteDatingId));

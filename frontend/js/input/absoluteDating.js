@@ -1,307 +1,322 @@
+let absoluteDatings = [];
 
-// Populate sample dropdown  ------------------------------------------------------------
-const absDating_sample_dropdown = document.getElementById("absDating_sample_dropdown");
-
-absDating_sample_dropdown.addEventListener('focus', () => {
-
-    // Reset dropdown
-    while (absDating_sample_dropdown.options.length > 1) {
-        absDating_sample_dropdown.remove(1);
-    }
-
-    axios.get('http://localhost:8080/samples')
-    .then(response => {
-        response.data.forEach(item => {
-            // Create option
-            const option = document.createElement('option');
-            option.value = item.id;
-
-            const projectNames = item.feature.site.researchProjectList
-                .map(rp => rp.projectName)
-                .join(', ');
-            option.textContent = item.label + " (feature: " + item.feature.label + ", site: " + item.feature.site.label + ", research projects: " + projectNames + ")";
-
-            absDating_sample_dropdown.appendChild(option)
-        });
-    })
-    .catch(error => {
-        console.error('Error during sample GET request: ', error);
-    });
-});
-
-// Reference literature -----------------------------------------------------------------
-const literature_id = document.getElementById("absDating_literature_id");
-const literature_Input = document.getElementById("absDating_literature_Input");
-const literature_clearIcon = document.getElementById("absDating_literature_clearIcon");
-const literature_Dropdown = document.getElementById("absDating_literature_Dropdown");
-
-let cachedItems = [];
-
-let activeIndex = -1;
-let suppressDropdown = false;
-
-literature_Input.addEventListener("focus", () => {
-
-    if (suppressDropdown) {
-        suppressDropdown = false;
-        return;
-    }
-
-    adjustDropdownWidth();
-
-    // Send a GET request to literature
-    fetch('http://localhost:8080/literature', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
-    .then(data => {
-        cachedItems = data;
-        activeIndex = -1; // Reset the active index
-        populateDropdown(cachedItems);
-    })
-    .catch(error => {
-        console.error('Error during literature fetch:', error);
-    });
-});
-
-function adjustDropdownWidth() {
-    const inputWidth = literature_Input.offsetWidth;
-    literature_Dropdown.style.width = `${inputWidth}px`;
+async function getAbsoluteDatings() {
+    const { data } = await axios.get('http://localhost:8080/absolute_datings');
+    absoluteDatings = data;
 }
 
-// Autofill
-literature_Input.addEventListener("input", () => {
+// Form and Fields ------------------------------------------------------------
+const absoluteDating_form = document.getElementById('absDatingForm');
 
-    // Update Dropdown ----------------------------------------------
-    const query = literature_Input.value.toLowerCase();
-    const filteredItem = cachedItems.filter(item =>
-        item.title.toLowerCase().includes(query) // Customise here
-    );
-    activeIndex = -1; // Reset the active index
-    populateDropdown(filteredItem);
-    // --------------------------------------------------------------
-    
-    // Check whether the entered 'item name' already exists in the dropdown
-    const matchedItem = cachedItems.find(item => 
-        item.title.toLowerCase() === query // Customise here
-    );
+const absoluteDating_site_dropdown    = document.getElementById("absDating_site_dropdown");
+const absoluteDating_feature_dropdown = document.getElementById("absDating_feature_dropdown");
+const absoluteDating_sample_dropdown  = document.getElementById("absDating_sample_dropdown");
 
-    if (matchedItem) {
-        selectItem(matchedItem);
-    }
-    else { // Reset Form 
-        id.value = "";
-    }
-});
+const subSampleInput = document.getElementById("subsample");
 
-function populateDropdown(itemList) {  
-    literature_Dropdown.innerHTML = ""; // Reset dropdown
-    
-    itemList.forEach((item, index) => {
-        const listItem = document.createElement("li");
-        listItem.textContent = item.title; // Customise here
-        listItem.addEventListener("click", () => {
-            selectItem(item);
-        });
-        literature_Dropdown.appendChild(listItem);
-    });
-
-    // Hide dropdown if no item match
-    literature_Dropdown.classList.toggle("hidden", itemList.length === 0);
-}
-
-function selectItem(item) {
-    literature_id.value = item.id;
-    literature_Input.value = item.title;
-}
-
-// Reset Form
-literature_clearIcon.addEventListener("click", () => {
-    literature_id.value = "";
-    literature_Input.value = "";              
-    literature_Input.focus();
-});
-
-// Close Dropdown when selecting an item (via mouse click)
-literature_Dropdown.addEventListener("click", (e) => {
-    if (e.target.tagName === "LI") {
-        suppressDropdown = true;
-        literature_Dropdown.classList.add("hidden"); // Close dropdown
-        literature_Dropdown.focus();                 // Keep focus on input field
-    }
-});
-
-// Dropdown button navigation --------------------------
-literature_Input.addEventListener("keydown", (e) => {
-
-    // Select all <li> elements (list entries) within the dropdown
-    const items = literature_Dropdown.querySelectorAll("li");
-
-    // ArrowDown -> Navigate downwards
-    if (e.key === "ArrowDown") {
-        e.preventDefault();
-        activeIndex = (activeIndex + 1) % items.length; // Navigate downwards
-        updateActiveItem(items);
-
-    // ArrowUp -> Navigate upwards
-    } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        activeIndex = (activeIndex - 1 + items.length) % items.length; // Navigate upwards
-        updateActiveItem(items);
-
-    // Enter -> Select current element + Close dropdown
-    } else if (e.key === "Enter" && activeIndex >= 0) {
-        e.preventDefault();
-        items[activeIndex].click();                  // Select current element
-        literature_Dropdown.classList.add("hidden"); // Close dropdown
-
-    // Escape -> Close dropdown
-    } else if (e.key === "Escape") {
-        literature_Dropdown.classList.add("hidden"); // Close dropdown
-    }
-});
-
-function updateActiveItem(items) {
-    items.forEach((item, index) => {
-        item.classList.toggle("active", index === activeIndex);
-    });
-}
-
-// Dropdown focus management ---------------------------    
-// Close dropdown when clicked outside
-document.addEventListener("click", (e) => {
-    if (!literature_Dropdown.contains(e.target) && e.target !== literature_Input && !literature_clearIcon.contains(e.target)) {
-        literature_Dropdown.classList.add("hidden");
-    }
-});
-
-// Detect mousedown on dropdown and clearIcon to prevent immediate blur handling
-let isClickingDropdown = false;
-literature_Dropdown.addEventListener("mousedown", () => {
-isClickingDropdown = true;
-});
-let isClickingClearIcon = false;
-literature_clearIcon.addEventListener("mousedown", () => {
-isClickingClearIcon = true;
-});
-
-// Close dropdown when focus is lost (e.g., using Tab key)
-literature_Input.addEventListener("blur", () => {
-    setTimeout(() => {
-        if (!isClickingDropdown && !isClickingClearIcon) {
-            literature_Dropdown.classList.add("hidden");
-        }
-        // Reset after handling
-        isClickingDropdown = false;
-        isClickingClearIcon = false;
-    }, 0);
-});
-
-
-// 'Add literature' to literatur container ----------------------------------------------
-window.absDating_literatureList = [];
-
-function absDating_addLiterature() {
-    
-    // Get literature id of selected item
-    const literatureId = literature_id.value; 
-
-    // Check if a existing literature from the database is selcted
-    if (literatureId) {
-
-        // Check if the literature is already in literature container
-        const existingLiterature = absDating_literatureList.find(item => item.id === literatureId);
-        if (existingLiterature) {
-            // Reset literature dropdown
-            literature_id.value = "";
-            literature_Input.value = "";            
-            alert("This Literature has already been added.");
-            return;
-        }
-        else {
-            // Get name (title) of selected item
-            const literatureTitle = literature_Input.value;
-
-            // Create JSON object to store the data
-            const literatureData = { id: literatureId };
-            
-            // Save object into the literature array
-            const index = absDating_literatureList.push(literatureData) - 1;
-
-            // Display the saved literature in a box under the form
-            const saved_literatureBox = document.createElement("div");
-            saved_literatureBox.style.border = "1px solid #ccc";
-            saved_literatureBox.style.padding = "10px";
-            saved_literatureBox.style.marginTop = "8px";
-            saved_literatureBox.style.marginBottom = "10px";
-            saved_literatureBox.style.width = "95%";
-            saved_literatureBox.style.backgroundColor = "#f9f9f9";
-
-            function updateBoxLayout() {
-                if (window.innerWidth <= 720) {
-                    saved_literatureBox.style.marginLeft = "0";
-                } else {
-                    saved_literatureBox.style.marginLeft = "32%";
-                }
-            }
-
-            updateBoxLayout();
-
-            window.addEventListener("resize", updateBoxLayout);
-
-            // And title and delete button
-            saved_literatureBox.innerHTML = `
-                <span style="
-                    display: inline-block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 95%;
-                ">${literatureTitle}</span>
-                <span style="color: red; float: right; cursor: pointer;" 
-                      onclick="deleteLiterature(this, ${index})">
-                      &#10005;
-                </span>
-            `;
-            
-            // Append the saved lit box to the container
-            document.getElementById("absDating_literature_container").appendChild(saved_literatureBox);
-
-            // Reset literature dropdown
-            suppressDropdown = false;
-            literature_id.value = "";
-            literature_Input.value = "";
-        }
-    }
-    else {
-        alert("Select a existing literature from the database or create a new one.");
-        return;
-    }
-}
-
-function deleteLiterature(deleteIcon, index) {
-    // Find the parent div (the literature box) and remove it
-    const literatureBox = deleteIcon.parentElement;
-    literatureBox.remove();
-
-    // Remove literature from the absDating_literatureList with index
-    if (index !== -1) {
-        absDating_literatureList.splice(index, 1);
-    }
-};
-
-// Manage dating accordions -------------------------------------------------------------
-const materialDropdown = document.getElementById("material");
+const materialDropdown     = document.getElementById("material");
+const remarksTextarea      = document.getElementById("absDating_remarks");
 const datingMethodDropdown = document.getElementById("dating_method");
 
+// Dendro dating
+const dendroLabInput    = document.getElementById("dendro_lab");
+const dendroNumberInput = document.getElementById("dendro_number");
+const dendroAgeInput    = document.getElementById("dendro_age");
+const waneyEdgeCheckbox = document.getElementById("waney_edge");
+// C14 dating
+const c14LabDropdown = document.getElementById("c14_lab");
+const c14NumberInput = document.getElementById("c14_number");
+const c14AgeBPInput  = document.getElementById("c14_age_bp");
+const c14StdDevInput = document.getElementById("c14_std_dev");
+const c14CalTextarea = document.getElementById("c14_calibration_bc_ad_2s");
+const deltaC13Input  = document.getElementById("delta_C13");
+const c13DevInput    = document.getElementById("c13_dev");
+const pMCInput       = document.getElementById("pMC");
+const pMCDevInput    = document.getElementById("pMC_dev");
+// Other dating
+const otherLabInput    = document.getElementById("other_lab");
+const otherNumberInput = document.getElementById("other_number");
+const otherAgeInput    = document.getElementById("other_age");
+
+// Select2 reference site dropdown --------------------------------------------
+$('#absDating_site_dropdown').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
+});
+
+// remove arrow
+$('#absDating_site_dropdown')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let absoluteDatingSite_isReopening = false;
+$('#absDating_site_dropdown').on('select2:opening', async function (e) {
+    if (absoluteDatingSite_isReopening) {
+        absoluteDatingSite_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    // Disable dropdown and show "Loading..."
+    $('#absDating_site_dropdown')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+
+    // Reset form
+    resetAbsoluteDatingForm();
+    $('#absDating_feature_dropdown').val(null).trigger('change');
+    $('#absDating_sample_dropdown').val(null).trigger('change');
+
+    try {
+        await getSites();
+    } finally {
+        // Enable and reset dropdown
+        $('#absDating_site_dropdown')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        sites.forEach(item => {
+            // Determine item name --------------------------------
+            let itemName;
+            if (item.activityNumber) {
+                itemName = `${item.label}, ${item.activityNumber}`;
+            } else {
+                itemName = item.label;
+            }
+            const projectNames = item.researchProjectList
+                .map(rp => rp.projectName)
+                .join(', ');
+            itemName += ` (research projects: ${projectNames})`;
+            // ----------------------------------------------------
+            $('#absDating_site_dropdown').append(
+                new Option(itemName, item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#absDating_site_dropdown').trigger('change.select2');
+
+        // Reopen dropdown
+        absoluteDatingSite_isReopening = true;
+        setTimeout(() => {
+            $('#absDating_site_dropdown').select2('open');
+        }, 0);
+    }
+});
+
+// Select2 refernence feature dropdown ----------------------------------------
+$('#absDating_feature_dropdown').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
+});
+
+// remove arrow
+$('#absDating_feature_dropdown')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let absoluteDatingFeature_isReopening = false;
+$('#absDating_feature_dropdown').on('select2:opening', async function (e) {
+    if (absoluteDatingFeature_isReopening) {
+        absoluteDatingFeature_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    const selectedSite = absoluteDating_site_dropdown.value;
+    // Check if site is selcted
+    if (!selectedSite) {
+        toast.info("Before you can select a feature, you must select a site.");
+        return;
+    }
+
+    // Disable dropdown and show "Loading..."
+    $('#absDating_feature_dropdown')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+
+    // Reset form except site dropdown
+    resetAbsoluteDatingForm();
+    $('#absDating_sample_dropdown').val(null).trigger('change');
+    absoluteDating_site_dropdown.value = selectedSite;
+
+    try {
+        await getFeatures();
+    } finally {
+        // Enable and reset dropdown
+        $('#absDating_feature_dropdown')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        features.filter(item => item.site?.id === selectedSite).forEach(item => {
+            $('#absDating_feature_dropdown').append(
+                new Option(item.label, item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#absDating_feature_dropdown').trigger('change.select2');
+
+        // Reopen dropdown
+        absoluteDatingFeature_isReopening = true;
+        setTimeout(() => {
+            $('#absDating_feature_dropdown').select2('open');
+        }, 0);
+    }
+});
+
+// Select2 reference sample dropdown ------------------------------------------
+$('#absDating_sample_dropdown').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
+});
+
+// remove arrow
+$('#absDating_sample_dropdown')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let absoluteDatingSample_isReopening = false;
+$('#absDating_sample_dropdown').on('select2:opening', async function (e) {
+    if (absoluteDatingSample_isReopening) {
+        absoluteDatingSample_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    const selectedFeature = absoluteDating_feature_dropdown.value;
+    // Check if sample is selcted
+    if (!selectedFeature) {
+        toast.info("Before you can select a sample, you must select a feature.");
+        return;
+    }
+
+    // Disable dropdown and show "Loading..."
+    $('#absDating_sample_dropdown')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+    
+    // Reset form except site dropdown
+    const selectedSite = absoluteDating_site_dropdown.value;
+    resetAbsoluteDatingForm();
+    absoluteDating_site_dropdown.value = selectedSite;
+    absoluteDating_feature_dropdown.value = selectedFeature;
+
+    try {
+        await getSamples();
+    } finally {
+        // Enable and reset dropdown
+        $('#absDating_sample_dropdown')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        samples.filter(sample => sample.feature?.id === selectedFeature).forEach(item => {
+            $('#absDating_sample_dropdown').append(
+                new Option(item.label, item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#absDating_sample_dropdown').trigger('change.select2');
+
+        // Reopen dropdown
+        absoluteDatingSample_isReopening = true;
+        setTimeout(() => {
+            $('#absDating_sample_dropdown').select2('open');
+        }, 0);
+    }
+});
+
+// Select2 refernce literature dropdown ---------------------------------------
+$('#datingLiterature').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
+});
+
+// remove arrow
+$('#datingLiterature')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let datingLiterature_isReopening = false;
+$('#datingLiterature').on('select2:opening', async function (e) {
+    if (datingLiterature_isReopening) {
+        datingLiterature_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    // Disable dropdown and show "Loading..."
+    $('#datingLiterature')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+
+    try {
+        await getLiterature();
+    } finally {
+        // Enable and reset dropdown
+        $('#datingLiterature')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        literature.forEach(item => {
+            $('#datingLiterature').append(
+                new Option(formatLiterature(item), item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#datingLiterature').trigger('change.select2');
+
+        // Reopen dropdown
+        datingLiterature_isReopening = true;
+        setTimeout(() => {
+            $('#datingLiterature').select2('open');
+        }, 0);
+    }
+});
+
+// Populate DANTE dropdowns ---------------------------------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+    await fetchDanteAttribute("material");
+    populateDanteDropdown("material", materialDropdown);
+
+    await fetchDanteAttribute("datingMethod");
+    populateDanteDropdown("datingMethod", datingMethodDropdown);
+
+    await fetchDanteAttribute("c14Laboratory");
+    populateDanteDropdown("c14Laboratory", c14LabDropdown);
+});
+
+// Manage dating accordions ---------------------------------------------------
 // DendroDating accordion
 const dendroDating_AccordionItem = document.getElementById("dendroDating_AccordionItem");
 const dendroDating_AccordionButton = dendroDating_AccordionItem.querySelector(".accordion-button");
@@ -317,27 +332,13 @@ const otherDating_AccordionItem = document.getElementById("otherDating_Accordion
 const otherDating_AccordionButton = otherDating_AccordionItem.querySelector(".accordion-button");
 const otherDating_AccordionCollapseElem = document.getElementById("otherDating_AccordionCollapseElem");
 
-datingMethodDropdown.addEventListener("change", function () {
-
+$('#dating_method').on('change', function () {
     const selectedValue = this.selectedOptions[0].text;
 
     if (selectedValue === "Dendrochronology") {
-        // Populate laborytories
-        const dendro_lab_list = document.getElementById('dendro_lab_list');
-        axios.get('http://localhost:8080/laboratories')
-        .then(response => {
-            response.data.forEach(item => {
-                // Create option
-                const option = document.createElement('option');
-                option.value = item.label;
-                option.setAttribute("data-id", item.id);
+        c14LabDropdown.required = false;
 
-                dendro_lab_list.appendChild(option)
-            });                
-        })
-        .catch(error => {
-            console.error('Error during laboratory GET request: ', error);
-        });
+        populateLabList();
 
         // Activate accordion
         dendroDating_AccordionItem.style.pointerEvents = "auto";
@@ -365,6 +366,8 @@ datingMethodDropdown.addEventListener("change", function () {
         otherDating_AccordionCollapseElem.classList.remove("show");
 
     } else if (selectedValue === "Radiocarbon Dating") {
+        c14LabDropdown.required = true;
+
         // Activate accordion
         c14Dating_AccordionItem.style.pointerEvents = "auto";
         c14Dating_AccordionItem.style.opacity = "1";
@@ -390,7 +393,9 @@ datingMethodDropdown.addEventListener("change", function () {
         otherDating_AccordionButton.setAttribute("aria-expanded", "false");
         otherDating_AccordionCollapseElem.classList.remove("show");
 
-    } else if (selectedValue === "select dating method") {
+    } else if (selectedValue === "") {
+        c14LabDropdown.required = false;
+
         // Deactivate all accordions
         dendroDating_AccordionItem.style.pointerEvents = "none";
         dendroDating_AccordionItem.style.opacity = "0.5";
@@ -415,22 +420,9 @@ datingMethodDropdown.addEventListener("change", function () {
         otherDating_AccordionCollapseElem.classList.remove("show");
     
     } else { // Other Dating
-        // Populate laborytories
-        const other_lab_list = document.getElementById('other_lab_list');
-        axios.get('http://localhost:8080/laboratories')
-        .then(response => {
-            response.data.forEach(item => {
-                // Create option
-                const option = document.createElement('option');
-                option.value = item.label;
-                option.setAttribute("data-id", item.id);
-
-                other_lab_list.appendChild(option)
-            });                
-        })
-        .catch(error => {
-            console.error('Error during laboratory GET request: ', error);
-        });
+        c14LabDropdown.required = false;
+        
+        populateLabList();
 
         // Activate accordion
         otherDating_AccordionItem.style.pointerEvents = "auto";
@@ -459,58 +451,42 @@ datingMethodDropdown.addEventListener("change", function () {
     }
 });
 
+// Populate laboratory input list ---------------------------------------------
+const lab_list = document.getElementById('lab_list');
 
-const c14LabDropdown = document.getElementById("c14_lab");
+function populateLabList() {
+    // Reset datalist
+    lab_list.innerHTML = "";
 
-// Populate Dante dropdowns -------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", async () => {
+    // Populate laborytories
+    axios.get('http://localhost:8080/laboratories')
+    .then(response => {
+        response.data.forEach(item => {
+            // Create option
+            const option = document.createElement('option');
+            option.value = item.label;
+            option.setAttribute("data-id", item.id);
 
-    await fetchDanteAttribute("material");
-    populateDanteDropdown("material", materialDropdown);
-
-    await fetchDanteAttribute("datingMethod");
-    populateDanteDropdown("datingMethod", datingMethodDropdown);
-
-    await fetchDanteAttribute("c14Laboratory");
-    populateDanteDropdown("c14Laboratory", c14LabDropdown);
-});
+            lab_list.appendChild(option)
+        });                
+    })
+    .catch(error => {
+        console.error('Error during laboratory GET request: ', error);
+    });
+}
 
 
-// Submit/Update absolute dating --------------------------------------------------------
-const absDatingsampleDropdown = document.getElementById("absDating_sample_dropdown");
-const subSampleInput = document.getElementById("subsample");
-const remarksTextarea = document.getElementById("absDating_remarks");
-// Dendro dating
-const dendroLabInput = document.getElementById("dendro_lab");
-const dendroNumberInput = document.getElementById("dendro_number");
-const dendroAgeInput = document.getElementById("dendro_age");
-const waneyEdgeCheckbox = document.getElementById("waney_edge");
-// C14 dating
-const c14NumberInput = document.getElementById("c14_number");
-const c14AgeBPInput = document.getElementById("c14_age_bp");
-const c14StdDevInput = document.getElementById("c14_std_dev");
-const c14CalTextarea = document.getElementById("c14_calibration_bc_ad_2s");
-const deltaC13Input = document.getElementById("delta_C13");
-const c13DevInput = document.getElementById("c13_dev");
-const pMC = document.getElementById("pMC");
-const pMCDev = document.getElementById("pMC_dev");
-// Other dating
-const otherLabInput = document.getElementById("other_lab");
-const otherNumberInput = document.getElementById("other_number");
-const otherAgeInput = document.getElementById("other_age");
-
-function submit_update_AbsoulteDating() {
-    const absDatingForm = document.getElementById('absDatingForm');
-
-    if (absDatingForm.checkValidity()) {
+// ----------------------------------------------------------------------------
+function create_update_absoulteDating() {
+    if (absoluteDating_form.checkValidity()) {
         const absoluteDatingId = document.getElementById("absDating_id").value;
         const datingMethodLabel = datingMethodDropdown.selectedOptions[0].text
 
         // Create absolute dating payload
         const payload = {            
             // References ----------------------------------------
-            sample: { id: absDatingsampleDropdown.value },
-            literatureList: absDating_literatureList,
+            sample: { id: absoluteDating_sample_dropdown.value },
+            literatureList: absoluteDatingLiteratureList,
             
             // Absolute dating -----------------------------------
             subSample: subSampleInput.value,
@@ -539,8 +515,7 @@ function submit_update_AbsoulteDating() {
 
                 const labLabel = dendroLabInput.value;
                 // Get labId
-                const dendroLab_datalist = document.getElementById('dendro_lab_list');
-                const matchedOption = Array.from(dendroLab_datalist.options).find(opt => opt.value === labLabel);
+                const matchedOption = Array.from(lab_list.options).find(opt => opt.value === labLabel);
                 const labId = matchedOption ? matchedOption.getAttribute("data-id") : null;
 
                 payload.dendrochronologicalDating = {
@@ -570,16 +545,15 @@ function submit_update_AbsoulteDating() {
                     c14CalibrationBcAd2s: c14CalTextarea.value,
                     deltaC13: deltaC13Input.value,
                     deltaC13Uncertainty: c13DevInput.value,
-                    pmc: pMC.value,
-                    pmcUncertainty: pMCDev.value
+                    pmc: pMCInput.value,
+                    pmcUncertainty: pMCDevInput.value
                 };
 
             // Other Dating --------------------------------------
             } else {
                 const labLabel = otherLabInput.value;
                 // Get labId
-                const otherLab_datalist = document.getElementById('other_lab_list');
-                const matchedOption = Array.from(otherLab_datalist.options).find(opt => opt.value === labLabel);
+                const matchedOption = Array.from(lab_list.options).find(opt => opt.value === labLabel);
                 const labId = matchedOption ? matchedOption.getAttribute("data-id") : null;
 
                 payload.otherDating = {
@@ -596,24 +570,32 @@ function submit_update_AbsoulteDating() {
             }
         }
         
-        if (absoluteDatingId) { // update (PUT)
+        if (absoluteDatingId) { // Update (PUT) --------------------------------------------
             axios.put(`http://localhost:8080/absolute_datings/${absoluteDatingId}`, payload)
             .then(response => {
                 console.log(response.data);
-                alert("dating updated");
+                toast.success("dating updated");
             })
             .catch(error => {
                 console.error('Error during PUT request to update absolute dating:', error);
                 alert("action failed");
             });
-        } else { // create (POST)
+
+        } else { // Create (POST) ----------------------------------------------------------
             axios.post('http://localhost:8080/absolute_datings', payload)
             .then(response => {
                 console.log(response.data);
-                alert("dating created");
-                
-                // Reset form
-                absDatingForm.reset();
+                toast.success("dating created");
+
+                // Reset form except site, feature and sample dropdown ------------
+                const selectedSiteValue    = absoluteDating_site_dropdown.value;
+                const selectedFeatureValue = absoluteDating_feature_dropdown.value;
+                const selectedSampleValue  = absoluteDating_sample_dropdown.value;
+                resetAbsoluteDatingForm();
+                absoluteDating_site_dropdown.value    = selectedSiteValue;
+                absoluteDating_feature_dropdown.value = selectedFeatureValue;
+                absoluteDating_sample_dropdown.value  = selectedSampleValue;
+                // ----------------------------------------------------------------
             })
             .catch(error => {
                 console.error('Error during POST request to create absolute dating:', error);
@@ -621,13 +603,24 @@ function submit_update_AbsoulteDating() {
             });
         }        
 
-    } else {
+    } else { // Report --------------------------
         // Set focus on invalid field
-        absDatingsampleDropdown.focus();
+        absoluteDating_sample_dropdown.focus();
 
         // wait until focus is set
         setTimeout(() => {
-            absDatingForm.reportValidity();
+            absoluteDating_form.reportValidity();
         }, 450);
-    }
+    } // ----------------------------------------
+}
+
+function resetAbsoluteDatingForm() {
+    absoluteDating_form.reset();
+
+    absoluteDatingLiteratureList = [];
+    document.getElementById("absDating_literature_container").innerHTML = "";
+
+    $('#material').val(null).trigger('change');
+    $('#dating_method').val(null).trigger('change');
+    $('#c14_lab').val(null).trigger('change');
 }

@@ -1,6 +1,21 @@
 let literatureTable;
 
 async function buildLiteratureTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET literature -----------------------------------------------------------
+    let literature = [];
+    try {
+        const response = await axios.get("http://localhost:8080/literature");
+        literature = response.data;
+    } catch (error) {
+        console.error("Error loading literature:", error);
+    }
 
     // GET authors --------------------------------------------------------------
     let authors = [];
@@ -9,6 +24,21 @@ async function buildLiteratureTable() {
         authors = response.data;
     } catch (error) {
         console.error("Error loading authors:", error)
+    }
+    
+    function formatAuth(authorList) {
+        if (!authorList) return "";
+
+        // HTML download
+        if (!Array.isArray(authorList)) return authorList;
+
+        return authorList
+            .map(id => {
+                const author = authors.find(author => author.id === id)
+                return formatName(author) ?? id ?? "";
+            })
+            .filter(Boolean)
+            .join(", ");
     }
 
     // Create year list for publication year ------------------------------------
@@ -20,15 +50,15 @@ async function buildLiteratureTable() {
 
     // Create Table -------------------------------------------------------------
     literatureTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: literature,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*title", field:"title", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"publication year", field:"publicationYear", headerSortTristate:true,
+            {title:"*title", titleDownload:"title", field:"title", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"publication year", titleDownload:"publicationYear", field:"publicationYear", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: years,
                     emptyValue:null
@@ -46,7 +76,7 @@ async function buildLiteratureTable() {
                     valueMap:"label"
                 },
             },
-            {title: "authors (multiple selection)", field:"authorList", headerSortTristate:true,
+            {title: "authors (multiple selection)", titleDownload:"authorList", field:"authorList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -75,20 +105,12 @@ async function buildLiteratureTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const authorIds = cell.getValue();
-                    if (Array.isArray(authorIds)) {
-                        return authorIds
-                                .map(id => {
-                                    const author = authors.find(item => item.id === id)
-                                    return formatName(author)})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatAuth(cell.getValue()),
+                accessorDownload: value => formatAuth(value),
             },
             {title:"doi", field:"doi", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"short citation", field:"shortCitation", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"long citation", field:"longCitation", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"short citation", titleDownload:"shortCitation", field:"shortCitation", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"long citation", titleDownload:"longCitation", field:"longCitation", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"abstract", field:"litAbstract", editor:"input", headerFilter:true, headerSort:false},
         ],
         initialSort: [
@@ -96,12 +118,14 @@ async function buildLiteratureTable() {
         ]
     });
 
-    // GET literature and populate table --------------------------------------
-    axios.get("http://localhost:8080/literature")
-    .then(response => {
-        literatureTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading literature:", error));    
+
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "literatureTable";
+
 
     // PUT: update literature -------------------------------------------------
     literatureTable.on("cellEdited", async function(cell){
@@ -183,20 +207,63 @@ async function buildLiteratureTable() {
     });
 }
 
-// Export table ---------------------------------------------------------
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "literatureTable") {
+        const rawData = literatureTable.getData("active");
+    
+        const transformed = rawData.map(row => {
+            
+            return {
+                id: row.id,
+                title: row.title,
+                publicationYear: row.publicationYear,
+                authorList: (row.authorList || []).map(authorId => {
+                    const authorValues = literatureTable.getColumn("authorList").getDefinition().editorParams.values;
+                    const author = authorValues.find(a => a.value === authorId);
+                    return { id: authorId, name: author?.label ?? "" };
+                }),
+                doi: row.doi,
+                shortCitation: row.shortCitation,
+                longCitation: row.longCitation,
+                abstract: row.abstract,
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Literature.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+});
 
 document.getElementById("download-csv").addEventListener("click", function(){
-    literatureTable.download("csv", "data.csv");
-});
-
-document.getElementById("download-json").addEventListener("click", function(){
-    literatureTable.download("json", "data.json");
-});
+    if (activeTable === "literatureTable") {
+        literatureTable.download(
+            "csv",
+            "ArboDat+_Download_Literature.csv"
+        );
+    }    
+});    
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    literatureTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "literatureTable") {
+        literatureTable.download(
+            "xlsx",
+            "ArboDat+_Download_Literature.xlsx",
+            {sheetName:"ArboDat+ Literature"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    literatureTable.download("html", "data.html", {style:true});
+    if (activeTable === "literatureTable") {
+        literatureTable.download(
+            "html",
+            "ArboDat+_Download_Literature.html"            
+        );
+    }
 });

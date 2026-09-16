@@ -1,31 +1,48 @@
 let authorTable;
 
-async function buildAuthorTable() {    
+async function buildAuthorTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET authors --------------------------------------------------------------
+    let authors = [];
+    try {
+        const response = await axios.get("http://localhost:8080/authors");
+        authors = response.data;
+    } catch (error) {
+        console.error("Error loading authors:", error);
+    }
 
     // Create Table -------------------------------------------------------------
     authorTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: authors,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"first name", field:"firstName", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"middle name", field:"middleName", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"*last name", field:"lastName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"first name", titleDownload:"firstName", field:"firstName", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"middle name", titleDownload:"middleName", field:"middleName", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"*last name", titleDownload:"lastName", field:"lastName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
         ],
         initialSort: [
             {column: "lastName", dir: "asc"}
         ]
-    });
+    }); // ----------------------------------------------------------------------
 
-    // GET authors and populate table --------------------------------------
-    axios.get("http://localhost:8080/authors")
-    .then(response => {
-        authorTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading authors:", error));    
+
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "authorTable";
+
 
     // PUT: update authors -------------------------------------------------
     authorTable.on("cellEdited", async function(cell){
@@ -92,20 +109,41 @@ async function buildAuthorTable() {
     });
 }
 
-// Export table ---------------------------------------------------------
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "authorTable") {
+        authorTable.download(
+            "json",
+            "ArboDat+_Download_Authors.json"
+        );
+    }
+});
 
 document.getElementById("download-csv").addEventListener("click", function(){
-    authorTable.download("csv", "data.csv");
+    if (activeTable === "authorTable") {
+        authorTable.download(
+            "csv",
+            "ArboDat+_Download_Authors.csv"
+        );
+    }
 });
 
-document.getElementById("download-json").addEventListener("click", function(){
-    authorTable.download("json", "data.json");
-});
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    authorTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "authorTable") {
+        authorTable.download(
+            "xlsx",
+            "ArboDat+_Download_Authors.xlsx",
+            {sheetName:"ArboDat+ Authors"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    authorTable.download("html", "data.html", {style:true});
+    if (activeTable === "authorTable") {
+        authorTable.download(
+            "html",
+            "ArboDat+_Download_Authors.html"
+        );
+    }
 });

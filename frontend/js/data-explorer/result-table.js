@@ -1,6 +1,50 @@
 let resultTable;
 
 async function buildResultTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET results --------------------------------------------------------------
+    let results = [];
+
+    const size = 1000;
+    let page = 0;
+    let last = false;
+    while (!last) {
+        try {
+            const response = await axios.get("http://localhost:8080/results", {
+                params: { page, size }
+            });
+
+            results.push(...response.data.content);
+            last = response.data.last;
+            page++;
+        } catch (error) {
+            console.error("Error loading results:", error);
+        }
+    }
+
+    // GET sites --------------------------------------------------------------
+    let sites = [];
+    try {
+        const response = await axios.get("http://localhost:8080/sites");
+        sites = response.data;
+    } catch (error) {
+        console.error("Error loading sites:", error)
+    }
+
+    // GET features --------------------------------------------------------------
+    let features = [];
+    try {
+        const response = await axios.get("http://localhost:8080/features");
+        features = response.data;
+    } catch (error) {
+        console.error("Error loading features:", error)
+    }
 
     // GET samples --------------------------------------------------------------
     let samples = [];
@@ -20,25 +64,59 @@ async function buildResultTable() {
         console.error("Error loading absolute datings:", error)
     }
 
-    // Fetch taxCodes
-    const ArboDat_PCODE_URI = "http://uri.gbv.de/terminology/arbodat_taxonomy/6ac2cb7f-fed7-445d-bd8c-4c8cadec2303"
+    // Fetch taxCodes -----------------------------------------------------------
+    const ArboDat_PCODE_URI = "http://uri.gbv.de/terminology/arbodat_taxonomy/6ac2cb7f-fed7-445d-bd8c-4c8cadec2303";
     await fetchDanteTaxCodes(ArboDat_PCODE_URI);
+
+    function formatClassificationConfer(classificationConferId){
+        if (!classificationConferId) return "";
+        const classificationConfer = cachedClassificationConfers.find(cf => cf.uri === classificationConferId) || null;
+        return classificationConfer?.prefLabel.en ?? classificationConferId;
+    }
+
+    // GET rest type ------------------------------------------------------------
+    let restTypes = [];
+    try {
+        const response = await axios.get("http://localhost:8080/dante_attributes/rest_type");
+        restTypes = response.data;
+    } catch (error) {
+        console.error("Error loading rest types:", error)
+    }
+
+    function formatRestType(restTypeId){
+        if (!restTypeId) return "";
+        const restType = restTypes.find(rt => rt.id === restTypeId) || null;
+        return restType?.label ?? restTypeId;
+    }
+
+    function formatStateOfPreservation(stateOfPreservationId){
+        if (!stateOfPreservationId) return "";
+        const stateOfPreservation = cachedStateOfPreservation.find(sop => sop.uri === stateOfPreservationId) || null;
+        return stateOfPreservation?.prefLabel.en ?? stateOfPreservationId;
+    }
 
     // Create Table -------------------------------------------------------------
     resultTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: results,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title: "*sample", field:"sample.id", headerSortTristate:true,
-                editor:"list", editorParams:{
-                    values: samples.map(item => ({
-                            value: item.id,
-                            label: item.label
-                        })),
+            {title: "*sample", titleDownload:"sample", field:"sample.id", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const featureId = rowData?.sample.feature.id;
+
+                    return {
+                        values: samples
+                            .filter(item => item.feature?.id === featureId)
+                            .map(item => ({
+                                value: item.id,
+                                label: item.label
+                            }))
+                    };
                 },
                 headerFilter:"list", headerFilterParams: {
                     values: samples.map(item => ({
@@ -53,25 +131,91 @@ async function buildResultTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell) {
-                    const value = cell.getValue();
-                    const sample = samples.find(item => item.id === value) || null;
-                    return sample?.label || "";
-                }
+                formatter: cell => formatSample(samples, cell.getValue()),
+                accessorDownload: value => formatSample(samples, value),
             },
-            {title: "dating list (multiple selection)", field:"absoluteDatingList", headerSortTristate:true,
+            {title: "*feature", titleDownload:"feature", field:"sample.feature.id", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const siteId = rowData?.sample.feature.site.id;
+
+                    return {
+                        values: features
+                            .filter(item => item.site?.id === siteId)
+                            .map(item => ({
+                                value: item.id,
+                                label: item.label
+                            }))
+                    };
+                },
+                headerFilter:"list", headerFilterParams: {
+                    values: features.map(item => ({
+                            value: item.id,
+                            label: item.label
+                    })),
+                    multiselect: true
+                },
+                headerFilterFunc: function(headerValue, rowValue) {
+                    if (!headerValue || (Array.isArray(headerValue) && headerValue.length === 0)) {
+                        return true;
+                    }
+                    return headerValue.includes(rowValue);
+                },
+                formatter: cell => formatFeature(features, cell.getValue()),
+                accessorDownload: value => formatFeature(features, value),
+            },
+            {title: "*site", titleDownload:"site", field:"sample.feature.site.id", headerSortTristate:true,
+                editor:"list", editorParams:{
+                    values: sites.map(item => ({
+                            value: item.id,
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
+                        }))
+                    ,
+                },
+                headerFilter:"list", headerFilterParams: {
+                    values: sites.map(item => ({
+                            value: item.id,
+                            label:
+                                item.label +
+                                " (research projects: " +
+                                item.researchProjectList.map(rp => rp.projectName).join(', ') +
+                                ")"
+                    })),
+                    multiselect: true
+                },
+                headerFilterFunc: function(headerValue, rowValue) {
+                    if (!headerValue || (Array.isArray(headerValue) && headerValue.length === 0)) {
+                        return true;
+                    }
+                    return headerValue.includes(rowValue);
+                },
+                formatter: cell => formatSite(sites, cell.getValue()),
+                accessorDownload: value => formatSite(sites, value),
+            },
+            {title: "dating list (multiple selection)", titleDownload:"absoluteDatingList", field:"absoluteDatingList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map objects only to id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
                 },
-                editor:"list", editorParams:{
-                    values: datings.map(item => ({
-                            value: item.id,
-                            label: formatDatings(item)
-                        })),
-                    autocomplete:false,
-                    multiselect:true,
-                    emptyValue:[]
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const sampleId = rowData?.sample?.id;
+
+                    return {
+                        values: datings
+                            .filter(item => item.sample?.id === sampleId)
+                            .map(item => ({
+                                value: item.id,
+                                label: formatDatings(item)
+                            })),
+                        autocomplete:false,
+                        multiselect:true,
+                        emptyValue:[]
+                    };
                 },
                 headerFilter:"list", headerFilterParams: {
                     values: datings.map(item => ({
@@ -88,6 +232,12 @@ async function buildResultTable() {
                 },
                 formatter: function(cell) {
                     const datingsIds = cell.getValue();
+
+                    // HTML download
+                    if (Array.isArray(datingsIds) && datingsIds.length > 0 && typeof datingsIds[0] === "object") {
+                        return datingsIds.map(obj => formatDatings(obj)).join(", ");
+                    }
+
                     if (Array.isArray(datingsIds)) {
                         return datingsIds
                                 .map(id => {
@@ -95,9 +245,27 @@ async function buildResultTable() {
                                     return formatDatings(dating)})
                                 .join(", ");
                     }
+                },
+                accessorDownload: function(value) {
+                    if (!Array.isArray(value)) return "";
+                    return value
+                        .map(id => {
+                            const dating = datings.find(item => item.id === id);
+                            return {
+                                id: dating.id,
+                                subSample: dating.subSample,
+                                remarks: dating.remarks,
+                                datingMethod: dating.datingMethod,
+                                material: dating.material,
+                                literatureList: dating.literatureList,
+                                c14Dating: dating.c14Dating,
+                                dendrochronologicalDating: dating.dendrochronologicalDating,
+                                otherDating: dating.otherDating
+                            }
+                        })
                 }
             },
-            {title:"entry date", field:"entryDate", editor:"date", headerSortTristate:true,
+            {title:"entry date", titleDownload:"entryDate", field:"entryDate", editor:"date", headerSortTristate:true,
                 headerFilter:"input", headerFilterFunc: function(headerValue, rowValue) {
                     if (!headerValue) return true;
                     if (!rowValue) return false;
@@ -136,7 +304,7 @@ async function buildResultTable() {
                     return "";
                 }
             },
-            {title:"*tax code", field:"taxCode.id", headerSortTristate:true,
+            {title:"*tax code", titleDownload:"taxCode", field:"taxCode.id", headerSortTristate:true,
                 editor:"list", editorParams: function(cell) {
                     const rowData = cell.getRow().getData();
 
@@ -188,15 +356,40 @@ async function buildResultTable() {
                     
                     const value = cell.getValue();
                     const entry = taxCodes.find(item => item.uri === value);
+
+                    // HTML download
+                    if (!entry) return typeof value === "string" ? value : "";
+
                     return entry ? [entry.notation, entry.prefLabel?.la].filter(Boolean).join(", ") : "";
                 },
+                accessorDownload: function(value, data) {
+                    const row = resultTable.getRow(data.id);
+                    const rowData = row.getData();
+
+                    if (!value) return "";
+
+                    const sample = samples.find(s => s.id === rowData.sample?.id);
+                    if (!sample) return "";
+
+                    const taxonomyUri = sample.feature.site.taxonomy?.id;
+                    const taxCodes = cachedTaxCodesForURI.get(taxonomyUri) || [];
+
+                    const entry = taxCodes.find(item => item.uri === value);
+                    return entry ? [entry.notation, entry.prefLabel?.la].filter(Boolean).join(", ") : "";
+                }
             },
-            {title:"*organic / minerals", field:"orgOrMin", headerSortTristate:true,
-                editor:"list", editorParams:{
-                    values: [
-                        { value: "org", label: "ORG" },
-                        { value: "min", label: "MIN" }
-                    ]
+            {title:"*organic / minerals", titleDownload:"orgOrMin", field:"orgOrMin", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const fractions = rowData?.sample.fractionAnalyzedList || [];
+                    const allowedValues = fractions.map(f => f.orgOrMin);
+
+                    return {
+                        values: [
+                            { value: "org", label: "ORG" },
+                            { value: "min", label: "MIN" }
+                        ].filter(item => allowedValues.includes(item.value))
+                    };
                 },
                 headerFilter: "list",
                 headerFilterParams: {
@@ -216,13 +409,19 @@ async function buildResultTable() {
                     }
                 },
             },
-            {title:"*sieve size", field:"sieveSize", validator: ["required"], headerFilter:"input", headerSortTristate:true, 
-                editor:"number", editorParams:{
-                    min:0,
-                    step:0.1,
+            {title:"*sieve size", titleDownload:"sieveSize", field:"sieveSize", validator: ["required"], headerFilter:"input", headerSortTristate:true,
+                editor:"list", editorParams: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const fractions = rowData?.sample.fractionAnalyzedList || [];
+                    const orgOrMin = rowData?.orgOrMin;
+                    const allowedValues = fractions.filter(f => f.orgOrMin === orgOrMin).map(f => f.sieveSize);
+
+                    return {
+                        values: allowedValues
+                    };
                 },
             },
-            {title:"*fraction analyzed", field:"fractionAnalyzed", headerSortTristate:true,
+            {title:"*fraction analyzed", titleDownload:"fractionAnalyzed", field:"fractionAnalyzed", headerSortTristate:true,
                 editor:"list", editorParams:{ values: [ "yes", "no", "partly"] },
                 headerFilter: "list", headerFilterParams:
                     { values: [ "yes", "no", "partly"], multiselect:true },
@@ -233,7 +432,7 @@ async function buildResultTable() {
                     return headerValue.includes(rowValue);
                 },
             },
-            {title:"*classification confer", field:"classificationConfer.id", headerSortTristate:true,
+            {title:"*classification confer", titleDownload:"classificationConfer", field:"classificationConfer.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: cachedClassificationConfers.map(item => ({
                             value: item.uri,
@@ -253,23 +452,20 @@ async function buildResultTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const item = cachedClassificationConfers.find(item => item.uri === value) || null;
-                    return item?.prefLabel.en || "";
-                },
+                formatter: cell => formatClassificationConfer(cell.getValue()),
+                accessorDownload: value => formatClassificationConfer(value),
             },
-            {title:"*rType", field:"restType.id", headerSortTristate:true,
+            {title:"*rType", titleDownload:"restType", field:"restType.id", headerSortTristate:true,
                 editor:"list", editorParams:{
-                    values: cachedRestTypes.map(item => ({
-                            value: item.uri,
-                            label: item.prefLabel.en
+                    values: restTypes.map(item => ({
+                            value: item.id,
+                            label: item.label + (item.structuralConcept ? ` (${item.structuralConcept})` : "")
                         }))       
                 },
                 headerFilter:true, headerFilterParams: {
-                    values: cachedRestTypes.map(item => ({
-                            value: item.uri,
-                            label: item.prefLabel.en
+                    values: restTypes.map(item => ({
+                            value: item.id,
+                            label: item.label + (item.structuralConcept ? ` (${item.structuralConcept})` : "")
                         })),
                     multiselect:true
                 },
@@ -279,13 +475,10 @@ async function buildResultTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const item = cachedRestTypes.find(item => item.uri === value) || null;
-                    return item?.prefLabel.en || "";
-                },
+                formatter: cell => formatRestType(cell.getValue()),
+                accessorDownload: value => formatRestType(value),
             },
-            {title:"*state of preservation", field:"stateOfPreservation.id", headerSortTristate:true,
+            {title:"*state of preservation", titleDownload:"stateOfPreservation", field:"stateOfPreservation.id", headerSortTristate:true,
                 editor:"list", editorParams:{
                     values: cachedStateOfPreservation.map(item => ({
                             value: item.uri,
@@ -305,25 +498,22 @@ async function buildResultTable() {
                     }
                     return headerValue.includes(rowValue);
                 },
-                formatter: function(cell){
-                    const value = cell.getValue();
-                    const item = cachedStateOfPreservation.find(item => item.uri === value) || null;
-                    return item?.prefLabel.en || "";
-                },
+                formatter: cell => formatStateOfPreservation(cell.getValue()),
+                accessorDownload: value => formatStateOfPreservation(value),
             },
-            {title:"rCount", field:"restCount", headerFilter:"input", headerSortTristate:true,
+            {title:"rCount", titleDownload:"restCount", field:"restCount", headerFilter:"input", headerSortTristate:true,
                 editor:"number", validator: ["integer"], editorParams:{
                     min:0,
                     step:1,
                 },
             },
-            {title:"rFragment", field:"restFragment", headerFilter:"input", headerSortTristate:true,
+            {title:"rFragment", titleDownload:"restFragment", field:"restFragment", headerFilter:"input", headerSortTristate:true,
                 editor:"number", validator: ["integer"], editorParams:{
                     min:0,
                     step:1,
                 },
             },
-            {title:"rWeight [g]", field:"restWeight", headerFilter:"input", headerSortTristate:true,
+            {title:"rWeight [g]", titleDownload:"restWeight", field:"restWeight", headerFilter:"input", headerSortTristate:true,
                 editor:"number", editorParams:{
                     min:0,
                     step:0.1,
@@ -382,14 +572,16 @@ async function buildResultTable() {
         ],
     });
 
-    // GET results and populate table ----------------------------------
-    axios.get("http://localhost:8080/results")
-    .then(response => {
-        resultTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading results:", error));
 
-    // PUT: update results ---------------------------------------------
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "resultTable";
+
+
+    // PUT: update results ------------------------------------------------------
     resultTable.on("cellEdited", async function(cell){
 
         const editedField = cell.getField();
@@ -414,6 +606,7 @@ async function buildResultTable() {
 
             const payload = {
                 ...result,
+                sample: result.sample ? { id: result.sample.id } : null,
                 absoluteDatingList: datingsAsObjects,
             };
     
@@ -461,20 +654,132 @@ async function buildResultTable() {
     });
 }
 
-// Export table ---------------------------------------------------------
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "resultTable") {
+        const rawData = resultTable.getData("active");
+        
+        const transformed = rawData.map(row => {
+            // Sample
+            const sampleId = row.sample?.id;
+            const sampleValues = resultTable.getColumn("sample.id").getDefinition().editorParams({
+                getRow: () => ({
+                    getData: () => row
+                })
+            }).values;
+            const sample = sampleValues.find(s => s.value === sampleId);
+            // Feature
+            const featureId     = row.sample?.feature?.id;
+            const featureValues = resultTable.getColumn("sample.feature.id").getDefinition().editorParams({
+                getRow: () => ({
+                    getData: () => row
+                })
+            }).values;
+            const feature       = featureValues.find(f => f.value === featureId);
+            // Site
+            const siteId     = row.sample?.feature?.site?.id;
+            const siteValues = resultTable.getColumn("sample.feature.site.id").getDefinition().editorParams.values;
+            const site       = siteValues.find(s => s.value === siteId);
+            // Tax code
+            const taxCodeId     = row.taxCode?.id;
+            const taxCodeValues = resultTable.getColumn("taxCode.id").getDefinition().editorParams({
+                getRow: () => ({
+                    getData: () => row
+                })
+            }).values;
+            const taxCode       = taxCodeValues.find(tc => tc.value === taxCodeId);
+            // Classification confer
+            const classificationConferId = row.classificationConfer?.id;
+            const classificationConfer   = cachedClassificationConfers.find(cf => cf.uri === classificationConferId);
+            // Rest type
+            const restTypeId     = row.restType.id;
+            const restTypeValues = resultTable.getColumn("restType.id").getDefinition().editorParams.values;
+            const restType       = restTypeValues.find(rt => rt.value === restTypeId);
+            // State of preservation
+            const stateOfPreservationId = row.stateOfPreservation.id;
+            const stateOfPreservation   = cachedStateOfPreservation.find(sop => sop.uri = stateOfPreservationId);
+            
+            return {
+                id:        row.id,
+                sample:    sampleId && {
+                    id:   sampleId,
+                    name: sample.label
+                },
+                feature: featureId && {
+                    id:   featureId,
+                    name: feature.label
+                },
+                site: siteId && {
+                    id:   siteId,
+                    name: site.label
+                },
+                absoluteDatingList: (() => {
+                    const accessorDownload = resultTable
+                        .getColumn("absoluteDatingList")
+                        .getDefinition()
+                        .accessorDownload;
+                    return accessorDownload(row.absoluteDatingList);
+                })(),
+                entryDate: row.entryDate,
+                taxCode: taxCodeId && {
+                    id:   taxCodeId,
+                    name: taxCode.label
+                },
+                orgOrMin: row.orgOrMin,
+                sieveSize: row.sieveSize,
+                fractionAnalyzed: row.fractionAnalyzed,
+                classificationConfer: classificationConferId
+                    ? { id: classificationConferId, label: classificationConfer?.prefLabel.en ?? "" }
+                    : null,
+                restType: restType
+                    ? { id: restType, name: restType?.label ?? "" }
+                    : null,
+                stateOfPreservation: stateOfPreservationId
+                    ? { id: stateOfPreservationId, label: stateOfPreservation?.prefLabel.en ?? "" }
+                    : null,
+                restCount: row.restCount,
+                restFragment: row.restFragment,
+                restWeight: row.restWeight,
+                estimation: row.estimation,
+                multiplier: row.multiplier,
+                remarks: row.remarksTaxonomy
+            };
+        });
+
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Results.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+});
 
 document.getElementById("download-csv").addEventListener("click", function(){
-    resultTable.download("csv", "data.csv");
-});
-
-document.getElementById("download-json").addEventListener("click", function(){
-    resultTable.download("json", "data.json");
-});
+    if (activeTable === "resultTable") {
+        resultTable.download(
+            "csv",
+            "ArboDat+_Download_Results.csv"
+        );
+    }    
+});    
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    resultTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "resultTable") {
+        resultTable.download(
+            "xlsx",
+            "ArboDat+_Download_Results.xlsx",
+            {sheetName:"ArboDat+ Results"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    resultTable.download("html", "data.html", {style:true});
+    if (activeTable === "resultTable") {
+        resultTable.download(
+            "html",
+            "ArboDat+_Download_Results.html"
+        );
+    }
 });

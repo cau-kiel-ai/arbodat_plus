@@ -1,30 +1,49 @@
 let institutionTable;
 
-async function buildInstitutionTable() {    
+async function buildInstitutionTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
+
+    // GET institutions ---------------------------------------------------------
+    let institutions = [];
+    try {
+        const response = await axios.get("http://localhost:8080/institutions");
+        institutions = response.data;
+    } catch (error) {
+        console.error("Error loading institutions:", error);
+    }
 
     // Create Table -------------------------------------------------------------
     institutionTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: institutions,
         columns:[
-            {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
-                rowRange:"active" //only toggle the values of the active filtered rows
-            }, hozAlign:"center", headerSort:false},
+            {formatter:"rowSelection", titleFormatter:"rowSelection",
+                titleFormatterParams:{
+                    rowRange:"active" //only toggle the values of the active filtered rows
+                }, hozAlign:"center", headerSort:false
+            },
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"*label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"ror id", field:"rorId", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"*label", titleDownload:"label", field:"label", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"ror id", titleDownload:"rorId", field:"rorId", editor:"input", headerFilter:true, headerSortTristate:true},
         ],
         initialSort: [
             {column: "label", dir: "asc"}
         ]
-    });
+    }); // ----------------------------------------------------------------------
 
-    // GET institutions and populate table --------------------------------------
-    axios.get("http://localhost:8080/institutions")
-    .then(response => {
-        institutionTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading institutions:", error));    
+
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
+
+    activeTable = "institutionTable";
+
 
     // PUT: update institutions -------------------------------------------------
     institutionTable.on("cellEdited", async function(cell){
@@ -91,20 +110,40 @@ async function buildInstitutionTable() {
     });
 }
 
- // Export table ---------------------------------------------------------
-
-document.getElementById("download-csv").addEventListener("click", function(){
-    institutionTable.download("csv", "data.csv");
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "institutionTable") {
+        institutionTable.download(
+            "json",
+            "ArboDat+_Download_Institutions.json"
+        );
+    }
 });
 
-document.getElementById("download-json").addEventListener("click", function(){
-    institutionTable.download("json", "data.json");
+document.getElementById("download-csv").addEventListener("click", function(){
+    if (activeTable === "institutionTable") {
+        institutionTable.download(
+            "csv",
+            "ArboDat+_Download_Institutions.csv"
+        );
+    }
 });
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    institutionTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "institutionTable") {
+        institutionTable.download(
+            "xlsx",
+            "ArboDat+_Download_Institutions.xlsx",
+            {sheetName:"ArboDat+ Institutions"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    institutionTable.download("html", "data.html", {style:true});
+    if (activeTable === "institutionTable") {
+        institutionTable.download(
+            "html",
+            "ArboDat+_Download_Institutions.html"
+        );
+    }
 });

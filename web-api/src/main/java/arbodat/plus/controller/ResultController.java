@@ -3,6 +3,8 @@ package arbodat.plus.controller;
 import arbodat.plus.model.*;
 import arbodat.plus.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -37,10 +39,7 @@ public class ResultController {
     @Autowired
     TaxCodeRepository taxCodeRepository;
 
-    @GetMapping
-    public List<Result> getAllResults() {
-        return resultRepository.findAll();
-    }
+    @GetMapping public Page<Result> getResults(Pageable pageable) { return resultRepository.findAll(pageable); }
 
     @PostMapping
     public String create(@RequestBody Result transferredResult) {

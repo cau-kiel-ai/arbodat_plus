@@ -65,7 +65,7 @@ public class UserController {
         // update user attributes
         user.setOrcid(transferredUser.getOrcid());
         user.setFirstName(transferredUser.getFirstName());
-        user.setMiddleNames(transferredUser.getMiddleNames());
+        user.setMiddleName(transferredUser.getMiddleName());
         user.setLastName(transferredUser.getLastName());
         user.setMailAddress(transferredUser.getMailAddress());
 

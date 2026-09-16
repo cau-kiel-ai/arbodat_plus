@@ -18,6 +18,12 @@ public class SiteType implements Serializable {
     @Column(name = "label")
     private String label;
 
+    @Column(name = "label_de")
+    private String labelDe;
+
+    @Column(name = "label_fr")
+    private String labelFr;
+
     @Column(name = "structural_concept")
     private String structuralConcept;
 

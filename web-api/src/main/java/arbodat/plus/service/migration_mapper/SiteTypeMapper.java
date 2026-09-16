@@ -117,6 +117,7 @@ public class SiteTypeMapper {
         siteTypeMap.put("unbek", "ArboDat+_siteType_unknown");
         // not chosen
         siteTypeMap.put("-99", "ArboDat+_siteType_notChosen");
+        siteTypeMap.put(null, "ArboDat+_siteType_notChosen");
         // other anthropogenic deposit
         siteTypeMap.put("FustelSo", "ArboDat+_siteType_otherAnthropogenicDeposit");
         // other natural deposit

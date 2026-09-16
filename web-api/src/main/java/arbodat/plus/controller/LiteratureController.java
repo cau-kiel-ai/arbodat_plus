@@ -28,7 +28,7 @@ public class LiteratureController {
     }
 
     @PostMapping
-    public String create(@RequestPart Literature literature,
+    public String create(@RequestPart Literature transferredLiterature,
                          @RequestPart List<Author> authorList) {
 
         // Handle authors -------------------------------------------
@@ -46,10 +46,10 @@ public class LiteratureController {
                 authors.add(existingAuthor);
             }
         }
-        literature.setAuthorList(authors);
+        transferredLiterature.setAuthorList(authors);
         // ----------------------------------------------------------
 
-        literatureRepository.save(literature);
+        literatureRepository.save(transferredLiterature);
         return "literature is created";
     }
 
@@ -68,6 +68,14 @@ public class LiteratureController {
         literature.setShortCitation(transferredLiterature.getShortCitation());
         literature.setLongCitation(transferredLiterature.getLongCitation());
         literature.setLitAbstract(transferredLiterature.getLitAbstract());
+
+        // add site from migration update literature
+        if (transferredLiterature.getSiteList() != null) {
+            transferredLiterature.getSiteList()
+                    .stream()
+                    .findFirst()
+                    .ifPresent(site -> literature.getSiteList().add(site));
+        }
 
         // Handle authors -------------------------------------------
         Set<Author> authors = new HashSet<>();

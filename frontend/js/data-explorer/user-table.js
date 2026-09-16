@@ -1,8 +1,23 @@
 let userTable;
 
 async function buildUserTable() {
+    const container = document.getElementById("table");
+    const spinner = document.getElementById('tableSpinner');
+    const tableContainer = document.querySelector('.table-container');
+    container.innerHTML = "";
+    spinner.style.display = 'block';
+    tableContainer.style.display = 'none';
 
-    // GET institutions ----------------------------------------------------------------
+    // GET users ----------------------------------------------------------------
+    let users = [];
+    try {
+        const response = await axios.get("http://localhost:8080/users");
+        users = response.data;
+    } catch (error) {
+        console.error("Error loading users:", error);
+    }
+
+    // GET institutions ---------------------------------------------------------
     let institutions = [];
     try {
         const response = await axios.get("http://localhost:8080/institutions");
@@ -13,19 +28,19 @@ async function buildUserTable() {
 
     // Create Table -------------------------------------------------------------
     userTable = new Tabulator("#table", {
-        // height:200, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        // layout:"fitColumns",
+        height: "100%",
+        data: users,
         columns:[
             {formatter:"rowSelection", titleFormatter:"rowSelection", titleFormatterParams:{
                 rowRange:"active" //only toggle the values of the active filtered rows
             }, hozAlign:"center", headerSort:false},
             {title:"id", field:"id", headerFilter:true, headerSort:false},
-            {title:"first name", field:"firstName", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"middle name", field:"middleNames", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"*last name", field:"lastName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
-            {title:"mail address", field:"mailAddress", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"first name", titleDownload:"firstName", field:"firstName", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"middle name", titleDownload:"middleName", field:"middleName", editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"*last name", titleDownload:"lastName", field:"lastName", validator: ["required"], editor:"input", headerFilter:true, headerSortTristate:true},
+            {title:"mail address", titleDownload:"mailAddress", field:"mailAddress", editor:"input", headerFilter:true, headerSortTristate:true},
             {title:"ORCID", field:"orcid", editor:"input", headerFilter:true, headerSortTristate:true},
-            {title: "institution list (multiple selection)", field:"institutionList", headerSortTristate:true,
+            {title: "institution list (multiple selection)", titleDownload:"institutionList", field:"institutionList", headerSortTristate:true,
                 mutator: function(value) {
                     // Map site type objects only to site type id
                     return Array.isArray(value) ? value.map(item => item.id? item.id : item) : [];
@@ -54,16 +69,8 @@ async function buildUserTable() {
                 sorter:"array", sorterParams:{
                     valueMap:"label"
                 },
-                formatter: function(cell) {
-                    const institutionIds = cell.getValue();
-                    if (Array.isArray(institutionIds)) {
-                        return institutionIds
-                                .map(id => {
-                                    const institution = institutions.find(item => item.id === id)
-                                    return institution?.label;})
-                                .join(", ");
-                    }
-                }
+                formatter: cell => formatInst(institutions, cell.getValue()),
+                accessorDownload: value => formatInst(institutions, value),
             },
         ],
         initialSort: [
@@ -71,14 +78,15 @@ async function buildUserTable() {
         ]
     });
 
-    // GET users and populate table --------------------------------------
-    axios.get("http://localhost:8080/users")
-    .then(response => {
-        userTable.setData(response.data);
-    })
-    .catch(error => console.error("Error loading users:", error));    
+    // Hide spinner
+    spinner.style.display = 'none';
+    // Show table
+    tableContainer.style.display = 'flex';
 
-    // PUT: update users -------------------------------------------------
+    activeTable = "userTable";
+
+
+    // PUT: update users --------------------------------------------------------
     userTable.on("cellEdited", async function(cell){
 
         const editedField = cell.getField();
@@ -153,20 +161,62 @@ async function buildUserTable() {
     });
 }
 
- // Export table ---------------------------------------------------------
+// Export table -----------------------------------------------------------------
+document.getElementById("download-json").addEventListener("click", function(){
+    if (activeTable === "userTable") {
+        const rawData = userTable.getData("active");
+    
+        const transformed = rawData.map(row => {
+            
+            return {
+                id: row.id,
+                firstName: row.firstName,
+                middleName: row.middleName,
+                lastName: row.lastName,
+                mailAddress: row.mailAddress,
+                orcid: row.orcid,
+                institutionList: (row.institutionList || []).map(institutionId => {
+                    const institutionValues = userTable.getColumn("institutionList").getDefinition().editorParams.values;
+                    const institution = institutionValues.find(i => i.value === institutionId);
+                    return { id: institutionId, name: institution?.label };
+                }),
+            };
+        });
 
- document.getElementById("download-csv").addEventListener("click", function(){
-    userTable.download("csv", "data.csv");
+        const blob = new Blob([JSON.stringify(transformed, null, 4)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ArboDat+_Download_Users.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 });
 
-document.getElementById("download-json").addEventListener("click", function(){
-    userTable.download("json", "data.json");
+document.getElementById("download-csv").addEventListener("click", function(){
+    if (activeTable === "userTable") {
+        userTable.download(
+            "csv",
+            "ArboDat+_Download_User.csv"
+        );
+    }
 });
 
 document.getElementById("download-xlsx").addEventListener("click", function(){
-    userTable.download("xlsx", "data.xlsx", {sheetName:"ArboDat+ exported data"});
+    if (activeTable === "userTable") {
+        userTable.download(
+            "xlsx",
+            "ArboDat+_Download_User.xlsx",
+            {sheetName:"ArboDat+ User"}
+        );
+    }
 });
 
 document.getElementById("download-html").addEventListener("click", function(){
-    userTable.download("html", "data.html", {style:true});
+    if (activeTable === "userTable") {
+        userTable.download(
+            "html",
+            "ArboDat+_Download_User.html"
+        );
+    }
 });

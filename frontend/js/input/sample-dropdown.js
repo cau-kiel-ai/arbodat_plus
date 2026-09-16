@@ -8,43 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputField = document.getElementById("sample_label");
     const submit_update_button = document.getElementById("sample_submit_update_button");
 
-    const feature_dropdown = document.getElementById("feature_dropdown");
-
-    // Attributes ---------------------------------------------------
-    // Sample location
-    const stratum_input = document.getElementById("stratum");
-    const layer_input = document.getElementById("layer");
-    const sector_input = document.getElementById("sector");
-    const planum_input = document.getElementById("planum");
-    const depth_from_input = document.getElementById("depth_from");
-    const depth_to_input = document.getElementById("depth_to");
-    // Coordinates
-    const coordinate_system_dropdown = document.getElementById("sample_coordinate_system");
-    const longitude_input = document.getElementById("sample_longitude");
-    const latitude_input = document.getElementById("sample_latitude");
-    const altitude_input = document.getElementById("sample_altitude");
-    const longitude_wgs84_input = document.getElementById("sample_longitude_wgs84");
-    const latitude_wgs84_input = document.getElementById("sample_latitude_wgs84");
-    // Measurement details
-    const bot_det_by_selectpicker = document.getElementById("bot_det_by");
-    const year_of_bot_det_input = document.getElementById("bot_det_yr");
-    const sample_type_dropdown = document.getElementById("sample_type");
-    const sample_storage_checkbox = document.getElementById("storage");
-    const micro_remain_checkbox = document.getElementById("microRemain");
-    // Inventory
-    const seeds_and_fruits_dropdown = document.getElementById("seedsAndFruits");
-    const wood_subfossile_dropdown = document.getElementById("woodSubfossile");
-    const charcoal_investigated_dropdown = document.getElementById("charcoalInvestigated");
-    const charcoal_total_weight_input = document.getElementById("charcoal_total_weight");
-    const charcoal_undetermined_weight_input = document.getElementById("charcoal_undetermined_weight");
-    const volume_input = document.getElementById("sampleVolume");
-    const volume_determination_dry_radio = document.getElementById("dry");
-    const volume_determination_wet_radio = document.getElementById("wet");
-    // Sample dating
-    const chronozone_dropdown = document.getElementById("chronozone");
-    const archaeological_dating_input = document.getElementById("archaeologicalDating");
-    const cultural_group_input = document.getElementById("culturalGroup");
-    const remarks_textarea = document.getElementById("sample_remarks");
+    const bot_det_by_container = document.getElementById("botanicalDeterminationByContainer");
     // ---------------------------------------------------------------------------------------
 
     let activeIndex = -1;
@@ -56,10 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
     inputField.addEventListener("focus", () => {
 
         // Check if feature is selcted
-        const feature_id = feature_dropdown.value;
+        const feature_id = sample_feature_dropdown.value;
         if (!feature_id) {
-            alert("before you can enter or select a sample label, you must select a feature");
-            feature_dropdown.focus();
+            toast.info("Before you can enter or select a sample label, you must select a feature.");
+            inputField.blur();
         }
 
         if (suppressDropdown) {
@@ -84,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             // Filter samples by selected feature
-            cachedItems = data.filter(item => item.feature.id === feature_id); // Customise here
+            cachedItems = data.filter(sample => sample.feature?.id === feature_id); // Customise here
             activeIndex = -1; // Reset the active index
             populateDropdown(cachedItems);
         })
@@ -134,15 +98,18 @@ document.addEventListener("DOMContentLoaded", () => {
             depth_from_input.value = '';
             depth_to_input.value   = '';
             // Coordinates
-            coordinate_system_dropdown.value = '';
-            longitude_input.value            = '';
-            latitude_input.value             = '';
-            altitude_input.value             = '';
-            longitude_wgs84_input.value      = '';
-            latitude_wgs84_input.value       = '';
+            $('#sample_coordinate_system').val(null).trigger('change');
+            longitude_input.value       = '';
+            latitude_input.value        = '';
+            altitude_input.value        = '';
+            longitude_wgs84_input.value = '';
+            latitude_wgs84_input.value  = '';
             // Measurement details
-            bot_det_by_selectpicker.value = '';
-            year_of_bot_det_input.value   = '';
+            // Reset list and container -----------
+            sampleBotanicalDeterminationByList = []
+            bot_det_by_container.innerHTML = "";
+            // ------------------------------------
+            year_of_bot_det_input.value = '';
 
             // Reset fractions --------------------------------------
             // fraction 1
@@ -156,20 +123,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 removeFraction();
             } // ----------------------------------------------------
 
-            sample_type_dropdown.value      = '';
+            $('#sample_type').val(null).trigger('change');
             sample_storage_checkbox.checked = false;
             micro_remain_checkbox.checked   = false;
             // Inventory
-            seeds_and_fruits_dropdown.value          = '';
-            wood_subfossile_dropdown.value           = '';
-            charcoal_investigated_dropdown.value     = '';
+            $('#seedsAndFruits').val(null).trigger('change');
+            $('#woodSubfossile').val(null).trigger('change');
+            $('#charcoalInvestigated').val(null).trigger('change');
             charcoal_total_weight_input.value        = '';
             charcoal_undetermined_weight_input.value = '';
             volume_input.value                       = '';
             volume_determination_dry_radio.checked   = false;
             volume_determination_wet_radio.checked   = false;
-            // Sample dating
-            chronozone_dropdown.value         = '';
+            // Sample dating            
+            $('#chronozone').val(null).trigger('change');
             archaeological_dating_input.value = '';
             cultural_group_input.value        = '';
             remarks_textarea.value            = '';
@@ -180,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function populateDropdown(itemList) {  
         dropdown.innerHTML = ""; // Reset dropdown
         
-        itemList.forEach((item, index) => {
+        itemList.forEach((item) => {
             const listItem = document.createElement("li");
             listItem.textContent = item.label; // Customise here
             listItem.addEventListener("click", () => {
@@ -209,16 +176,29 @@ document.addEventListener("DOMContentLoaded", () => {
         depth_from_input.value = item.depthFrom;
         depth_to_input.value   = item.depthTo;
         // Coordinates
-        coordinate_system_dropdown.value = item.coordinate?.coordinateSystem?.id ?? "";
-        longitude_input.value            = item.coordinate?.longitude      ?? "";
-        latitude_input.value             = item.coordinate?.latitude       ?? "";
-        altitude_input.value             = item.coordinate?.altitude       ?? "";
-        longitude_wgs84_input.value      = item.coordinate?.longitudeWgs84 ?? "";
-        latitude_wgs84_input.value       = item.coordinate?.latitudeWgs84  ?? "";
+        $('#sample_coordinate_system')
+            .val(item.coordinate?.coordinateSystem?.id ?? "").trigger('change');
+        longitude_input.value       = item.coordinate?.longitude      ?? "";
+        latitude_input.value        = item.coordinate?.latitude       ?? "";
+        altitude_input.value        = item.coordinate?.altitude       ?? "";
+        longitude_wgs84_input.value = item.coordinate?.longitudeWgs84 ?? "";
+        latitude_wgs84_input.value  = item.coordinate?.latitudeWgs84  ?? "";
         // Measurement details
-        [...bot_det_by_selectpicker.options].forEach(option => 
-            option.selected = item.botanicalDeterminationBy?.some(user => user.id == option.value)
-        );
+        // Reset user list and container ----------------
+        sampleBotanicalDeterminationByList = []
+        bot_det_by_container.innerHTML = "";
+        // Add users to list and container
+        item.botanicalDeterminationBy.forEach(item => {
+            const itemText = formatName(item);            
+            const userData = { id: item.id };
+            const index = sampleBotanicalDeterminationByList.push(userData) - 1;
+            addUserItemBox(
+                itemText,
+                index,
+                "sampleBotanicalDeterminationByList",
+                "botanicalDeterminationByContainer"
+            );
+        }); // ------------------------------------------
         year_of_bot_det_input.value = item.botanicalDeterminationYear;
 
         // Reset fractions -----------------------------------------
@@ -250,20 +230,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }); // -----------------------------------------------------
 
-        sample_type_dropdown.value      = item.sampleType?.id ?? "";
+        $('#sample_type').val(item.sampleType?.id ?? "").trigger('change');
         sample_storage_checkbox.checked = item.sampleStorage;
         micro_remain_checkbox.checked   = item.microRemain;
         // Inventory
-        seeds_and_fruits_dropdown.value          = item.seedsAndFruits?.id       ?? '';
-        wood_subfossile_dropdown.value           = item.woodSubfossile?.id       ?? '';
-        charcoal_investigated_dropdown.value     = item.charcoalInvestigated?.id ?? '';
+        $('#seedsAndFruits').val(item.seedsAndFruits?.id ?? '').trigger('change');
+        $('#woodSubfossile').val(item.woodSubfossile?.id ?? '').trigger('change');
+        $('#charcoalInvestigated').val(item.charcoalInvestigated?.id ?? '').trigger('change');
         charcoal_total_weight_input.value        = item.totalWeight;
         charcoal_undetermined_weight_input.value = item.weightUndetermined;
         volume_input.value                       = item.sampleVolume;
         volume_determination_dry_radio.checked   = item.volumeDetermination === "dry";
         volume_determination_wet_radio.checked   = item.volumeDetermination === "wet";
         // Sample dating
-        chronozone_dropdown.value         = item.chronozone?.id ?? '';
+        $('#chronozone').val(item.chronozone?.id ?? '').trigger('change');
         archaeological_dating_input.value = item.archaeologicalDating;
         cultural_group_input.value        = item.culturalGroup;
         remarks_textarea.value            = item.remarksSample;
@@ -286,15 +266,18 @@ document.addEventListener("DOMContentLoaded", () => {
         depth_from_input.value = '';
         depth_to_input.value   = '';
         // Coordinates
-        coordinate_system_dropdown.value = '';
-        longitude_input.value            = '';
-        latitude_input.value             = '';
-        altitude_input.value             = '';
-        longitude_wgs84_input.value      = '';
-        latitude_wgs84_input.value       = '';
+        $('#sample_coordinate_system').val(null).trigger('change');
+        longitude_input.value       = '';
+        latitude_input.value        = '';
+        altitude_input.value        = '';
+        longitude_wgs84_input.value = '';
+        latitude_wgs84_input.value  = '';
         // Measurement details
-        bot_det_by_selectpicker.value = '';
-        year_of_bot_det_input.value   = '';
+        // Reset list and container -----------
+        sampleBotanicalDeterminationByList = []
+        bot_det_by_container.innerHTML = "";
+        // ------------------------------------
+        year_of_bot_det_input.value = '';
         
         // Reset fractions --------------------------------------
         // fraction 1
@@ -308,20 +291,20 @@ document.addEventListener("DOMContentLoaded", () => {
             removeFraction();
         } // ----------------------------------------------------
 
-        sample_type_dropdown.value      = '';
+        $('#sample_type').val(null).trigger('change');
         sample_storage_checkbox.checked = false;
         micro_remain_checkbox.checked   = false;
         // Inventory
-        seeds_and_fruits_dropdown.value          = '';
-        wood_subfossile_dropdown.value           = '';
-        charcoal_investigated_dropdown.value     = '';
+        $('#seedsAndFruits').val(null).trigger('change');
+        $('#woodSubfossile').val(null).trigger('change');
+        $('#charcoalInvestigated').val(null).trigger('change');
         charcoal_total_weight_input.value        = '';
         charcoal_undetermined_weight_input.value = '';
         volume_input.value                       = '';
         volume_determination_dry_radio.checked   = false;
         volume_determination_wet_radio.checked   = false;
         // Sample dating
-        chronozone_dropdown.value         = '';
+        $('#chronozone').val(null).trigger('change');
         archaeological_dating_input.value = '';
         cultural_group_input.value        = '';
         remarks_textarea.value            = '';

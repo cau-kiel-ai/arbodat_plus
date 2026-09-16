@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dropdown = document.getElementById("projectDropdown");
     const clearIcon = document.getElementById("clearIcon");
     
-    const id = document.getElementById("projectId");
+    const id = document.getElementById("researchProjectId");
     const inputField = document.getElementById("projectName");
     // Attributes
     const funderInput = document.getElementById("funder");
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
           funderInput.readOnly = false;
           authorisationNumberInput.value = "";
           authorisationNumberInput.readOnly = false;
-          licenseInput.value = "";
+          $('#licenseDropdown').val(null).trigger('change');
           licenseInput.disabled = false;
           exportFileNameInput.value = "";
           exportFileNameInput.readOnly = false;
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         funderInput.readOnly = true;
         authorisationNumberInput.value = item.authorisationNumber;
         authorisationNumberInput.readOnly = true;
-        licenseInput.value = item.license?.id ?? '';
+        $('#licenseDropdown').val(item.license?.id ?? '').trigger('change');
         licenseInput.disabled = true;
         exportFileNameInput.value = item.exportFileName;
         exportFileNameInput.readOnly = true;
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         funderInput.readOnly = false;
         authorisationNumberInput.value = "";
         authorisationNumberInput.readOnly = false;
-        licenseInput.value = "";
+        $('#licenseDropdown').val(null).trigger('change');
         licenseInput.disabled = false;
         exportFileNameInput.value = "";
         exportFileNameInput.readOnly = false;

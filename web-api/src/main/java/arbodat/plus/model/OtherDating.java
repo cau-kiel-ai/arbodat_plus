@@ -26,7 +26,7 @@ public class OtherDating implements Serializable {
     private Laboratory laboratory;
 
     @Column(name = "number")
-    private Integer number;
+    private String number;
     // ---------------------------------------
 
     @OneToOne(mappedBy = "otherDating")

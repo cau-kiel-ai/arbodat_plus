@@ -29,7 +29,7 @@ public class DendrochronologicalDating implements Serializable {
     private Laboratory laboratory;
 
     @Column(name = "number")
-    private Integer number;
+    private String number;
     // ---------------------------------------
 
     @OneToOne(mappedBy = "dendrochronologicalDating")

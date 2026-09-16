@@ -14,7 +14,18 @@ header {
     z-index: 1;
     top: 0;
     left: 0;
-}   
+}
+
+.clear-icon {
+    transform: translateY(-50%);
+    cursor: pointer;
+    position: absolute;
+    right: 25px;
+    top: 50%;
+}
+.clear-icon:hover {
+  text-decoration: underline;
+}
 
 header h1{
     display: inline-block;
@@ -65,7 +76,7 @@ header h1{
 
 /* ------------ Input.html specific settings: General --------------- */
 
-.header_img_input_html {
+.header {
     background-color: #776c78;
     height: 70px;
     text-align: center;
@@ -74,7 +85,7 @@ header h1{
     z-index: 999;
    }
 
-.header_img_input_html img {
+.header img {
     height: 65px;
     width: 120px;
 }
@@ -334,7 +345,7 @@ button:hover{
 footer li a:hover{
     text-decoration: underline;
     background-color: #b4adb5;
-    padding: 3%;
+    padding: 4px 8px;
     cursor:pointer;
 }
 
@@ -351,7 +362,7 @@ footer li a:hover{
         display: inline-block;
     }
 
-    .header_img_input_html {
+    .header {
         background-color: #776c78;
         height: 70px;
         text-align: center;
@@ -381,7 +392,7 @@ footer li a:hover{
         display: inline-block;
     }
     
-    .header_img_input_html {
+    .header {
         background-color: #776c78;
         height: 70px;
         text-align: center;
@@ -422,7 +433,7 @@ footer li a:hover{
         display: inline-block;
     }
         
-    .header_img_input_html {
+    .header {
         background-color: #776c78;
         height: 70px;
         text-align: center;

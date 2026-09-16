@@ -4,8 +4,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.5'
 }
 
-// group = 'arbodat'
-// version = '0.0.1'
+group = 'arbodat'
+version = '3.1.0'
 
 java {
 	toolchain {
@@ -19,6 +19,10 @@ configurations {
 	}
 }
 
+// build.gradle
+tasks.named('bootJar') {
+    archiveFileName = 'web-api.jar'
+}
 tasks.named('jar') {
 	enabled = false
 }

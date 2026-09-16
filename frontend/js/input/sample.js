@@ -1,70 +1,189 @@
+let samples = [];
 
-const sample_label_input = document.getElementById("sample_label");
-const sample_feature_dropdown = document.getElementById("feature_dropdown");
+async function getSamples() {
+    const { data } = await axios.get('http://localhost:8080/samples');
+    samples = data;
+}
+
+// Form and Fields ------------------------------------------------------------
+const sampleForm = document.getElementById('sampleForm');
+
+const sample_site_dropdown    = document.getElementById("sampleSite");
+const sample_feature_dropdown = document.getElementById("sampleFeature");
+const sample_label_input      = document.getElementById("sample_label");
 // Sample location
-const stratum_input = document.getElementById("stratum");
-const layer_input = document.getElementById("layer");
-const sector_input = document.getElementById("sector");
-const planum_input = document.getElementById("planum");
+const stratum_input    = document.getElementById("stratum");
+const layer_input      = document.getElementById("layer");
+const sector_input     = document.getElementById("sector");
+const planum_input     = document.getElementById("planum");
 const depth_from_input = document.getElementById("depth_from");
-const depth_to_input = document.getElementById("depth_to");
+const depth_to_input   = document.getElementById("depth_to");
 // Coordinates
 const coordinate_system_dropdown = document.getElementById("sample_coordinate_system");
-const longitude_input = document.getElementById("sample_longitude");
-const latitude_input = document.getElementById("sample_latitude");
-const altitude_input = document.getElementById("sample_altitude");
-const longitude_wgs84_input = document.getElementById("sample_longitude_wgs84");
-const latitude_wgs84_input = document.getElementById("sample_latitude_wgs84");
+const longitude_input            = document.getElementById("sample_longitude");
+const latitude_input             = document.getElementById("sample_latitude");
+const altitude_input             = document.getElementById("sample_altitude");
+const longitude_wgs84_input      = document.getElementById("sample_longitude_wgs84");
+const latitude_wgs84_input       = document.getElementById("sample_latitude_wgs84");
 // Measurement details
-const botDetBy_selectpicker = document.getElementById("bot_det_by");
-const year_of_bot_det_input = document.getElementById("bot_det_yr");
-const sample_type_dropdown = document.getElementById("sample_type");
+const botDetBy_dropdown       = document.getElementById("botanicalDeterminationsBy");
+const year_of_bot_det_input   = document.getElementById("bot_det_yr");
+const sample_type_dropdown    = document.getElementById("sample_type");
 const sample_storage_checkbox = document.getElementById("storage");
-const micro_remain_checkbox = document.getElementById("microRemain");
+const micro_remain_checkbox   = document.getElementById("microRemain");
 // Inventory
-const seeds_and_fruits_dropdown = document.getElementById("seedsAndFruits");
-const wood_subfossile_dropdown = document.getElementById("woodSubfossile");
-const charcoal_investigated_dropdown = document.getElementById("charcoalInvestigated");
-const charcoal_total_weight_input = document.getElementById("charcoal_total_weight");
+const seeds_and_fruits_dropdown          = document.getElementById("seedsAndFruits");
+const wood_subfossile_dropdown           = document.getElementById("woodSubfossile");
+const charcoal_investigated_dropdown     = document.getElementById("charcoalInvestigated");
+const charcoal_total_weight_input        = document.getElementById("charcoal_total_weight");
 const charcoal_undetermined_weight_input = document.getElementById("charcoal_undetermined_weight");
-const volume_input = document.getElementById("sampleVolume");
-const volume_determination_dry_radio = document.getElementById("dry");
-const volume_determination_wet_radio = document.getElementById("wet");
+const volume_input                       = document.getElementById("sampleVolume");
+const volume_determination_dry_radio     = document.getElementById("dry");
+const volume_determination_wet_radio     = document.getElementById("wet");
 // Sample dating
-const chronozone_dropdown = document.getElementById("chronozone");
+const chronozone_dropdown         = document.getElementById("chronozone");
 const archaeological_dating_input = document.getElementById("archaeologicalDating");
-const cultural_group_input = document.getElementById("culturalGroup");
-const remarks_textarea = document.getElementById("sample_remarks");
+const cultural_group_input        = document.getElementById("culturalGroup");
+const remarks_textarea            = document.getElementById("sample_remarks");
 
-
-// Populate feature dropdown  -------------------------------------------------
-sample_feature_dropdown.addEventListener('focus', () => {
-
-    // Reset dropdown
-    while (sample_feature_dropdown.options.length > 1) {
-        sample_feature_dropdown.remove(1);
-    }
-
-    axios.get('http://localhost:8080/features')
-    .then(response => {
-        response.data.forEach(item => {
-            // Create option
-            const option = document.createElement('option');
-            option.value = item.id;
-
-            const projectNames = item.site.researchProjectList
-                .map(rp => rp.projectName)
-                .join(', ');
-            option.textContent = item.label + " (site: " + item.site.label + ", research projects: " + projectNames + ")";
-
-            sample_feature_dropdown.appendChild(option)
-        });
-    })
-    .catch(error => {
-        console.error('Error during feature GET request: ', error);
-    });
+// Select2 reference site dropdown --------------------------------------------
+$('#sampleSite').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
 });
 
+// remove arrow
+$('#sampleSite')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let sampleSite_isReopening = false;
+$('#sampleSite').on('select2:opening', async function (e) {
+    if (sampleSite_isReopening) {
+        sampleSite_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    // Disable dropdown and show "Loading..."
+    $('#sampleSite')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+
+    // Reset form
+    resetSampleForm();
+    $('#sampleFeature').val(null).trigger('change');
+
+    try {
+        await getSites();
+    } finally {
+        // Enable and reset dropdown
+        $('#sampleSite')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        sites.forEach(item => {
+            // Determine item name --------------------------------
+            let itemName;
+            if (item.activityNumber) {
+                itemName = `${item.label}, ${item.activityNumber}`;
+            } else {
+                itemName = item.label;
+            }
+            const projectNames = item.researchProjectList
+                .map(rp => rp.projectName)
+                .join(', ');
+            itemName += ` (research projects: ${projectNames})`;
+            // ----------------------------------------------------
+            $('#sampleSite').append(
+                new Option(itemName, item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#sampleSite').trigger('change.select2');
+
+        // Reopen dropdown
+        sampleSite_isReopening = true;
+        setTimeout(() => {
+            $('#sampleSite').select2('open');
+        }, 0);
+    }
+});
+
+// Select2 reference feature dropdown -----------------------------------------
+$('#sampleFeature').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
+});
+
+// remove arrow
+$('#sampleFeature')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
+
+let sampleFeature_isReopening = false;
+$('#sampleFeature').on('select2:opening', async function (e) {
+    if (sampleFeature_isReopening) {
+        sampleFeature_isReopening = false;
+        return;
+    }
+
+    e.preventDefault(); // Prevent opening
+
+    const selectedSite = sample_site_dropdown.value;
+    // Check if site is selcted
+    if (!selectedSite) {
+        toast.info("Before you can select a feature, you must select a site.");
+        return;
+    }
+
+    // Disable dropdown and show "Loading..."
+    $('#sampleFeature')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
+
+    // Reset form except site dropdown
+    resetSampleForm();
+    sample_site_dropdown.value = selectedSite;
+
+    try {
+        await getFeatures();
+    } finally {
+        // Enable and reset dropdown
+        $('#sampleFeature')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
+
+        // Update data
+        features.filter(item => item.site?.id === selectedSite).forEach(item => {
+            $('#sampleFeature').append(
+                new Option(item.label, item.id)
+            );
+        });
+
+        // Refresh UI
+        $('#sampleFeature').trigger('change.select2');
+
+        // Reopen dropdown
+        sampleFeature_isReopening = true;
+        setTimeout(() => {
+            $('#sampleFeature').select2('open');
+        }, 0);
+    }
+});
 
 // Handle coordinate input -> leaflet map -------------------------------------
 document.addEventListener('DOMContentLoaded', async function () {
@@ -104,9 +223,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     //     });
     // });
 
-    coordinate_system_dropdown.addEventListener("input", () => {
-        handleCoordinateInput();
-    });
+    $('#sample_coordinate_system').on('change', handleCoordinateInput);
     longitude_input.addEventListener("input", () => {
         handleCoordinateInput();
     });
@@ -126,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const coordinateSystem = coordinate_system_dropdown.options[coordinate_system_dropdown.selectedIndex];
             let sourceEPSG = coordinateSystem?.getAttribute('data-crsNotation');
           
-            if (longitude && latitude && sourceEPSG != null) {
+            if (longitude && latitude && sourceEPSG && sourceEPSG !== "undefined") {
                 try {
                     // transform coordinates to WGS84
                     const { transformedLatitude, transformedLongitude } =
@@ -170,80 +287,63 @@ document.addEventListener('DOMContentLoaded', async function () {
     // }
 });
 
-
-// Populate botDetBy selectpicker ---------------------------------------------
-document.getElementById('panelsStayOpen-collapseFive').addEventListener('shown.bs.collapse', () => {
-
-    // Reset selectpicker
-    botDetBy_selectpicker.innerHTML = '';
-
-    // Get users
-    axios.get('http://localhost:8080/users')
-    .then(response => {
-        response.data.forEach(user => {
-            // Create option
-            const option = document.createElement('option');
-
-            let userName;
-            if (user.firstName) {
-                if (user.middleNames) {
-                userName = `${user.lastName}, ${user.firstName} ${user.middleNames}`;
-                } else {
-                    userName = `${user.lastName}, ${user.firstName}`;
-                }                                    
-            } else {
-                userName = `${user.lastName}`;
-            }
-
-            option.value = user.id;
-            option.textContent = userName;
-
-            botDetBy_selectpicker.appendChild(option)
-        });                
-    })
-    .catch(error => {
-        console.error('Error during user GET request: ', error);
-    });
+// Select2 botDetBy dropdown --------------------------------------------------
+$('#botanicalDeterminationsBy').select2({
+    placeholder: "",
+    allowClear: true,
+    width: "100%",
 });
 
-const botDetSelect = document.getElementById("bot_det_by");
-let clicked = false;
+// remove arrow
+$('#botanicalDeterminationsBy')
+    .next('.select2-container')
+    .find('.select2-selection__arrow')
+    .remove();
 
-botDetSelect.addEventListener("click", () => {
- clicked = true;
+let botanicalDeterminationsBy_isReopening = false;
+$('#botanicalDeterminationsBy').on('select2:opening', async function (e) {
+    if (botanicalDeterminationsBy_isReopening) {
+        botanicalDeterminationsBy_isReopening = false;
+        return;
+    }
 
-    if (!clicked) {
-        // Get users
-        axios.get('http://localhost:8080/users')
-        .then(response => {
-            response.data.forEach(user => {
-                // Create option
-                const option = document.createElement('option');
+    e.preventDefault(); // Prevent opening
 
-                let userName;
-                if (user.firstName) {
-                    if (user.middleNames) {
-                    userName = `${user.lastName}, ${user.firstName} ${user.middleNames}`;
-                    } else {
-                        userName = `${user.lastName}, ${user.firstName}`;
-                    }                                    
-                } else {
-                    userName = `${user.lastName}`;
-                }
+    // Disable dropdown and show "Loading..."
+    $('#botanicalDeterminationsBy')
+        .empty()
+        .append(new Option('Loading...', 'loading', true, true))
+        .trigger('change')
+        .prop('disabled', true); // Disable
 
-                option.value = user.id;
-                option.textContent = userName;
+    try {
+        await getUsers();
+    } finally {
+        // Enable and reset dropdown
+        $('#botanicalDeterminationsBy')
+            .prop('disabled', false) // Enable
+            .empty()
+            .append(new Option('', '', false, false));
 
-                botDetBy_selectpicker.appendChild(option)
-            });                
-        })
-        .catch(error => {
-            console.error('Error during user GET request: ', error);
+        // Update data
+        users.forEach(item => {
+            $('#botanicalDeterminationsBy').append(
+                new Option(formatName(item), item.id)
+            );
         });
-    };
+
+        // Refresh UI
+        $('#botanicalDeterminationsBy').trigger('change.select2');
+
+        // Reopen dropdown
+        botanicalDeterminationsBy_isReopening = true;
+        setTimeout(() => {
+            $('#botanicalDeterminationsBy').select2('open');
+        }, 0);
+    }
 });
 
-// Populate Dante dropdowns ---------------------------------------------------
+// Populate DANTE dropdowns ---------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
     await fetchDanteAttribute("sampleType");
     populateDanteDropdown ("sampleType", sample_type_dropdown);
@@ -261,11 +361,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     populateDanteDropdown ("chronozone", chronozone_dropdown);
 });
 
-
 // Submit/Update sample -------------------------------------------------------
-function submit_update_Sample() {
-    const sampleForm = document.getElementById('sampleForm');
-
+function create_update_sample() {
     if (sampleForm.checkValidity()) {
         const sampleId = document.getElementById("sample_id").value;
 
@@ -273,8 +370,7 @@ function submit_update_Sample() {
         const payload = {            
             // General -------------------------------------------
             feature: { id: sample_feature_dropdown.value },
-            label: sample_label_input.value,
-            
+            label: sample_label_input.value,            
             // Sample location -----------------------------------
             stratum: stratum_input.value || null,
             layer: layer_input.value || null,
@@ -283,7 +379,7 @@ function submit_update_Sample() {
             depthFrom: depth_from_input.value,
             depthTo: depth_to_input.value,
             // Measurement details -------------------------------
-            botanicalDeterminationBy: Array.from(botDetBy_selectpicker.selectedOptions).map(option => ({ id: option.value })),
+            botanicalDeterminationBy: sampleBotanicalDeterminationByList,
             botanicalDeterminationYear: year_of_bot_det_input.value,
             sampleStorage: sample_storage_checkbox.checked,
             microRemain: micro_remain_checkbox.checked,
@@ -296,12 +392,12 @@ function submit_update_Sample() {
                                  : volume_determination_wet_radio.checked
                                  ? "wet"
                                  : null,
-            // Sample dating
+            // Sample dating -------------------------------------
             archaeologicalDating: archaeological_dating_input.value || null,
             culturalGroup: cultural_group_input.value || null,
             remarksSample: remarks_textarea.value || null,
         };
-        // Coordinates
+        // Coordinates -------------------------------------------
         payload.coordinate = {
             coordinateSystem: coordinate_system_dropdown.value
                                 ? { id: coordinate_system_dropdown.value,
@@ -313,8 +409,7 @@ function submit_update_Sample() {
             longitudeWgs84: longitude_wgs84_input.value,
             latitudeWgs84:  latitude_wgs84_input.value,
         }
-
-        // Fractions
+        // Fractions ---------------------------------------------
         fraction_list = []
         for (let i = 1; i <= frac_counter; i++) {
             const fraction_analyzed = document.getElementById("fraction_analyzed_" + i);
@@ -332,65 +427,67 @@ function submit_update_Sample() {
         }
         payload.fractionAnalyzedList = fraction_list;
 
-        // Sample type
+        // Sample type -------------------------------------------
         if (sample_type_dropdown.value) {
             payload.sampleType = {
                 id: sample_type_dropdown.value,
                 label: sample_type_dropdown.selectedOptions[0].text
             }
         }        
-        // Seeds and fruits
+        // Seeds and fruits --------------------------------------
         if (seeds_and_fruits_dropdown.value) {
             payload.seedsAndFruits = {
                 id: seeds_and_fruits_dropdown.value,
                 label: seeds_and_fruits_dropdown.selectedOptions[0].text
             }
         }
-        // Wood subfossile
+        // Wood subfossile ---------------------------------------
         if (wood_subfossile_dropdown.value) {
             payload.woodSubfossile = {
                 id: wood_subfossile_dropdown.value,
                 label: wood_subfossile_dropdown.selectedOptions[0].text
             }
         }
-        // Charcoal investigated
+        // Charcoal investigated ---------------------------------
         if (charcoal_investigated_dropdown.value) {
             payload.charcoalInvestigated = {
                 id: charcoal_investigated_dropdown.value,
                 label: charcoal_investigated_dropdown.selectedOptions[0].text
             }
         }
-        // Chronozone
+        // Chronozone --------------------------------------------
         if (chronozone_dropdown.value) {
             payload.chronozone = {
                 id: chronozone_dropdown.value,
                 label: chronozone_dropdown.selectedOptions[0].text
             }
-        }
-        
-        // Sample id
-        if (sampleId) {
+        } // -----------------------------------------------------
+
+        if (sampleId) { // Update (PUT) -----------------------------------
             payload.id = sampleId;
-        }
-        
-        if (sampleId) { // update (PUT)
+
             axios.put(`http://localhost:8080/samples/${sampleId}`, payload)
             .then(response => {
                 console.log(response.data);
-                alert("sample updated");
+                toast.success("sample updated");
             })
             .catch(error => {
                 console.error('Error during PUT request to update sample:', error);
                 alert("action failed");
             });
-        } else { // create (POST)
+        } else { // Create (POST) -----------------------------------------
             axios.post('http://localhost:8080/samples', payload)
             .then(response => {
                 console.log(response.data);
-                alert("sample created");
+                toast.success("sample created");
 
-                // Reset Form
-                sampleForm.reset();
+                // Reset form except site and feature dropdown ----
+                const siteValue    = sample_site_dropdown.value;
+                const featureValue = sample_feature_dropdown.value;
+                resetSampleForm();
+                sample_site_dropdown.value = siteValue;
+                sample_feature_dropdown.value = featureValue;
+                // ------------------------------------------------
             })
             .catch(error => {
                 console.error('Error during POST request to create sample:', error);
@@ -398,7 +495,7 @@ function submit_update_Sample() {
             });
         }
 
-    } else {
+    } else {  // Report ----------------
         // Set focus on invalid field
         sample_feature_dropdown.focus();
 
@@ -406,5 +503,19 @@ function submit_update_Sample() {
         setTimeout(() => {
             sampleForm.reportValidity();
         }, 850);
-    }
+    } // -------------------------------
+}
+
+function resetSampleForm() {
+    sampleForm.reset();
+
+    $('#sample_coordinate_system').val(null).trigger('change');
+    $('#sample_type').val(null).trigger('change');
+    $('#seedsAndFruits').val(null).trigger('change');
+    $('#woodSubfossile').val(null).trigger('change');
+    $('#charcoalInvestigated').val(null).trigger('change');
+    $('#chronozone').val(null).trigger('change');
+
+    sampleBotanicalDeterminationByList = [];
+    document.getElementById("botanicalDeterminationByContainer").innerHTML = "";
 }
